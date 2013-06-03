@@ -39,8 +39,6 @@ class Logger:
         '''Logs message in stderr, instead of predefined file'''
         self.log(level,message,sys.stderr)
 
-#Setting a Logger for this module
-Log = Logger(thresold=5)
 
 #To deal with fasta files
 class FastaFile:
@@ -114,79 +112,4 @@ class FastaFile:
         #return seq obj
         return self.seqs_list[idx]
         
-    def old_FindGaps(self, sequenceObj):
-        """Permette di analizzare una sequenza Bio::Seq
-        per capire dove sono posizionati i GAP"""
-        
-        #queste variabili potrebbero tornarmi utili
-        self.dna_alphabet = ['t', 'a', 'c', 'g', 'n']
-        self.gaps_start = []
-        self.gaps_end = []
-        self.gaps_size = []
-        self.n_of_gaps = 0
-        
-        #inizializzo delle variabili importanti
-        gap_flag = 0
-        gap_size = 0
-        gap_start = 0
-        i = 0
-        
-        #ok ciclo lungo la sequenza Bio::Seq alla ricerca di Gap
-        for letter in sequenceObj:
-            #attenzione ai caratteri. Diventeranno tutti minuscoli
-            letter = letter.lower()
-            
-            #controlliamo che letter sia nell'alfabeto
-            if letter not in self.dna_alphabet:
-                Log.err(1, "Base sconosciuta %s in posizione %s" %(letter, i))
-        
-            #controlliamo lo stato dei gap
-            if letter == 'n' and gap_flag == 0:
-                Log.log(3, "Gap aperto in posizione %s" %(i))
-                
-                gap_flag = 1
-                gap_size = 1
-                gap_start = i
-        
-            elif gap_flag == 1 and letter != 'n':
-                Log.log(3, "Gap chiuso in posizione %s" %(i))
-                
-                #Devo memorizzare questi dati
-                self.gaps_start += [gap_start]
-                self.gaps_end += [i]
-                self.gaps_size += [gap_size]
-                
-                #aggiusto il GAP
-                gap_flag = 0
-        
-            elif gap_flag == 1:
-                #incremento la dimensione del GAP
-                gap_size += 1
-                
-            #IMPORTANTISSIMO: aumentare il contatore i
-            i += 1
-        
-        #Ok. Se finisco la sequenza e il gap_flag è ancora aperto?
-        if gap_flag == 1:
-            Log.log(4, "La sequenza termina con un gap")
-            
-            #questa volta devo chiudere il GAP
-            self.gaps_start += [gap_start]
-            self.gaps_end += [i]
-            self.gaps_size += [gap_size]
-        
-        #OK adesso il numero di gaps_start, gaps_end e gaps_size
-        #deve essere lo stesso
-        if len(self.gaps_start) != len(self.gaps_end) or len(self.gaps_start) != len(self.gaps_size):
-            raise Exception, "C'è stato un problema nella lettura dei gaps"
-        
-        else:
-            self.n_of_gaps = len(self.gaps_start)
-        
-        #debug
-        if self.n_of_gaps != 0:
-            Log.log(2, "Sono stati trovati %s gap" %(self.n_of_gaps))
-        
-        #Ok, se arrivo qua ho letto le informazioni di tutti  gap
-        return
         

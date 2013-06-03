@@ -14,3 +14,9 @@ import Elements
 
 #default level of vebosity
 logger = Utility.Logger(threshold=1)
+
+#the default window size in bp
+WINDOW_SIZE = 100000
+
+#The gap tolerance in bp
+GAP_TOLERANCE = 5000
