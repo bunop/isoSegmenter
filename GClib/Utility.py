@@ -18,9 +18,10 @@ import Bio.SeqIO
 #for logging messages
 class Logger:
     """To set up a level of verbosity of an application"""
-    def __init__(self,threshold=1,outfile=sys.stdout):
+    def __init__(self,threshold=1,outfile=sys.stdout,errfile=sys.stderr):
         self.threshold = threshold
         self.outfile = outfile
+        self.errfile = errfile
     
     def log(self,level,message,outfile=None):
         '''Logs message if level lower than or equal to threshold. 
@@ -37,7 +38,7 @@ class Logger:
             
     def err(self,level,message):
         '''Logs message in stderr, instead of predefined file'''
-        self.log(level,message,sys.stderr)
+        self.log(level,message,self.errfile)
 
 
 #To deal with fasta files

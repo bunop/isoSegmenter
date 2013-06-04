@@ -20,3 +20,6 @@ WINDOW_SIZE = 100000
 
 #The gap tolerance in bp
 GAP_TOLERANCE = 5000
+
+#The GClevel upper limit for each class
+CLASS_TO_LEVEL = { "L1":37, "L2":41, "H1":46, "H2":53, "H3":100 }

@@ -330,10 +330,8 @@ class Chromosome:
             
             #update start coordinate for next step
             start = end
-            
         
-            
-        
+    
 
 #A function to define the class of a sequence window
 def CalcClass(GClevel):
@@ -342,19 +340,19 @@ def CalcClass(GClevel):
     Class = None
     
     #L1 = 37
-    if GClevel <= 37:
+    if GClevel <= GClib.CLASS_TO_LEVEL["L1"]:
         Class = "L1"
     
     #L2 = 41
-    elif GClevel > 37 and GClevel <= 41:
+    elif GClevel > GClib.CLASS_TO_LEVEL["L1"] and GClevel <= GClib.CLASS_TO_LEVEL["L2"]:
         Class = "L2"
         
     #H1 = 46
-    elif GClevel > 41 and GClevel <= 46:
+    elif GClevel > GClib.CLASS_TO_LEVEL["L2"] and GClevel <= GClib.CLASS_TO_LEVEL["H1"]:
         Class = "H1"
 
     #H2 = 53
-    elif GClevel > 46 and GClevel <= 53:
+    elif GClevel > GClib.CLASS_TO_LEVEL["H1"] and GClevel <= GClib.CLASS_TO_LEVEL["H2"]:
         Class = "H2"
         
     #Otherwise is an H3 class

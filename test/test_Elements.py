@@ -11,10 +11,14 @@ import sys
 import unittest
 
 sys.path.append("..")
+
+import GClib
 import GClib.Elements
 
 class test_CalcClass(unittest.TestCase):
     def setUp(self):
+        """A test case to verify class assignment"""
+        
         self.GClevels = ((31, "L1"),
                          (37, "L1"),
                          (37.1, "L2"),
@@ -29,7 +33,7 @@ class test_CalcClass(unittest.TestCase):
                         )
 
     def test_CalcClass(self):
-        """Testing class assignment..."""
+        """Testing class assignment"""
         
         for GClevel, Class in self.GClevels:
             result = GClib.Elements.CalcClass(GClevel)
