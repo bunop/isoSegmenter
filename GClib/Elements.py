@@ -13,6 +13,7 @@ Printed coordinates are 1 based and the last printed coordinate is INCLUDED.
 import re
 import Bio
 import GClib
+import Bio.SeqUtils
 
 from numpy.numarray import mlab
 
@@ -145,8 +146,8 @@ class Isochore(Element):
         #The class may change:
         self.Class = CalcClass(self.avg_GClevel)
         
-    def Test(self,isochore1,isochore2=None):
-        """Testing the stddev if this isochores will be added to another one (or two)"""
+    def TestHypoSTD(self,isochore1,isochore2=None):
+        """Testing the stddev if this isochores is added to another one (or two)"""
         
         GClevels = self.GClevels + isochore1.GClevels
         
@@ -326,12 +327,150 @@ class Chromosome:
             GClib.logger.log(3, new_window)
             
             #add this windows to the windows list
-            self.windows = [new_window]
+            self.windows += [new_window]
             
             #update start coordinate for next step
             start = end
         
-    
+    def FindIsochores(self):
+        """A function for calculating isochores for this chromosome. Windows must be
+        calculated to call this function (call ValueWindows())"""
+        
+        if self.windows == []:
+            raise ChromosomeError, "Windows must be calculated to call this function"
+            
+        #The isochore calculation is performed in three step. In the first one, we put
+        #in the same isochore all adjacent windows with the same class. Resetting isochores if any
+        self.isochores = []
+        
+        #processing all windows
+        GClib.logger.log(4, "Isochores calculations. Step (1)...")
+        
+        for window in self.windows:
+            GClib.logger.log(5, "Current %s" %(window))
+            if window.Class == "gap":
+                #in this Case, i will add a new element
+                self.isochores += [window]
+                GClib.logger.log(3, "%s added to isochore list" %(window))
+            
+            #Add a window to an isochore if I have already seen a window
+            elif len(self.isochores) > 0 and window.Class == self.isochores[-1].Class:
+                GClib.logger.log(3, "Adding %s to %s" %(window, self.isochores[-1]))
+                self.isochores[-1].AddWindow(window)
+                GClib.logger.log(3, "%s updated" %(self.isochores[-1]))
+                
+            else:
+                self.isochores += [Isochore(window=window)]
+                GClib.logger.log(3, "New %s defined" %(self.isochores[-1]))
+        
+        #Merge isocore below a certain limit (1 window)
+        #TODO: define a parameter for a minimun size of an isochore
+        GClib.logger.log(4, "Step (1) completed. Starting Step (2)...")
+        
+        #Now we can merge isochore under a certain size. Since we are modifing the
+        #isochore list by removing indexes, it is safer to procede by reversing array. To obtain the -2 value,
+        #I have to consider len(isochores) -2 because the length of an array is +1
+        #higher than the last index
+        for i in range(len(self.isochores)-2,1,-1):
+            if self.isochores[i].Class == "gap" or len(self.isochores[i]) > 1:
+                GClib.logger.log(5, "Ignoring %s" %(self.isochores[i]))
+                continue
+            
+            else:
+                #debug
+                GClib.logger.log(4, "Cicle %s. Considering %s:%s, %s:%s and %s:%s" %(i, i, self.isochores[i], i-1, self.isochores[i-1], i+1, self.isochores[i+1]))
+                
+                #Three test in order to evaluate the most reliable isochore. 
+                T1 = None
+                T2 = None
+                T3 = None
+                
+                #T1: adding this isochore to the next. Mind the gaps
+                if self.isochores[i+1].Class != "gap":
+                    T1 = self.isochores[i].TestHypoSTD(self.isochores[i+1])
+                
+                #T2: adding this isochore to the previous one
+                if self.isochores[i-1].Class != "gap":
+                    T2 = self.isochores[i].TestHypoSTD(self.isochores[i-1])
+                
+                #T3: adding this isochore to the previous and the next one
+                if self.isochores[i+1].Class != "gap" and self.isochores[i-1].Class != "gap":
+                    T3 = self.isochores[i].TestHypoSTD(self.isochores[i+1], self.isochores[i-1])
+                    
+                #Sorting the three test
+                T = dict(T1=T1,T2=T2,T3=T3)
+                T = sorted(T.items(), key=lambda x: x[1])
+                
+                #debug
+                GClib.logger.log(4, "Sorted test STDDEV %s" %(T))
+                
+                #getting the first element != None
+                for case, value in T:
+                    if value != None:
+                        if case == "T1":
+                            GClib.logger.log(3, "%s hypothesis selected. Adding %s to %s" %(case, i,i+1))
+                            self.isochores[i].AddIsochore(self.isochores[i+1])
+                            
+                            #deleting i+1
+                            del(self.isochores[i+1])
+                            
+                        elif case == "T2":
+                            GClib.logger.log(3, "%s hypothesis selected. Adding isochore %s to %s" %(case, i-1,i))
+                            self.isochores[i-1].AddIsochore(self.isochores[i])
+                            
+                            #deleting i
+                            del(self.isochores[i])
+                            
+                        else:
+                            #case T3
+                            GClib.logger.log(3, "%s hypothesis selected. Adding isochore %s to %s and %s" %(case, i-1,i,i+1))
+                            self.isochores[i-1].AddIsochore(self.isochores[i])
+                            self.isochores[i-1].AddIsochore(self.isochores[i+1])
+                            
+                            #deleting i+1
+                            del(self.isochores[i+1])
+                            
+                            #deleting i
+                            del(self.isochores[i])
+                        
+                        #Last
+                        break
+                
+                #Finding the better case
+            
+            #debug
+            #break
+        
+        GClib.logger.log(4, "Step (2) completed. Starting Step (3)...")
+        
+        #Now we could two distinct isochore with the same class, and we want to merge them
+        for i in range(len(self.isochores)-2,0,-1):
+            if self.isochores[i].Class == self.isochores[i+1].Class:
+                #debug
+                GClib.logger.log(3, "Merging %s to %s" %(self.isochores[i],self.isochores[i+1]))
+                
+                #cathing the old class
+                old_Class = self.isochores[i].Class
+                
+                #merge the isochores
+                self.isochores[i].AddIsochore(self.isochores[i+1])
+                
+                #deleting i+1
+                del(self.isochores[i+1])
+                
+                #debug
+                GClib.logger.log(3, "%s updated" %(self.isochores[i]))
+                
+                #May the class change?
+                if self.isochores[i].Class != old_Class:
+                    GClib.logger.err(3, "The class has changed for %s" %(self.isochores[i]))
+                    #at this moment, I want to see this event
+                    raise ChromosomeError, "The class has changed for %s" %(self.isochores[i])
+            
+            #cicle i
+        
+        GClib.logger.log(4, "Step (3) completed.")
+        
 
 #A function to define the class of a sequence window
 def CalcClass(GClevel):
