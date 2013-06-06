@@ -15,6 +15,8 @@ import time
 import GClib
 import Bio.SeqIO
 
+__author__ = "Paolo Cozzi <paolo.cozzi@tecnoparco.org>"
+
 #for logging messages
 class Logger:
     """To set up a level of verbosity of an application"""

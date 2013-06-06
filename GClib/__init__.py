@@ -6,9 +6,10 @@ Created on Fri May  3 14:49:03 2013
 
 """
 
-__all__ = ["Elements", "Utility" ]
+__all__ = ["Elements", "Utility", "Graphs" ]
 __author__ = "Paolo Cozzi <paolo.cozzi@tecnoparco.org>"
 
+import Graphs
 import Utility
 import Elements
 

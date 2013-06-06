@@ -10,12 +10,18 @@ Printed coordinates are 1 based and the last printed coordinate is INCLUDED.
 
 """
 
+import os
 import re
+import csv
+import sys
 import Bio
 import GClib
+import types
 import Bio.SeqUtils
 
 from numpy.numarray import mlab
+
+__author__ = "Paolo Cozzi <paolo.cozzi@tecnoparco.org>"
 
 #Exceptions for each methods definitions
 class ElementError(Exception) : pass
@@ -123,7 +129,7 @@ class Isochore(Element):
         if window.end > self.end:
             self.end = window.end
             
-        #TODO: raise an exception while passing a windows containing this element
+        #TODO: raise an exception when passing a windows containing this element
         self.size = self.end - self.start
         
     def AddIsochore(self, isochore):
@@ -140,7 +146,7 @@ class Isochore(Element):
         if isochore.end > self.end:
             self.end = isochore.end
             
-        #TODO: raise an exception while passing a windows containing this element
+        #TODO: raise an exception when passing a windows containing this element
         self.size = self.end - self.start
         
         #The class may change:
@@ -165,7 +171,7 @@ class Gap(Element):
         self.Class = "gap"
         
     def __str__(self):
-        return "Gap: start:%s,end:%s,size:%s,class:%s" %(self.start+1, self.end, self.size, self.Class)
+        return "Gap: start:%s,end:%s,size:%s,Class:%s" %(self.start+1, self.end, self.size, self.Class)
 
 #A generic chromosome Class
 class Chromosome:
@@ -470,7 +476,104 @@ class Chromosome:
             #cicle i
         
         GClib.logger.log(4, "Step (3) completed.")
+    
+    def _handle_output(self,output):
+        """This file open a file for writing if necessary"""
         
+        #A flag to determine if I have to close the file (don't close stdout)
+        flag_close = False
+        
+        if type(output) == types.StringType:
+            #testing for file existance
+            if os.path.exists(output):
+                raise ChromosomeError, "File %s exists. I cannot overwrite it"
+                
+            #else
+            output = open(output, "w")
+            
+            #I have to close this file once I've finished
+            flag_close = True
+            
+        elif type(output) != types.FileType:
+            raise ChromosomeError, "I don't know ho to handle %s : %s" %(output, type(output))
+            
+        return output, flag_close
+    
+    def DumpGaps(self, output=sys.stdout):
+        """Dumps gaps in CSV. The output could be an open file handle or
+        a filename to write on"""
+        
+        if self.gaps == []:
+            raise ChromosomeError, "Gaps must be calculated to call this function"
+            
+        #Assuming to work with a open filehandle
+        output, flag_close = self._handle_output(output)
+        
+        #Here, I must have an open file type
+        csv_writer = csv.writer(output, lineterminator="\n")
+        csv_writer.writerow(["Start", "End", "Size"])
+        
+        for gap in self.gaps:
+            csv_writer.writerow([gap.start, gap.end, gap.size])
+            output.flush()
+            
+        #closing file if necessary
+        if flag_close == True: output.close()
+    
+    def DumpWindows(self, output=sys.stdout):
+        """Dumps windows data in CSV. The output could be an open file handle or
+        a filename to write on"""
+        
+        if self.windows == []:
+            raise ChromosomeError, "Windows must be calculated to call this function"
+        
+        #Assuming to work with a open filehandle
+        output, flag_close = self._handle_output(output)
+        
+        #Here, I must have an open file type
+        csv_writer = csv.writer(output, lineterminator="\n")
+        csv_writer.writerow(["Start", "End", "Size", "Class", "GClevel"])
+        
+        for window in self.windows:
+            #mind the gap element
+            if window.Class == "gap":
+                csv_writer.writerow([window.start, window.end, window.size, window.Class, None])
+                
+            else:
+                csv_writer.writerow([window.start, window.end, window.size, window.Class, window.GClevel])
+                
+            output.flush()
+            
+        #closing file if necessary
+        if flag_close == True: output.close()  
+    
+    def DumpIsochores(self, output=sys.stdout):
+        """Dumps isochores data in CSV. The output could be an open file handle or
+        a filename to write on"""
+        
+        if self.isochores == []:
+            raise ChromosomeError, "Isochores must be calculated to call this function"
+        
+        #Assuming to work with a open filehandle
+        output, flag_close = self._handle_output(output)
+        
+        #Here, I must have an open file type
+        csv_writer = csv.writer(output, lineterminator="\n")
+        csv_writer.writerow(["Start", "End", "Size", "Class", "AVG_GClevel", "STDDEV_GClevel"])
+        
+        for isochore in self.isochores:
+            #mind the gap element
+            if isochore.Class == "gap":
+                csv_writer.writerow([isochore.start, isochore.end, isochore.size, isochore.Class, None, None])
+                
+            else:
+                csv_writer.writerow([isochore.start, isochore.end, isochore.size, isochore.Class, isochore.avg_GClevel, isochore.stddev_GClevel])
+                
+            output.flush()
+            
+        #closing file if necessary
+        if flag_close == True: output.close()  
+    
 
 #A function to define the class of a sequence window
 def CalcClass(GClevel):
