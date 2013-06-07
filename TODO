@@ -1,6 +1,8 @@
 
 * Support for doing graphs (profiles and isochores)
 
+* Insert code to value DN, TN profile
+
 * Insert code for genome, window and isochore shuffling
 
 * Support for chromosome aligment
@@ -8,3 +10,5 @@
 * Main program ISOfinder
 
 * Graphics support for families
+
+* Support to read isochore CSV files and instantiating isochore classes

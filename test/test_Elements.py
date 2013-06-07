@@ -38,6 +38,39 @@ class test_CalcClass(unittest.TestCase):
         for GClevel, Class in self.GClevels:
             result = GClib.Elements.CalcClass(GClevel)
             self.assertEqual(result, Class)
-            
+
+class test_Element(unittest.TestCase):
+    def setUp(self):
+        """Testing element instantiation"""
+        
+        self._test_Element = GClib.Elements.Element()
+        
+    def test_SetSize(self):
+        """Testing element set size"""
+        
+        #testing setting start and no end and viceversa
+        self.assertRaises(GClib.Elements.ElementError, self._test_Element.SetSize, None, 100000)
+        self.assertRaises(GClib.Elements.ElementError, self._test_Element.SetSize, 100000, None)
+        
+        #cal SetSize and verify dimensions and start, end coordinates
+        start = 100000
+        end = 500000
+        size = end-start
+        
+        #Normal SetSize call
+        self._test_Element.SetSize(start,end)
+        self.assertEqual(self._test_Element.start, start)
+        self.assertEqual(self._test_Element.end, end)
+        self.assertEqual(self._test_Element.size, size)
+        
+        #Verify coordinate inversion
+        self._test_Element.SetSize(end, start)
+        self.assertEqual(self._test_Element.start, start)
+        self.assertEqual(self._test_Element.end, end)
+        self.assertEqual(self._test_Element.size, size)
+        
+        
+        
+
 if __name__ == "__main__":
     unittest.main()

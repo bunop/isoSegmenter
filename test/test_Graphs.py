@@ -260,6 +260,27 @@ class test_BaseGraph(unittest.TestCase):
         #remove temporary file
         if os.path.exists(testfile):
             os.remove(testfile)
+    
+#The testing methods for DrawChromosome classes
+class test_DrawChromosome(unittest.TestCase):
+    def setUp(self):
+        self._test_DrawChromosome = GClib.Graphs.DrawChromosome()
         
+    def test_DrawColorGraph(self):
+        """Testing DrawColorGraph"""
+        
+        self._test_DrawChromosome.DrawColorGraph()
+        
+    def test_DrawGraph(self):
+        """Testing DrawGraph"""
+        
+        self._test_DrawChromosome.DrawGraph()
+        
+    def test_DrawColoredRectangles(self):
+        """Testing DrawColoredRectangles"""
+        
+        self._test_DrawChromosome.DrawColoredRectangles()
+        
+
 if __name__ == "__main__":
     unittest.main()

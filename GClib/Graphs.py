@@ -18,6 +18,7 @@ __author__ = "Paolo Cozzi <paolo.cozzi@tecnoparco.org>"
 
 #exception definition
 class BaseGraphError(Exception) : pass
+class DrawChromosomeError(BaseGraphError) : pass
 
 class BaseGraph():
     """A base class to make graps like draw chromosomes"""
@@ -51,6 +52,23 @@ class BaseGraph():
         self.white = None
         self.black = None
         self.gray = None
+        
+    def __str__(self):
+        """A method useful for debugging"""
+        
+        myclass = str(self.__class__)
+        myattributes = self.__dict__
+        
+        #the returned string
+        message = "\n %s Object\n\n" %(myclass)
+        
+        for key, value in myattributes.iteritems():
+            message += "\t%s -> %s\n" %(key, value)
+            
+        return message
+        
+    def __repr__(self):
+        return self.__str__()
         
     def SetMinMaxValues(self, min_value, max_value):
         """Set the maximum and minimum values printable in the graphs"""
@@ -351,6 +369,172 @@ class BaseGraph():
         
         GClib.logger.log(1, "Image written in %s" %(filename))
         
+
+#The main class which simulates the behaviour of draw_chromsome.pl
+class DrawChromosome(BaseGraph):
+    """The main class which simulates the behaviour of draw_chromsome.pl"""
+    
+    def __init__(self, sequence_start=0):
+        """Instantiate the class"""
+        
+        #Istanzio le variabili della classe base
+        BaseGraph.__init__(self, sequence_start=sequence_start)
+        
+        #Le scala dell'asse y (dipende dal tipo di grafico)
+        self.SetMinMaxValues(30,65)
+        
+    #da sistemare!
+    def DrawColorGraph(self,data):
+        """Disegna una linea colorata per ogni valore letto"""
+        points = len(data)
+        points2 = int(self.seq_len / self.window)
+        px = int((self.x - self.border*2) / points2)
+        y_base = self.y
+        
+        for i in range(points):
+            x1 = self.border + (px * i)
+            y1 = self.y - ((data[i] - self.y_min) * self.py)
+            color = self.ResolveColor(data[i])
+            self.graph.line((x1, y1), (x1, y_base), color)
+    
+    #Questa funzione vorrei che segnasse le isocore come una linea continua
+    #con altezza pari alla percentuale delle iscore
+    def DrawGraph(self, first_gruppo, media_attributo, color=(0, 0, 0), myshift=0):
+        """Disegna una linea che rappresenta la percentuale in GC lungo il genoma.
+        E' possibile specificare il colore come terna RGB. Inoltre e possibile fissare
+        a posteriori uno shift per cui spostare i gruppi"""
+        
+        #Come per DrawRectangleIsocore, mi serve leggere la prima delle strutture
+        gruppo = first_gruppo
+        
+        #La posizione di inizio è critica, se non ci sono dati
+        x1 = int(self.border + round((gruppo.start - self.seq_start + myshift) / self.scale) - 1)
+        
+        #questo è il punto più basso dell'immagine. Serve solo per disegnare i gap
+        y2 = self.y
+        old_y1 = None
+        
+        #devo costruire il colore
+        color = self.graph.colorAllocate(color)
+        
+        #per le linee. Aumento lo spessore
+        self.graph.setThickness(2)
+        
+        #parto con il ciclo
+        while gruppo != None:
+            #Calcolo la lunghezza delle regione in questione. Anziche sommarè ogni volta
+            #lo ricalcolo ogni volta cosi come DrawRectangleIsocore
+            x2 = int(self.border + round((gruppo.end - self.seq_start + myshift) / self.scale) - 1)
+        
+            logger.log(5, "Processo la regione %s : %s" %(gruppo.start, gruppo.end))
+            
+            if gruppo.classe == 'gap':
+                #come per draw_chromosome, il gap crea un rettangolo alto come
+                #tutto il grafico
+                y1 = int(self.y - (self.y_max-self.y_min) * self.py)
+                
+                #ok, adesso posso picchiarci dentro un rettangolo
+                self.graph.filledRectangle((x1,y1), (x2,y2), self.gray)
+                
+                #se c'è il gap, non voglio disegnare linee verticali
+                old_y1 = None
+                
+            else:
+                #se non sto trattando un Gap, allora devo disegnare una linea
+                #print gruppo.classe
+                
+                y1 = int(self.y - (getattr(gruppo, media_attributo)-self.y_min) * self.py)
+                
+                #questa è la linea orizzontale
+                self.graph.line((x1,y1), (x2,y1), color)
+                
+                #sarebbe bello disegnare anche le linee verticali
+                if old_y1 != None:
+                    self.graph.line((x1,y1), (x1,old_y1), color)
+                    
+                #aggiorno il valore di old_y1
+                old_y1 = y1
+                
+            #aggiorno i valori e passo alla isocora successiva
+            x1 = x2 + 1
+            
+            gruppo = gruppo.GetNextGruppo()
+        
+        #per le linee. Ripristino lo spessore
+        self.graph.setThickness(1)
+        
+        #debug
+        logger.log(2, "Isocore disegnate")
+        
+        return
+        
+    def DrawColoredRectangles(self, elements):
+        """permette di disegnare dei rettangoli in corrispondenza delle
+        isocore individuate. Necessita di una struttura gruppo di partenza e
+        dell'attributo da graficare (media del GC del gruppo o TN)"""
+        
+        #ok posso procedere con le mie analisi. La prima cosa che mi manca
+        #Quindi devo partire dalla prima struttura e cominciare a fare i rettangoli
+        #in base alla classe decido se fare un rettangolo per un gap, oppure per un isocora
+        x1 = self.border
+        y2 = self.y
+        
+        for element in elements:
+            #devo determinare dove si posiziona questa regione. La larghezza della
+            #regione è valida allo stesso modo per i gap e per le isocore. Start e
+            #end devono essere scalati in modo opportuno
+            #x2 = x1 + math.ceil(gruppo.size / self.scale)-1
+            
+            #se aggingo un rettangolo a quello precedente, ogni volta che commetto un errore,
+            #lo trascino nella prossima isocora. Allora la coordinata x2 deve essere calcolata
+            #solamente in base alla lunghezza dell'isocora
+            x2 = int(self.border + round( (element.end - self.seq_start) / self.scale) - 1)
+            
+            if element.Class == 'gap':
+                #come per draw_chromosome, il gap crea un rettangolo alto come
+                #tutto il grafico
+                y1 = int(self.y - (self.y_max-self.y_min) * self.py)
+                
+                #ok, adesso posso picchiarci dentro un rettangolo
+                self.graph.filledRectangle((x1,y1), (x2,y2), self.gray)
+                
+            else:
+                #in questo caso, la media dell'attributo che voglio misurare mi darà
+                #l'altezza del rettangolo, e pure il colore delle storie
+                try:
+                    color = self.ResolveColor(getattr(element, "avg_GClevel"))
+                    y1 = int(self.y - (getattr(element, "avg_GClevel")-self.y_min) * self.py)
+                
+                except AttributeError:
+                    color = self.ResolveColor(getattr(element, "GClevel"))
+                    y1 = int(self.y - (getattr(element, "GClevel")-self.y_min) * self.py)
+                
+                #provo a metterci un rettangolo colorato
+                self.graph.filledRectangle((x1,y1), (x2,y2), color)
+                
+            #aggiorno x1 e passo alla isocora successiva
+            x1 = x2 + 1
+    
+    def DrawLegend(self):
+        """Serve per segnare sul grafico la legenda delle isocore."""
+        
+        #per i box
+        y1 = self.y - (self.y_max - self.y_min) * self.py
+        self.graph.filledRectangle((self.x-self.border/5*4, y1), (self.x-self.border/5, self.y), self.colorslist[-1])
+        
+        lista = range(self.n_of_colors-1)
+        lista.reverse()
+        
+        for i in lista:
+            y1 = self.y - (self.isochore_proc[i]-self.y_min)*self.py
+            self.graph.filledRectangle((self.x-self.border/5*4, y1), (self.x-self.border/5, self.y), self.colorslist[i])
+        
+        #per le etichette. Se non ho isochore label è perchè non ho colorato per famiglie
+        self.graph.string(gd.gdFontGiant, (self.x-self.border/5*3, self.y - (self.isochore_proc[-1]-self.y_max) * self.py + 5), self.isochore_label[-1], self.black)
+        
+        for i in range(self.n_of_colors-1):
+            y1 = self.y-(self.isochore_proc[i]-self.y_min) * self.py + 5
+            self.graph.string(gd.gdFontGiant, (self.x-self.border/5*3, y1), self.isochore_label[i], self.black)
 
 #debug: define a test function to works on BaseGraph
 def test_BaseGraph(filename="test.png"):
