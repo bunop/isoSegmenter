@@ -261,6 +261,8 @@ class Chromosome:
     
     def __repr__(self):
         return self.__str__()
+        
+    #TODO: implement __eq__ method
     
     def WholeGCcontent(self):
         """Calculate the GC counter for the whole chromosome"""

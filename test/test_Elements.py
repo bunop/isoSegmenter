@@ -367,10 +367,10 @@ class test_Chromosome(unittest.TestCase):
             new_gap = new_gaps[i]
             test_gap = self.old_gaps[i]
             
-            self.assertEqual(new_gap.start, test_gap.start)
-            self.assertEqual(new_gap.end, test_gap.end)
-            self.assertEqual(new_gap.size, test_gap.size)
-            
+            #Assert equality with __eq__ method
+            self.assertEqual(new_gap, test_gap)
+        
+    
     def test_LoadDumpGaps(self):
         """Testing Dump and Load Gaps"""
         
@@ -390,9 +390,8 @@ class test_Chromosome(unittest.TestCase):
             new_gap = chromosome.gaps[i]
             test_gap = self.old_gaps[i]
             
-            self.assertEqual(new_gap.start, test_gap.start)
-            self.assertEqual(new_gap.end, test_gap.end)
-            self.assertEqual(new_gap.size, test_gap.size)
+            #Assert equality with __eq__ method
+            self.assertEqual(new_gap, test_gap)
         
         #deleting the old file
         os.remove(testfile)
@@ -420,9 +419,8 @@ class test_Chromosome(unittest.TestCase):
             new_gap = chromosome.gaps[i]
             test_gap = self.old_gaps[i]
             
-            self.assertEqual(new_gap.start, test_gap.start)
-            self.assertEqual(new_gap.end, test_gap.end)
-            self.assertEqual(new_gap.size, test_gap.size)
+            #Assert equality with __eq__ method
+            self.assertEqual(new_gap, test_gap)
             
         #remove testfile
         os.remove(testfile)
@@ -431,7 +429,47 @@ class test_Chromosome(unittest.TestCase):
         """Testing Value windows"""
         
         self._test_Chromosome.ValueWindows()
+        new_windows = self._test_Chromosome.windows
         
+        #Now testing windows legth
+        self.assertEqual(len(self.test_windows), len(new_windows))
+        
+        #And now thes all the gap element
+        for i in range(len(self.old_gaps)):
+            new_window = new_windows[i]
+            test_window = self.test_windows[i]
+            
+            #Assert equality with __eq__ method
+            self.assertEqual(new_window, test_window)
+    
+    def test_LoadDumpWindows(self):
+        """Testing Dump and Load Windows"""
+        
+        #calculating windows
+        self._test_Chromosome.ValueWindows()
+        
+        #A test file for reading and writing
+        testfile = tempfile.mktemp()
+        
+        #Passing file name to Dump and load Gap
+        self._test_Chromosome.DumpWindows(outfile=testfile)
+        
+        chromosome = GClib.Elements.Chromosome()
+        chromosome.LoadWindows(infile=testfile)
+        
+        #Now testing windows legth
+        self.assertEqual(len(self.test_windows), len(chromosome.windows))
+        
+        #And now thes all the windows element
+        for i in range(len(self.test_windows)):
+            new_window = chromosome.windows[i]
+            test_window = self.test_windows[i]
+            
+            #Assert equality with __eq__ method
+            self.assertEqual(new_window, test_window)
+        
+        #deleting the old file
+        os.remove(testfile)
 
 if __name__ == "__main__":
     unittest.main()
