@@ -7,7 +7,10 @@ Created on Fri May 31 17:07:40 2013
 
 """
 
+import os
+import csv
 import sys
+import tempfile
 import unittest
 
 from numpy.numarray import mlab
@@ -15,6 +18,7 @@ from numpy.numarray import mlab
 sys.path.append("..")
 
 import GClib
+import GClib.Utility
 import GClib.Elements
 
 class test_CalcClass(unittest.TestCase):
@@ -262,6 +266,172 @@ class test_Isochore(unittest.TestCase):
         isochore.AddWindow(window)
         self.assertRaises(GClib.Elements.IsochoreError, self._test_Isochore.AddIsochore, isochore)
 
+class test_Chromosome(unittest.TestCase):
+    #maybe loads SeqRecord object once
+    fastafile = GClib.Utility.FastaFile("chr21.fa.gz")
+    seqRecord = fastafile.GetNextSeq()
+    
+    #Open a local Gap CSV file, obtained by the precendent version of this software
+    old_filein = open("old_chr21_hg19_gaps.csv", "rU")
+    old_csvin = csv.reader(old_filein)
+    
+    #Discarding headers
+    old_csvin.next()
+    
+    #Here's the list of gaps tests
+    old_gaps = []
+    
+    #the coordinatees are 0 based in the old gap file version
+    for line in old_csvin:
+        start, end, size = [int(col) for col in line]
+        
+        old_gaps += [GClib.Elements.Gap(start=start, end=end)]
+        
+    old_filein.close()
+    
+    #Open a local Windows CSV file, obtained by the evaluation study of this program
+    test_filein = open("test_windows_chr21.csv", "rU")
+    test_csvin = csv.reader(test_filein)
+    
+    #Discarding headers
+    test_csvin.next()
+    
+    #Here's the list of windows tests
+    test_windows = []
+    
+    #the coordinatees are 1 based and have to be fixed
+    for line in test_csvin:
+        start, end, size, Class, GClevel = int(line[0]), int(line[1]), int(line[2]), line[3], line[4]
+        
+        window = GClib.Elements.Window()
+        window.start = start - 1 #beware to the 1 based coordinates
+        window.end = end
+        window.size = size
+        window.Class = Class
+        
+        #GClevel can be a float value
+        if GClevel != "":
+            window.GClevel = float(GClevel)
+        
+        #Add this window to window list
+        test_windows += [window]
+    
+    #close windows file
+    test_filein.close()
+    
+    #Opena a local Isochore file, obtained bt the evaluation study of this program
+    test_filein = open("test_isochores3_chr21.csv", "rU")
+    test_csvin = csv.reader(test_filein)
+    
+    #Discarding headers
+    test_csvin.next()
+    
+    #here's the list of isocores test
+    test_isochores = []
+    
+    #the coordinatees are 1 based and have to be fixed
+    for line in test_csvin:
+        start, end, size, Class, avg_GClevel, stddev_GClevel = int(line[0]), int(line[1]), int(line[2]), line[3], line[4], line[5]
+        
+        isochore = GClib.Elements.Isochore()
+        isochore.start = start - 1 #beware to the 1 based coordinate
+        isochore.end = end
+        isochore.size = size
+        isochore.Class = Class
+        
+        #Some values are float
+        if avg_GClevel != "":
+            isochore.avg_GClevel = float(avg_GClevel)
+            
+        if stddev_GClevel != "": 
+            isochore.stddev_GClevel = float(stddev_GClevel)
+        
+    #close isochores file
+    test_filein.close()
+    
+    def setUp(self):
+        """Testing chromosome instantiation"""
+        
+        self._test_Chromosome = GClib.Elements.Chromosome(self.seqRecord)
+        
+    def test_Scan4Gaps(self):
+        """Testing Scan4Gaps"""
+        
+        new_gaps = self._test_Chromosome.gaps
+        
+        #Now testing gaps legth
+        self.assertEqual(len(self.old_gaps), len(new_gaps))
+        
+        #And now thes all the gap element
+        for i in range(len(self.old_gaps)):
+            new_gap = new_gaps[i]
+            test_gap = self.old_gaps[i]
+            
+            self.assertEqual(new_gap.start, test_gap.start)
+            self.assertEqual(new_gap.end, test_gap.end)
+            self.assertEqual(new_gap.size, test_gap.size)
+            
+    def test_LoadDumpGaps(self):
+        """Testing Dump and Load Gaps"""
+        
+        testfile = tempfile.mktemp()
+        
+        #Passing file name to Dump and load Gap
+        self._test_Chromosome.DumpGaps(outfile=testfile)
+        
+        chromosome = GClib.Elements.Chromosome()
+        chromosome.LoadGaps(infile=testfile)
+        
+        #Now testing gaps legth
+        self.assertEqual(len(self.old_gaps), len(chromosome.gaps))
+        
+        #And now thes all the gap element
+        for i in range(len(self.old_gaps)):
+            new_gap = chromosome.gaps[i]
+            test_gap = self.old_gaps[i]
+            
+            self.assertEqual(new_gap.start, test_gap.start)
+            self.assertEqual(new_gap.end, test_gap.end)
+            self.assertEqual(new_gap.size, test_gap.size)
+        
+        #deleting the old file
+        os.remove(testfile)
+        
+        #Now passing an open file handle
+        outfile = open(testfile, "w")
+        self._test_Chromosome.DumpGaps(outfile=outfile)
+        
+        #Closing file
+        outfile.close()
+        
+        #Open a file for reading
+        infile = open(testfile, "rU")
+        chromosome = GClib.Elements.Chromosome()
+        chromosome.LoadGaps(infile=infile)
+        
+        #closing inputfile
+        infile.close()
+        
+        #Now testing gaps legth
+        self.assertEqual(len(self.old_gaps), len(chromosome.gaps))
+        
+        #And now thes all the gap element
+        for i in range(len(self.old_gaps)):
+            new_gap = chromosome.gaps[i]
+            test_gap = self.old_gaps[i]
+            
+            self.assertEqual(new_gap.start, test_gap.start)
+            self.assertEqual(new_gap.end, test_gap.end)
+            self.assertEqual(new_gap.size, test_gap.size)
+            
+        #remove testfile
+        os.remove(testfile)
+        
+    def test_ValueWindows(self):
+        """Testing Value windows"""
+        
+        self._test_Chromosome.ValueWindows()
+        
 
 if __name__ == "__main__":
     unittest.main()
