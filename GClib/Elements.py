@@ -26,6 +26,7 @@ __author__ = "Paolo Cozzi <paolo.cozzi@tecnoparco.org>"
 #Exceptions for each methods definitions
 class ElementError(Exception) : pass
 class WindowError(ElementError) : pass
+class IsochoreError(Exception) : pass
 class ChromosomeError(Exception) : pass
 
 
@@ -91,10 +92,15 @@ class Window(Element):
 #need to define a window class? (which doesn't contain values like average GC, and so on)?
 
 #A class for dealing isochores
-class Isochore(Element):
+class Isochore():
     def __init__(self, window=None):
         """Can instantiate an Isochore from a window"""
         
+        #default values
+        self.start = None
+        self.end = None
+        self.size = None
+        self.Class = None
         self.avg_GClevel = None
         self.stddev_GClevel = None
         self.GClevels = []
@@ -110,12 +116,28 @@ class Isochore(Element):
     def __str__(self):
         return "Isochore: start:%s,end:%s,size:%s,Class:%s,avg_GClevel:%s,stddev_GClevel:%s" %(self.start+1, self.end, self.size, self.Class, self.avg_GClevel, self.stddev_GClevel)
         
+    def __repr__(self):
+        return self.__str__()
+        
     #how many windows define an isochore?
     def __len__(self):
         """return the number of windows in this isochore"""
         return len(self.GClevels)
 
     def AddWindow(self, window):
+        """Add a window to the current isochore. Windows must to be contiguous and
+        non overlapped"""
+        
+        #Add only a instatiated Window Element
+        if window.__class__ != Window or window.Class == None:
+            raise IsochoreError, "You can add only an instantiated window to an isochore with AddWindow"
+        
+        #Raising an exception when adding a non contiguous window. This condition
+        #ensures that no windows already inside this isochore will be added. Note that
+        #coordinates are in python format
+        if window.start != self.end and window.end != self.start:
+            raise IsochoreError, "Windows must be contiguous to be added to current isochore"
+        
         self.GClevels += [window.GClevel]
         self.avg_GClevel = mlab.mean(self.GClevels)
         
@@ -128,11 +150,31 @@ class Isochore(Element):
             
         if window.end > self.end:
             self.end = window.end
-            
-        #TODO: raise an exception when passing a windows containing this element
+        
+        #determining the new size for this element
         self.size = self.end - self.start
         
+        #The class may change when adding a window
+        old_Class = self.Class
+        self.Class = CalcClass(self.avg_GClevel)
+        
+        if old_Class != self.Class:
+            GClib.logger.err(1, "The Class changed between %s and %s for %s" %(old_Class, self.Class, self))
+        
     def AddIsochore(self, isochore):
+        """Add and Isochore to the current one. Isochore must be contiguous and 
+        non overlapped"""
+        
+        #Add only a instatiated Isochore Element
+        if isochore.__class__ != Isochore or isochore.Class == None:
+            raise IsochoreError, "You can add only an instantiated isochore to an isochore with AddIsochore"
+            
+        #Raising an exception when adding a non contiguous isochore. This condition
+        #ensures that no isochores already inside this isochore will be added. Note that
+        #coordinates are in python format
+        if isochore.start != self.end and isochore.end != self.start:
+            raise IsochoreError, "Windows must be contiguous to be added to current isochore"
+        
         #merging the windows
         self.GClevels += isochore.GClevels
         
@@ -146,11 +188,16 @@ class Isochore(Element):
         if isochore.end > self.end:
             self.end = isochore.end
             
-        #TODO: raise an exception when passing a windows containing this element
+        #determining the new size for this element
         self.size = self.end - self.start
         
-        #The class may change:
+        #The class may change when adding and isochore:
+        old_Class = self.Class
         self.Class = CalcClass(self.avg_GClevel)
+        
+        if old_Class != self.Class:
+            GClib.logger.err(1, "The Class changed between %s and %s for %s" %(old_Class, self.Class, self))
+        
         
     def TestHypoSTD(self,isochore1,isochore2=None):
         """Testing the stddev if this isochores is added to another one (or two)"""
