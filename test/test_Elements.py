@@ -12,6 +12,7 @@ import csv
 import sys
 import tempfile
 import unittest
+import Bio.SeqUtils
 
 from numpy.numarray import mlab
 
@@ -74,6 +75,9 @@ class test_Element(unittest.TestCase):
         self.assertEqual(self._test_Element.start, start)
         self.assertEqual(self._test_Element.end, end)
         self.assertEqual(self._test_Element.size, size)
+        
+        #verify setsize with length == 0
+        self.assertRaises(GClib.Elements.ElementError, self._test_Element.SetSize, 100000, 100000)
 
 class test_Gap(unittest.TestCase):
     def setUp(self):
@@ -303,18 +307,26 @@ class test_Chromosome(unittest.TestCase):
     for line in test_csvin:
         start, end, size, Class, GClevel = int(line[0]), int(line[1]), int(line[2]), line[3], line[4]
         
-        window = GClib.Elements.Window()
-        window.start = start - 1 #beware to the 1 based coordinates
-        window.end = end
-        window.size = size
-        window.Class = Class
-        
-        #GClevel can be a float value
-        if GClevel != "":
+        if Class == "gap":
+            gap = GClib.Elements.Gap()
+            gap.start = start - 1 #beware to the 1 based coordinates
+            gap.end = end
+            gap.size = size
+            gap.Class = Class
+            
+            #add this gap to window list
+            test_windows += [gap]
+            
+        else:
+            window = GClib.Elements.Window()
+            window.start = start - 1 #beware to the 1 based coordinates
+            window.end = end
+            window.size = size
+            window.Class = Class
             window.GClevel = float(GClevel)
         
-        #Add this window to window list
-        test_windows += [window]
+            #Add this window to window list
+            test_windows += [window]
     
     #close windows file
     test_filein.close()
@@ -353,6 +365,16 @@ class test_Chromosome(unittest.TestCase):
         """Testing chromosome instantiation"""
         
         self._test_Chromosome = GClib.Elements.Chromosome(self.seqRecord)
+        
+        #Shut down logger
+        self._default_threshold = GClib.logger.threshold
+        GClib.logger.threshold = 0
+        
+    def tearDown(self):
+        """A method called after each test"""
+        
+        #restart logger with the default verbosity
+        GClib.logger.threshold = self._default_threshold
         
     def test_Scan4Gaps(self):
         """Testing Scan4Gaps"""
@@ -435,7 +457,7 @@ class test_Chromosome(unittest.TestCase):
         self.assertEqual(len(self.test_windows), len(new_windows))
         
         #And now thes all the gap element
-        for i in range(len(self.old_gaps)):
+        for i in range(len(self.test_windows)):
             new_window = new_windows[i]
             test_window = self.test_windows[i]
             
@@ -470,6 +492,78 @@ class test_Chromosome(unittest.TestCase):
         
         #deleting the old file
         os.remove(testfile)
+
+    def test_ValueWindowsWithDifferentStartEnd(self):
+        """Testing Value windows with different start - end coordinates"""
+        
+        #This is the position of first GAP in chromosome sequence start:1,end:9411193,size:9411193,Class:gap. So:
+        gap0 = GClib.Elements.Gap(start=9000000,end=9411193)
+        
+        #Setting a different start point
+        self._test_Chromosome.ValueWindows(From=9000000)
+        
+        #Asserting the first gap
+        self.assertEqual(gap0, self._test_Chromosome.windows[0])
+        
+        #Now setting the start site immediately after the GAP. The coordinates are 0 based
+        window0 = GClib.Elements.Window(start=9411193,end=9511193,GClevel=36.522)
+        
+        self._test_Chromosome.ValueWindows(From=9411193)
+        
+        #Asserting first window
+        self.assertEqual(window0, self._test_Chromosome.windows[0])
+        
+        #Starting windows from a different position
+        window1 = GClib.Elements.Window(start=15000000,end=15100000,GClevel=42.56)
+        
+        self._test_Chromosome.ValueWindows(From=15000000)
+        
+        #Asserting casual window
+        self.assertEqual(window1, self._test_Chromosome.windows[0])
+        
+        #Now testing windows until a determined position
+        last_gap = GClib.Elements.Gap(start=48119895,end=48120000)
+        
+        #limiting analysis to a position inside a GAP
+        self._test_Chromosome.ValueWindows(To=48120000)
+        
+        self.assertEqual(last_gap, self._test_Chromosome.windows[-1])
+        
+        #Limiting analysis immediatly after a GAP
+        last_windows = GClib.Elements.Window(start=48082664,end=48119895,GClevel=43.482582)
+        self._test_Chromosome.ValueWindows(To=48119895)
+        
+        self.assertEqual(last_windows, self._test_Chromosome.windows[-1])
+        
+        #Now evaluate a segment completely inside a GAP
+        whole_gap = GClib.Elements.Gap(start=1000000,end=4000000)
+        self._test_Chromosome.ValueWindows(From=1000000,To=4000000)
+        
+        #I want only a gap
+        self.assertEqual(len(self._test_Chromosome.windows),1)
+        self.assertEqual(self._test_Chromosome.windows[0], whole_gap)
+        
+        #And now we evaluate a region without gaps
+        From, To = 20000000,21000000
+        window_size = 100000
+        
+        #test for GC levels in this regions (look how it simple when no gap is considered ando supposing no isochore detection
+        GC_values = [round(Bio.SeqUtils.GC(self.seqRecord[step:step+window_size].seq),6) for step in range(From, To, window_size)]
+        
+        #determining windows
+        self._test_Chromosome.ValueWindows(From=From, To=To)
+        
+        #inspect windows positions and values:
+        self.assertEqual(len(self._test_Chromosome.windows), len(GC_values))
+        
+        for i, window in enumerate(self._test_Chromosome.windows):
+            start = From + i*window_size
+            end = start + window_size
+            self.assertEqual(window.start, start)
+            self.assertEqual(window.end, end)
+            self.assertEqual(window.GClevel, GC_values[i])
+        
+        
 
 if __name__ == "__main__":
     unittest.main()

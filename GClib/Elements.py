@@ -15,9 +15,11 @@ import re
 import csv
 import sys
 import Bio
+import numpy
 import GClib
 import types
 import Bio.SeqUtils
+
 
 from numpy.numarray import mlab
 
@@ -50,6 +52,15 @@ class Element:
         
         except AttributeError:
             raise ElementError, "Element Base Class: you have to define a __str__() method to override this one"
+            
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        else:
+            return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
     
     def SetSize(self, start, end):
         """Define the size of the element by specifing the positions"""
@@ -59,6 +70,10 @@ class Element:
         
         if start > end:
             start, end = end, start
+        
+        #No element of length 0 is admintted
+        if start == end:
+            raise ElementError, "start and end cannot be equal"
         
         self.start = start
         self.end = end
@@ -80,11 +95,12 @@ class Window(Element):
         
         if (GClevel != None):
             self.SetGClevel(GClevel)
+            
         
     def __str__(self):
-        return "Window: start:%s,end:%s,size:%s,GClevel:%.3f,Class:%s" %(self.start+1, self.end, self.size, self.GClevel, self.Class)
-
-    #TODO: implement __eq__ method
+        """Print Window in 0-Based coordinates"""
+        
+        return "Window: start:%s,end:%s,size:%s,GClevel:%.6f,Class:%s" %(self.start, self.end, self.size, self.GClevel, self.Class)
 
     def SetGClevel(self, GClevel):
         """To set GClevel and class for a window"""
@@ -116,17 +132,26 @@ class Isochore():
             self.Class = window.Class
     
     def __str__(self):
-        return "Isochore: start:%s,end:%s,size:%s,Class:%s,avg_GClevel:%s,stddev_GClevel:%s" %(self.start+1, self.end, self.size, self.Class, self.avg_GClevel, self.stddev_GClevel)
+        """Print Isochore in 0-Based coordinates"""
+        
+        return "Isochore: start:%s,end:%s,size:%s,Class:%s,avg_GClevel:%s,stddev_GClevel:%s" %(self.start, self.end, self.size, self.Class, self.avg_GClevel, self.stddev_GClevel)
         
     def __repr__(self):
         return self.__str__()
+        
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        else:
+            return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
         
     #how many windows define an isochore?
     def __len__(self):
         """return the number of windows in this isochore"""
         return len(self.GClevels)
-
-    #TODO: implement __eq__ method
 
     def AddWindow(self, window):
         """Add a window to the current isochore. Windows must to be contiguous and
@@ -222,9 +247,10 @@ class Gap(Element):
         self.Class = "gap"
         
     def __str__(self):
-        return "Gap: start:%s,end:%s,size:%s,Class:%s" %(self.start+1, self.end, self.size, self.Class)
+        """Print Gap in 0-Based coordinates"""
         
-    #TODO: implement __eq__ method
+        return "Gap: start:%s,end:%s,size:%s,Class:%s" %(self.start, self.end, self.size, self.Class)
+    
 
 #A generic chromosome Class
 class Chromosome:
@@ -277,18 +303,22 @@ class Chromosome:
         
         if type(self.seqRecord) != Bio.SeqRecord.SeqRecord:
             raise ChromosomeError, "I can search for gaps only on Bio.SeqRecord.SeqRecord object!"
-        
+
+        GClib.logger.log(2, "Starting GAPs calculation")
+
         #A gaps list
         gaps = []
         
         #A very quick method to find gaps on chromosome
         for match in re.finditer("N+", self.seqRecord.seq.tostring(), flags=re.IGNORECASE):
-            GClib.logger.log(2, "Gap found from %s to %s" %(match.start(), match.end()))
+            GClib.logger.log(3, "Gap found from %s to %s" %(match.start(), match.end()))
             
             #Adding this gap to the gaps list
             gaps += [Gap(start=match.start(), end=match.end())]
             
         self.gaps = gaps
+        
+        GClib.logger.log(2, "GAPs calculation finished")
         
     def ValueWindows(self, window_size=None, From=None, To=None, gap_tolerance=None):
         """Segments the sequence in non-overlapping windows of fixed size, and calculate
@@ -306,21 +336,24 @@ class Chromosome:
             self.size = len(self.seqRecord)
             
         if window_size == None:
-            GClib.logger.log(3, "No window size provided. Setting the default value to %s bp" %(GClib.WINDOW_SIZE))
+            GClib.logger.log(1, "No window size provided. Setting the default value to %s bp" %(GClib.WINDOW_SIZE))
             window_size = GClib.WINDOW_SIZE
         
         #Setting gap tolerance if not provided
         if gap_tolerance == None:
-            GClib.logger.log(3, "No gap tolerance provided. Setting the default value to %s bp" %(GClib.GAP_TOLERANCE))
+            GClib.logger.log(1, "No gap tolerance provided. Setting the default value to %s bp" %(GClib.GAP_TOLERANCE))
             gap_tolerance = GClib.GAP_TOLERANCE
         
         #The user may want to analize sequence between two coordinates. Otherwise I will set the default values
         if From == None:
             From = 0
-            
+        
+        #Coordinate are 0 based, so
         if To == None:
             To = self.size
-            
+        
+        GClib.logger.log(2, "Starting window calculation")
+        
         #resetting self.windows if any
         self.windows = []
         
@@ -331,11 +364,15 @@ class Chromosome:
         start = From
         
         while start < To:
+            #determining end coordinates
             end = start + window_size
             
             #I cannot take a end coordinate higher than sequence length, or user final coordinate
             if end > To:
                 end = To
+            
+            #Debug
+            GClib.logger.log(5, "Evaluation of window (start:%s, end:%s, size:%s)" %(start, end, end-start))
             
             #cheching gap presence in windows
             for gap in self.gaps:
@@ -343,43 +380,91 @@ class Chromosome:
                     #I can ignore this gap
                     continue
                 
+                #Case 1: Start is inside a GAP
                 if start >= gap.start and start < gap.end:
-                    #add this gap to windows list
-                    self.windows += [gap]
+                    #defin a new gap istance with this position. It will be useful when modifing coordinates by user limits
+                    new_gap = Gap(start=gap.start, end=gap.end)
+                    
+                    #Ensure that if the user started from a different position, Gap will start with the same positions
+                    if new_gap.start < From:
+                        GClib.logger.log(4, "Resizing %s to user start:%s coordinates" %(new_gap, From))
+                        new_gap.SetSize(From, new_gap.end) #Start the gap from the same user positions
+                    
+                    #Maybe the user want to terminate windows calculations before gap ending
+                    if new_gap.end > To:
+                        GClib.logger.log(4, "Resizing %s to user end:%s coordinates" %(new_gap, To))
+                        new_gap.SetSize(new_gap.start, To)
+                        
+                        #This assignments will interrupt the while cicle
+                        start = To
+                        end = To
+                        
+                        #Adding this gap to window list before break the cicle
+                        self.windows += [new_gap]
+                        
+                        #Breaking the cicle
+                        break
                     
                     #resizing start and end. The end gap coordinate is excluded (python behavior)
-                    new_start = gap.end
+                    #Ensure if the user ended to a determined position, Gap will end with the same position
+                    new_start = new_gap.end
                     new_end = new_start + window_size
                     
-                    #I cannot take a end coordinate higher than sequence length, or user final coordinate
+                    #I cannot take a end coordinate higher than sequence length, or user To coordinates
                     if new_end > To:
                         new_end = To
                         
                     #debug
-                    GClib.logger.log(4, "%s found in this window (start:%s,end:%s,size:%s). Setting window to (start:%s,end:%s,size:%s)" %(gap, start, end, end-start, new_start, new_end, new_end-new_start))
+                    GClib.logger.log(4, "Case 1: %s found in this window (start:%s,end:%s,size:%s). Setting window to (start:%s,end:%s,size:%s)" %(gap, start, end, end-start, new_start, new_end, new_end-new_start))
+                    
+                    #add this gap to windows list
+                    self.windows += [new_gap]
                     
                     #Updating the windows coordinates
                     start = new_start
                     end = new_end
-                    
+                
+                #Case 2: End is inside a GAP
                 if end >= gap.start and end < gap.end:
                     #resize window in order to avoid the next gap
                     new_end = gap.start
                     
                     #debug
-                    GClib.logger.log(4, "%s found in this window (start:%s,end:%s,size:%s). Setting window end to %s (start:%s,end:%s,size:%s)" %(gap, start, end, end-start, new_end, start, new_end, new_end-start))
+                    GClib.logger.log(4, "Case 2: %s found in this window (start:%s,end:%s,size:%s). Setting window end to %s (start:%s,end:%s,size:%s)" %(gap, start, end, end-start, new_end, start, new_end, new_end-start))
                     
                     #Updating windows coordinates
                     end = new_end
                     
+                #Case 3: A gap inside a window
+                if start < gap.start and end >= gap.end:
+                    #resize window in order to avoid the next gap
+                    new_end = gap.start
+                    
+                    #debug
+                    GClib.logger.log(4, "Case 3: %s found in this window (start:%s,end:%s,size:%s). Setting window end to %s (start:%s,end:%s,size:%s)" %(gap, start, end, end-start, new_end, start, new_end, new_end-start))
+                    
+                    #Updating windows coordinates
+                    end = new_end
+                    
+                
+                
+            #In case of sequence terminate with gaps, GAP Case1 will be called, start will be gap.end and end will be equal to To, since end = start+window_size cannot be higher than to.
+            #However it makes no sense to calculate a window with 0 length, because sequence is terminated
+            if start == end:
+                GClib.logger.log(2, "Windows calculation finished")
+                break
+                
             #calculate the GClevel of this windows
             GClevel = Bio.SeqUtils.GC(seqObj[start:end])
+            
+            #Round GClevel to first 6 decimal digits
+            GClevel = round(GClevel, 6)
             
             #Instantiate a new window
             new_window = Window(start=start, end=end, GClevel=GClevel)
             
             #debug
-            GClib.logger.log(3, new_window)
+            GClib.logger.log(3, "New %s defined" %(new_window))
             
             #add this windows to the windows list
             self.windows += [new_window]
@@ -399,6 +484,7 @@ class Chromosome:
         self.isochores = []
         
         #processing all windows
+        GClib.logger.log(2, "Starting isochores calculation")
         GClib.logger.log(4, "Isochores calculations. Step (1)...")
         
         for window in self.windows:
@@ -406,17 +492,17 @@ class Chromosome:
             if window.Class == "gap":
                 #in this Case, i will add a new element
                 self.isochores += [window]
-                GClib.logger.log(3, "%s added to isochore list" %(window))
+                GClib.logger.log(4, "%s added to isochore list" %(window))
             
             #Add a window to an isochore if I have already seen a window
             elif len(self.isochores) > 0 and window.Class == self.isochores[-1].Class:
-                GClib.logger.log(3, "Adding %s to %s" %(window, self.isochores[-1]))
+                GClib.logger.log(4, "Adding %s to %s" %(window, self.isochores[-1]))
                 self.isochores[-1].AddWindow(window)
-                GClib.logger.log(3, "%s updated" %(self.isochores[-1]))
+                GClib.logger.log(4, "%s updated" %(self.isochores[-1]))
                 
             else:
                 self.isochores += [Isochore(window=window)]
-                GClib.logger.log(3, "New %s defined" %(self.isochores[-1]))
+                GClib.logger.log(4, "New %s defined" %(self.isochores[-1]))
         
         #Merge isocore below a certain limit (1 window)
         #TODO: define a parameter for a minimun size of an isochore
@@ -433,7 +519,7 @@ class Chromosome:
             
             else:
                 #debug
-                GClib.logger.log(4, "Cicle %s. Considering %s:%s, %s:%s and %s:%s" %(i, i, self.isochores[i], i-1, self.isochores[i-1], i+1, self.isochores[i+1]))
+                GClib.logger.log(5, "Cicle %s. Considering %s:%s, %s:%s and %s:%s" %(i, i, self.isochores[i], i-1, self.isochores[i-1], i+1, self.isochores[i+1]))
                 
                 #Three test in order to evaluate the most reliable isochore. 
                 T1 = None
@@ -457,20 +543,20 @@ class Chromosome:
                 T = sorted(T.items(), key=lambda x: x[1])
                 
                 #debug
-                GClib.logger.log(4, "Sorted test STDDEV %s" %(T))
+                GClib.logger.log(5, "Sorted test STDDEV %s" %(T))
                 
                 #getting the first element != None
                 for case, value in T:
                     if value != None:
                         if case == "T1":
-                            GClib.logger.log(3, "%s hypothesis selected. Adding %s to %s" %(case, i,i+1))
+                            GClib.logger.log(4, "%s hypothesis selected. Adding %s to %s" %(case, i,i+1))
                             self.isochores[i].AddIsochore(self.isochores[i+1])
                             
                             #deleting i+1
                             del(self.isochores[i+1])
                             
                         elif case == "T2":
-                            GClib.logger.log(3, "%s hypothesis selected. Adding isochore %s to %s" %(case, i-1,i))
+                            GClib.logger.log(4, "%s hypothesis selected. Adding isochore %s to %s" %(case, i-1,i))
                             self.isochores[i-1].AddIsochore(self.isochores[i])
                             
                             #deleting i
@@ -478,7 +564,7 @@ class Chromosome:
                             
                         else:
                             #case T3
-                            GClib.logger.log(3, "%s hypothesis selected. Adding isochore %s to %s and %s" %(case, i-1,i,i+1))
+                            GClib.logger.log(4, "%s hypothesis selected. Adding isochore %s to %s and %s" %(case, i-1,i,i+1))
                             self.isochores[i-1].AddIsochore(self.isochores[i])
                             self.isochores[i-1].AddIsochore(self.isochores[i+1])
                             
@@ -502,7 +588,7 @@ class Chromosome:
         for i in range(len(self.isochores)-2,0,-1):
             if self.isochores[i].Class == self.isochores[i+1].Class:
                 #debug
-                GClib.logger.log(3, "Merging %s to %s" %(self.isochores[i],self.isochores[i+1]))
+                GClib.logger.log(4, "Merging %s to %s" %(self.isochores[i],self.isochores[i+1]))
                 
                 #cathing the old class
                 old_Class = self.isochores[i].Class
@@ -514,17 +600,23 @@ class Chromosome:
                 del(self.isochores[i+1])
                 
                 #debug
-                GClib.logger.log(3, "%s updated" %(self.isochores[i]))
+                GClib.logger.log(4, "%s updated" %(self.isochores[i]))
                 
                 #May the class change?
                 if self.isochores[i].Class != old_Class:
-                    GClib.logger.err(3, "The class has changed for %s" %(self.isochores[i]))
+                    GClib.logger.err(1, "The class has changed for %s" %(self.isochores[i]))
                     #at this moment, I want to see this event
                     raise ChromosomeError, "The class has changed for %s" %(self.isochores[i])
             
             #cicle i
         
         GClib.logger.log(4, "Step (3) completed.")
+        
+        #Print out each isochore instantiation, like windows and gaps
+        for isochore in self.isochores:
+            GClib.logger.log(3, "New %s defined" %(isochore))
+        
+        GClib.logger.log(2, "Isochores calculation finished")
     
     def _handle_output(self,outfile):
         """This function open a file for writing if necessary"""
@@ -568,7 +660,7 @@ class Chromosome:
     
     def DumpGaps(self, outfile=sys.stdout):
         """Dumps gaps in CSV. The output could be an open file handle or
-        a filename to write on"""
+        a filename to write on. Coordinates are 1 based"""
         
         if self.gaps == []:
             raise ChromosomeError, "Gaps must be calculated to call this function"
@@ -613,10 +705,10 @@ class Chromosome:
     
     def DumpWindows(self, outfile=sys.stdout):
         """Dumps windows data in CSV. The output could be an open file handle or
-        a filename to write on"""
+        a filename to write on. Coordinates are 1 based"""
         
         if self.windows == []:
-            raise ChromosomeError, "Windows must be calculated to call this function"
+            raise ChromosomeError, "Windows must be calculated with ValueWindows to call this function"
         
         #Assuming to work with a open filehandle
         outfile, flag_close = self._handle_output(outfile)
@@ -628,10 +720,10 @@ class Chromosome:
         for window in self.windows:
             #mind the gap element
             if window.Class == "gap":
-                csv_writer.writerow([window.start, window.end, window.size, window.Class, None])
+                csv_writer.writerow([window.start+1, window.end, window.size, window.Class, None])
                 
             else:
-                csv_writer.writerow([window.start, window.end, window.size, window.Class, window.GClevel])
+                csv_writer.writerow([window.start+1, window.end, window.size, window.Class, "%.6f" %(window.GClevel)])
                 
             outfile.flush()
             
@@ -653,20 +745,27 @@ class Chromosome:
         self.windows = []
         
         for line in csv_reader:
-            #beware to integer values
-            start, end, size, Class, GClevel = int(line[0]), int(line[1]), int(line[2]), line[3], float(line[4])
+            #beware to integer values. Pay attention to GAPs
+            start, end, size, Class, GClevel = int(line[0]), int(line[1]), int(line[2]), line[3], line[4]
             
             #reset coordinates in python internal coordinates (start 0 based, end excluded)
-            self.windows += [Window(start=start-1,end=end, GClevel=GClevel)]
+            if Class == "gap":
+                self.windows += [Gap(start=start-1,end=end)]
             
-            #Calculating class from read GClevel
-            new_Class = CalcClass(GClevel)
+            else:
+                #GClevel must be float
+                GClevel = float(GClevel)
+                
+                self.windows += [Window(start=start-1,end=end, GClevel=GClevel)]
             
-            if self.windows[-1].Class != new_Class:
-                GClib.logger.err(1, "Coercing  %s Class for %s" %(new_Class, self.windows[-1]))
-            
-            #Forcing class assegnation
-            self.windows[-1].Class = new_Class
+                #Calculating class from read GClevel
+                new_Class = CalcClass(GClevel)
+                
+                if self.windows[-1].Class != new_Class:
+                    GClib.logger.err(1, "Coercing  %s Class for %s" %(new_Class, self.windows[-1]))
+                
+                #Forcing class assegnation
+                self.windows[-1].Class = new_Class
         
         #closing file if necessary
         if flag_close == True: infile.close()
@@ -702,6 +801,10 @@ class Chromosome:
 #A function to define the class of a sequence window
 def CalcClass(GClevel):
     """Returns the isochore class of a %GC"""
+    
+    #Calculating class starting from integer or float
+    if type(GClevel) not in [types.IntType, types.FloatType, numpy.float64] :
+        raise Exception, "GClevel must be integer or float %s:%s" %(GClevel, type(GClevel))
     
     Class = None
     
