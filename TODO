@@ -1,5 +1,5 @@
 
-* Support for doing graphs (profiles and isochores)
+* Support for graphs profiles/ratio
 
 * Insert code to value DN, TN profile
 
@@ -11,4 +11,3 @@
 
 * Graphics support for families
 
-* Support to read isochore CSV files and instantiating isochore classes

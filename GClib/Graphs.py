@@ -354,9 +354,9 @@ class BaseGraph():
                 position = int((i - self.sequence_start) / self.scale + self.border)
                 self.graph.string(self.fontsize, (position-6,y1-30), str(i/label),self.black)
         
-        #Write MB at bottom of the ruler
-        position = self.x - self.border/5*4
-        self.graph.string(self.fontsize,(position,y1-30),"Mb",self.black)
+            #Write MB at bottom of the ruler
+            position = self.x - self.border/5*4
+            self.graph.string(self.fontsize,(position,y1-30),"Mb",self.black)
         
     def DrawHorizontalLines(self):
         """Draw Horyzontal lines and their value on the left of the graph"""
