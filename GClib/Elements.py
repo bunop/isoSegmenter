@@ -125,7 +125,7 @@ class Isochore():
         
         if window != None:
             self.GClevels = [window.GClevel]
-            self.avg_GClevel = mlab.mean(self.GClevels)
+            self.avg_GClevel = round(mlab.mean(self.GClevels),6)
             self.start = window.start
             self.end = window.end
             self.size = window.size
@@ -168,10 +168,10 @@ class Isochore():
             raise IsochoreError, "Windows must be contiguous to be added to current isochore"
         
         self.GClevels += [window.GClevel]
-        self.avg_GClevel = mlab.mean(self.GClevels)
+        self.avg_GClevel = round(mlab.mean(self.GClevels),6)
         
         if len(self.GClevels) > 1:
-            self.stddev_GClevel = mlab.std(self.GClevels)
+            self.stddev_GClevel = round(mlab.std(self.GClevels),6)
 
         #now I have to find the position of this elements
         if window.start < self.start:
@@ -208,8 +208,8 @@ class Isochore():
         self.GClevels += isochore.GClevels
         
         #calculating the isochore parameters
-        self.avg_GClevel = mlab.mean(self.GClevels)
-        self.stddev_GClevel = mlab.std(self.GClevels)
+        self.avg_GClevel = round(mlab.mean(self.GClevels),6)
+        self.stddev_GClevel = round(mlab.std(self.GClevels),6)
         
         if isochore.start < self.start:
             self.start = isochore.start
@@ -288,7 +288,11 @@ class Chromosome:
     def __repr__(self):
         return self.__str__()
         
-    #TODO: implement __eq__ method
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        else:
+            return False
     
     def WholeGCcontent(self):
         """Calculate the GC counter for the whole chromosome"""
@@ -754,18 +758,12 @@ class Chromosome:
             
             else:
                 #GClevel must be float
-                GClevel = float(GClevel)
+                GClevel = round(float(GClevel),6)
                 
                 self.windows += [Window(start=start-1,end=end, GClevel=GClevel)]
-            
-                #Calculating class from read GClevel
-                new_Class = CalcClass(GClevel)
                 
-                if self.windows[-1].Class != new_Class:
-                    GClib.logger.err(1, "Coercing  %s Class for %s" %(new_Class, self.windows[-1]))
-                
-                #Forcing class assegnation
-                self.windows[-1].Class = new_Class
+                #Forcing class assegnation read from file
+                self.windows[-1].Class = Class
         
         #closing file if necessary
         if flag_close == True: infile.close()
@@ -785,17 +783,59 @@ class Chromosome:
         csv_writer.writerow(["Start", "End", "Size", "Class", "AVG_GClevel", "STDDEV_GClevel"])
         
         for isochore in self.isochores:
-            #mind the gap element
+            #mind the gap element. Coordinates are 1-based
             if isochore.Class == "gap":
-                csv_writer.writerow([isochore.start, isochore.end, isochore.size, isochore.Class, None, None])
+                csv_writer.writerow([isochore.start+1, isochore.end, isochore.size, isochore.Class, None, None])
                 
             else:
-                csv_writer.writerow([isochore.start, isochore.end, isochore.size, isochore.Class, isochore.avg_GClevel, isochore.stddev_GClevel])
+                csv_writer.writerow([isochore.start+1, isochore.end, isochore.size, isochore.Class, "%.6f" %(isochore.avg_GClevel), "%.6f" %(isochore.stddev_GClevel)])
                 
             outfile.flush()
             
         #closing file if necessary
-        if flag_close == True: outfile.close()  
+        if flag_close == True: outfile.close()
+        
+    def LoadIsochores(self, infile):
+        """Load isochores from file into chromosome istance. Filename or open file 
+        handle are accepted"""
+        
+        #verify to work with an open file handle
+        infile, flag_close = self._handle_input(infile)
+        
+        #discarding the header
+        csv_reader = csv.reader(infile)
+        csv_reader.next()
+        
+        #resetting isochores
+        self.isochores = []
+        
+        for line in csv_reader:
+            #beware to integer values. Pay attention to GAPs
+            start, end, size, Class, avg_GClevel, stddev_GClevel = int(line[0]), int(line[1]), int(line[2]), line[3], line[4], line[5]
+            
+            #reset coordinates in python internal coordinates (start 0 based, end excluded)
+            if Class == "gap":
+                self.isochores += [Gap(start=start-1,end=end)]
+            
+            else:
+                #avg_GClevel, stddev_GClevel  must be float
+                avg_GClevel = round(float(avg_GClevel),6)
+                stddev_GClevel = round(float(stddev_GClevel),6)
+                
+                #Instantiating a new isochore
+                isochore = Isochore()
+                isochore.start = start - 1 #beware to the 1 based coordinate
+                isochore.end = end
+                isochore.size = size
+                isochore.Class = Class
+                isochore.avg_GClevel = avg_GClevel
+                isochore.stddev_GClevel = stddev_GClevel
+                
+                #adding this isochore to isochore list
+                self.isochores += [isochore]
+        
+        #closing file if necessary
+        if flag_close == True: infile.close()
     
 
 #A function to define the class of a sequence window

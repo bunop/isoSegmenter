@@ -185,8 +185,8 @@ class test_Isochore(unittest.TestCase):
         self.assertEqual(self._test_Isochore.GClevels, [38,40])
         self.assertEqual(self._test_Isochore.start, 200000)
         self.assertEqual(self._test_Isochore.end, 400000)
-        self.assertEqual(self._test_Isochore.avg_GClevel, mlab.mean([38,40]))
-        self.assertEqual(self._test_Isochore.stddev_GClevel, mlab.std([38,40]))
+        self.assertEqual(self._test_Isochore.avg_GClevel, round(mlab.mean([38,40]),6))
+        self.assertEqual(self._test_Isochore.stddev_GClevel, round(mlab.std([38,40]),6))
         
         #Adding a window before this element (why one can do this?)
         window = GClib.Elements.Window(start=100000, end=200000, GClevel=39)
@@ -194,8 +194,8 @@ class test_Isochore(unittest.TestCase):
         self.assertEqual(self._test_Isochore.GClevels, [38,40, 39])
         self.assertEqual(self._test_Isochore.start, 100000)
         self.assertEqual(self._test_Isochore.end, 400000)
-        self.assertEqual(self._test_Isochore.avg_GClevel, mlab.mean([38,40,39]))
-        self.assertEqual(self._test_Isochore.stddev_GClevel, mlab.std([38,40,39]))
+        self.assertEqual(self._test_Isochore.avg_GClevel, round(mlab.mean([38,40,39]),6))
+        self.assertEqual(self._test_Isochore.stddev_GClevel, round(mlab.std([38,40,39]),6))
         
         #Adding a non contiguous window
         window = GClib.Elements.Window(start=500000, end=600000, GClevel=39)
@@ -241,8 +241,8 @@ class test_Isochore(unittest.TestCase):
         self.assertEqual(self._test_Isochore.GClevels, [38,40, 39, 39, 38, 40])
         self.assertEqual(self._test_Isochore.start, 100000)
         self.assertEqual(self._test_Isochore.end, 700000)
-        self.assertEqual(self._test_Isochore.avg_GClevel, mlab.mean([38,40,39, 39, 38, 40]))
-        self.assertEqual(self._test_Isochore.stddev_GClevel, mlab.std([38,40,39, 39, 38, 40]))
+        self.assertEqual(self._test_Isochore.avg_GClevel, round(mlab.mean([38,40,39, 39, 38, 40]),6))
+        self.assertEqual(self._test_Isochore.stddev_GClevel, round(mlab.std([38,40,39, 39, 38, 40]),6))
         
         #Adding a non contiguous isochore
         window = GClib.Elements.Window(start=1000000, end=1100000, GClevel=39)
@@ -345,21 +345,45 @@ class test_Chromosome(unittest.TestCase):
     for line in test_csvin:
         start, end, size, Class, avg_GClevel, stddev_GClevel = int(line[0]), int(line[1]), int(line[2]), line[3], line[4], line[5]
         
-        isochore = GClib.Elements.Isochore()
-        isochore.start = start - 1 #beware to the 1 based coordinate
-        isochore.end = end
-        isochore.size = size
-        isochore.Class = Class
-        
-        #Some values are float
-        if avg_GClevel != "":
-            isochore.avg_GClevel = float(avg_GClevel)
+        if Class == "gap":
+            gap = GClib.Elements.Gap()
+            gap.start = start - 1 #beware to the 1 based coordinates
+            gap.end = end
+            gap.size = size
+            gap.Class = Class
             
-        if stddev_GClevel != "": 
+            #add this gap to isochore list
+            test_isochores += [gap]
+            
+        else:
+            isochore = GClib.Elements.Isochore()
+            isochore.start = start - 1 #beware to the 1 based coordinate
+            isochore.end = end
+            isochore.size = size
+            isochore.Class = Class
+            isochore.avg_GClevel = float(avg_GClevel)
             isochore.stddev_GClevel = float(stddev_GClevel)
+            
+            #finally I have to set the GC_levels attribute class, by reading those values from
+            #windows that compone isochores
+            for window in test_windows:
+                #pay attention to coordinates
+                if window.start >= start-1 and window.end <= end:
+                    #print "%s added to %s" %(window, isochore)
+                    isochore.GClevels += [window.GClevel]
+            
+            #add this isochore to isochore list
+            test_isochores += [isochore]
+            
+            #debug
+            #break
         
     #close isochores file
     test_filein.close()
+    
+    #In order to instantiate this class from a (i)python terminal
+    def runTest(self):
+        pass
     
     def setUp(self):
         """Testing chromosome instantiation"""
@@ -563,7 +587,60 @@ class test_Chromosome(unittest.TestCase):
             self.assertEqual(window.end, end)
             self.assertEqual(window.GClevel, GC_values[i])
         
+    def test_FindIsochores(self):
+        """Testing FindIsochores"""
         
+        self._test_Chromosome.ValueWindows()
+        self._test_Chromosome.FindIsochores()
+        
+        new_isochores = self._test_Chromosome.isochores
+        
+        #Now testing windows legth
+        self.assertEqual(len(self.test_isochores), len(new_isochores))
+        
+        #And now thes all the gap element
+        for i in range(len(self.test_isochores)):
+            new_isochore = new_isochores[i]
+            test_isochore = self.test_isochores[i]
+            
+            #Assert equality with __eq__ method
+            self.assertEqual(new_isochore, test_isochore)
+            
+    def test_LoadDumpIsochores(self):
+        """Testing Dump and Load Isochores"""
+        
+        #calculating isochores
+        self._test_Chromosome.ValueWindows()
+        self._test_Chromosome.FindIsochores()
+        
+        #A test file for reading and writing
+        testfile = tempfile.mktemp()
+        
+        #Passing file name to Dump and load Gap
+        self._test_Chromosome.DumpIsochores(outfile=testfile)
+        
+        chromosome = GClib.Elements.Chromosome()
+        chromosome.LoadIsochores(infile=testfile)
+        
+        #Now testing windows legth
+        self.assertEqual(len(self.test_isochores), len(chromosome.isochores))
+        
+        #And now thes all the windows element
+        for i in range(len(self.test_isochores)):
+            new_isochore = chromosome.isochores[i]
+            test_isochore = self.test_isochores[i]
+            
+            #the new load isochore leaks from GClevels attribute, since it isn't present
+            #in CSV file. So I fix this term before comparison, if other class attributes
+            #will be different, the test will fail
+            if new_isochore.Class != "gap" and test_isochore.Class != "gap":
+                new_isochore.GClevels = test_isochore.GClevels
+            
+            #Assert equality with __eq__ method
+            self.assertEqual(new_isochore, test_isochore)
+        
+        #deleting the old file
+        os.remove(testfile)
 
 if __name__ == "__main__":
     unittest.main()
