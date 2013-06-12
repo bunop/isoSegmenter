@@ -24,3 +24,6 @@ GAP_TOLERANCE = 5000
 
 #The GClevel upper limit for each class
 CLASS_TO_LEVEL = { "L1":37, "L2":41, "H1":46, "H2":53, "H3":100 }
+
+#The true type font used by EnlargeLabels(Graphs module)
+graph_font_type = "/usr/share/fonts/truetype/freefont/FreeSerifBold.ttf"

@@ -20,6 +20,7 @@ sys.path.append("..")
 
 import GClib
 import GClib.Graphs
+import GClib.Elements
 
 __author__ = "Paolo Cozzi <paolo.cozzi@tecnoparco.org>"
 
@@ -235,6 +236,27 @@ class test_BaseGraph(unittest.TestCase):
         self._test_BaseGrap.InitPicture()
         self._test_BaseGrap.DrawHorizontalLines()
         
+    def test_Enlargelabels(self):
+        """Testing EnlargeLabels"""
+        
+        #disable log temporarily
+        old_threshold = GClib.logger.threshold
+        GClib.logger.threshold = 0
+        
+        #testing methods before SetMaxMinValues
+        self.assertRaises(GClib.Graphs.BaseGraphError, self._test_BaseGrap.DrawXaxes)
+        
+        #Call the function in the correct way
+        self._test_BaseGrap.SetMinMaxValues(65,30)
+        self._test_BaseGrap.SetSequenceLength(1e6)
+        self._test_BaseGrap.SetHorizontalLines([37, 41, 46, 53])
+        self._test_BaseGrap.InitPicture()
+        self._test_BaseGrap.DrawHorizontalLines()
+        self._test_BaseGrap.EnlargeLabels()
+        
+        #resetting threshold
+        GClib.logger.threshold = old_threshold
+        
     def test_SaveFigure(self):
         """Testing SaveImage"""
         
@@ -248,7 +270,8 @@ class test_BaseGraph(unittest.TestCase):
         #Get a temporary filename for testing
         testfile = tempfile.mktemp()
         
-        #disable log
+        #disable log temporarily
+        old_threshold = GClib.logger.threshold
         GClib.logger.threshold = 0
         
         #Save the figure
@@ -260,27 +283,69 @@ class test_BaseGraph(unittest.TestCase):
         #remove temporary file
         if os.path.exists(testfile):
             os.remove(testfile)
+            
+        #resetting threshold
+        GClib.logger.threshold = old_threshold
     
 #The testing methods for DrawChromosome classes
 class test_DrawChromosome(unittest.TestCase):
+    #To test image representation, I need an useful test case. Element.Chromosome
+    #is tested by apposited methods
+    chromosome = GClib.Elements.Chromosome()
+    
+    #read isochore from isochores list
+    chromosome.LoadIsochores("test_isochores3_chr21.csv")
+    isochores = chromosome.isochores
+    
+    #read windows from windows list
+    chromosome.LoadWindows("test_windows_chr21.csv")
+    windows = chromosome.windows
+    
+    #determing sequence length from isochore coordinates
+    start = isochores[0].start
+    end = isochores[-1].end
+    
+    sequence_length = end-start
+    
     def setUp(self):
         self._test_DrawChromosome = GClib.Graphs.DrawChromosome()
+        self._test_DrawChromosome.SetSequenceLength(self.sequence_length)
+        self._test_DrawChromosome.InitPicture()
+        self._test_DrawChromosome.SetHorizontalLines([37, 41, 46, 53])
         
-    def test_DrawColorGraph(self):
-        """Testing DrawColorGraph"""
+    def test_DrawIsochoreProfile(self):
+        """Testing DrawIsochoreProfile"""
         
-        self._test_DrawChromosome.DrawColorGraph()
+        self._test_DrawChromosome.DrawIsochoreProfile(isochores=self.isochores)
         
-    def test_DrawGraph(self):
-        """Testing DrawGraph"""
+    def test_DrawWindowProfile(self):
+        """Testing DrawIsochoreProfile"""
         
-        self._test_DrawChromosome.DrawGraph()
+        self._test_DrawChromosome.DrawWindowProfile(windows=self.windows)
         
-    def test_DrawColoredRectangles(self):
-        """Testing DrawColoredRectangles"""
+    def test_DrawIsochoreRectangles(self):
+        """Testing DrawIsochoreRectangles"""
         
-        self._test_DrawChromosome.DrawColoredRectangles()
+        self._test_DrawChromosome.SetColorsList(colorbyclass=True)
+        self._test_DrawChromosome.DrawIsochoreRectangles(isochores=self.isochores)
         
+    def test_DrawWindowRectangles(self):
+        """Testing DrawWindowRectangles"""
+        
+        self._test_DrawChromosome.SetColorsList(colorbyclass=True)
+        self._test_DrawChromosome.DrawWindowRectangles(windows=self.windows)
+        
+    def test_DrawLegend(self):
+        """Testing DrawLegend"""
+        
+        #assert raise when colorbyclass=False
+        self._test_DrawChromosome.SetColorsList(colorbyclass=False)
+        self._test_DrawChromosome.DrawIsochoreRectangles(isochores=self.isochores)
+        self.assertRaises(GClib.Graphs.DrawChromosomeError, self._test_DrawChromosome.DrawLegend)
+        
+        self._test_DrawChromosome.SetColorsList(colorbyclass=True)
+        self._test_DrawChromosome.DrawIsochoreRectangles(isochores=self.isochores)
+        self._test_DrawChromosome.DrawLegend()
 
 if __name__ == "__main__":
     unittest.main()

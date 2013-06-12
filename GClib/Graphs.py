@@ -12,7 +12,12 @@ A module to deal with isochore graphs. This module is inspired from draw_chromos
 import gd
 import os
 import GClib
+import shutil
 import types
+import Image
+import ImageDraw
+import ImageFont
+import tempfile
 
 __author__ = "Paolo Cozzi <paolo.cozzi@tecnoparco.org>"
 
@@ -46,9 +51,14 @@ class BaseGraph():
         self.isochore_values = None #isocores values used to print horizontal lines and their values
         self.colorslist = None #a list of 
         self.n_of_colors = None #the number of colors
+        self.colored_by_class = False #Set True or False if SetColorsList is called with colorbyclass=True or not
+        
+        #To control image labels with PIL
+        self.drawn_labels = False #if labels are drawn by DrawXaxes, it will be True
+        self.imagefile = None #if labels are drawn by PIL, this will be the path of image file
         
         #Defined by InitPicture method
-        self.graph = None #GC graph instance will be put here
+        self.graph = None #GD graph instance will be put here
         self.white = None
         self.black = None
         self.gray = None
@@ -69,6 +79,13 @@ class BaseGraph():
         
     def __repr__(self):
         return self.__str__()
+        
+    def __del__(self):
+        """Delete temporary file if exists"""
+        
+        if self.imagefile != None:
+            if os.path.exists(self.imagefile):
+                os.remove(self.imagefile)
         
     def SetMinMaxValues(self, min_value, max_value):
         """Set the maximum and minimum values printable in the graphs"""
@@ -169,6 +186,9 @@ class BaseGraph():
             raise BaseGraphError, "InitPicture must be called before this method"
 
         if colorbyclass == True:
+            #setting the flag value in class attribute
+            self.colored_by_class = True
+            
             #One color for each class. Getting the possible values sorted by GClevel
             #note that GClib.CLASS_TO_LEVEL is a dictionary, so keys could be in random order
             items = sorted(GClib.CLASS_TO_LEVEL.items(), key=lambda x: x[1])
@@ -327,6 +347,9 @@ class BaseGraph():
         
         #Pheraps it's better to add labels via Python Image Library, because we can enlarge character dimension
         if drawlabels == True:
+            #Setting the proper flag
+            self.drawn_labels = True
+            
             for i in range(self.sequence_start, self.sequence_length + self.sequence_start, label * 2):
                 position = int((i - self.sequence_start) / self.scale + self.border)
                 self.graph.string(self.fontsize, (position-6,y1-30), str(i/label),self.black)
@@ -335,7 +358,6 @@ class BaseGraph():
         position = self.x - self.border/5*4
         self.graph.string(self.fontsize,(position,y1-30),"Mb",self.black)
         
-    
     def DrawHorizontalLines(self):
         """Draw Horyzontal lines and their value on the left of the graph"""
         
@@ -357,17 +379,90 @@ class BaseGraph():
             self.graph.string(self.fontsize, (int(self.border / 3), y1-8), label + "%",self.black)
             self.graph.line((self.border,y1), (self.x-self.border,y1), gd.gdStyled)
             
+    def FinishPicture(self,drawlabels=True):
+        """Call functions for x,y axis and horizontal lines. Drawlabels flag specifies
+        if labels are drawn or not"""
+        
+        self.DrawMinMaxValues()
+        self.DrawXaxes(drawlabels=drawlabels)
+        self.DrawHorizontalLines()
+        
+    def EnlargeLabels(self):
+        """Enlarge labels in picture"""
+        
+        #This function has prerequisites
+        if self.y_min == None or self.y_max == None:
+            raise BaseGraphError, "Max and Min y values must be defined by SetMinMaxValues"
+        
+        if self.drawn_labels == True:
+            raise BaseGraphError, "Labels were drawn by DrawXaxes, and cannot be overwritten by this function"
+        
+        #determining a temp file for image
+        imagefile = tempfile.mktemp(suffix=".png")
+        
+        #Save the image for the first time
+        self.SaveFigure(imagefile)
+        
+        #Setting the proper attribute to file position
+        self.imagefile = imagefile
+        
+        #Una volta salvato il grafico, è il momento di tirarsi le storie per la dimensione delle scritte
+        im = Image.open(imagefile)
+        
+        #Carico i font con cui scrivere dentro l'immagine
+        myfont = ImageFont.truetype(GClib.graph_font_type, 30)
+        
+        #Questo oggetto mi serve per scriverci dentro
+        draw = ImageDraw.Draw(im)
+        
+        #Determining left size point y1
+        y1 = int(round(self.y - (self.y_max - self.y_min) * self.py)) - 45
+        
+        #the interval (in bp) in which labels will be drawn
+        label = 1000000
+        
+        #Wrinting labels
+        for i in range(self.sequence_start, self.sequence_length + self.sequence_start, label*2):
+            position = int(round((i - self.sequence_start) / self.scale + self.border))
+            
+            #a different X position for different label precision (1, 10, 100)
+            if i/label < 10:
+                draw.text((position-7,y1), str(i/label), font=myfont, fill=1)
+            elif i/label < 100:
+                draw.text((position-15,y1), str(i/label), font=myfont, fill=1)
+            else:
+                draw.text((position-23,y1), str(i/label), font=myfont, fill=1)
+            
+        #For the Mb text
+        position = self.x - self.border/5*4
+        draw.text((position+5,y1), "Mb", font=myfont, fill=1)
+        
+        #save the new figure
+        im.save(imagefile)
 
     def SaveFigure(self, filename):
         """Draw the image in a new file"""
+        
+        if self.graph == None:
+            #if GD image isn't instantiated yed, I couldn't instantiate colors
+            raise BaseGraphError, "InitPicture must be called before this method"
         
         #checking for file existance
         if os.path.exists(filename):
             raise BaseGraphError, "File %s exists!!!" %(filename)
         
-        self.graph.writePng(filename)
+        #Determing if the Image is already drawn in temporary files
+        if self.imagefile == None:
+            #write a new image
+            self.graph.writePng(filename)
+            
+            GClib.logger.log(1, "Image written in %s" %(filename))
+            
+        else:
+            #move the temporary image in user files
+            shutil.move(self.imagefile, filename)
         
-        GClib.logger.log(1, "Image written in %s" %(filename))
+            GClib.logger.log(1, "Image moved in %s" %(filename))
         
 
 #The main class which simulates the behaviour of draw_chromsome.pl
@@ -377,164 +472,178 @@ class DrawChromosome(BaseGraph):
     def __init__(self, sequence_start=0):
         """Instantiate the class"""
         
-        #Istanzio le variabili della classe base
+        #Instantiate the base methods and the default attribute class
         BaseGraph.__init__(self, sequence_start=sequence_start)
         
-        #Le scala dell'asse y (dipende dal tipo di grafico)
+        #The y max and min values are decided by graph type. In this case, GClevel values
+        #comprised by 30 and 65 are expected
         self.SetMinMaxValues(30,65)
-        
-    #da sistemare!
-    def DrawColorGraph(self,data):
-        """Disegna una linea colorata per ogni valore letto"""
-        points = len(data)
-        points2 = int(self.seq_len / self.window)
-        px = int((self.x - self.border*2) / points2)
-        y_base = self.y
-        
-        for i in range(points):
-            x1 = self.border + (px * i)
-            y1 = self.y - ((data[i] - self.y_min) * self.py)
-            color = self.ResolveColor(data[i])
-            self.graph.line((x1, y1), (x1, y_base), color)
     
-    #Questa funzione vorrei che segnasse le isocore come una linea continua
-    #con altezza pari alla percentuale delle iscore
-    def DrawGraph(self, first_gruppo, media_attributo, color=(0, 0, 0), myshift=0):
-        """Disegna una linea che rappresenta la percentuale in GC lungo il genoma.
-        E' possibile specificare il colore come terna RGB. Inoltre e possibile fissare
-        a posteriori uno shift per cui spostare i gruppi"""
+    def DrawGenericProfile(self, elements, attribute, color, myshift):
+        """This function draw elements with a line, which heigth is equal to 'attribute'
+        defined by the user. This function is called to draw a window or isochore profile"""
         
-        #Come per DrawRectangleIsocore, mi serve leggere la prima delle strutture
-        gruppo = first_gruppo
+        #The x1 grap position is critical to be determined. It depends from first element
+        #position and user shift value.
+        x1 = int(self.border + round((elements[0].start - self.sequence_start + myshift) / self.scale) - 1)
         
-        #La posizione di inizio è critica, se non ci sono dati
-        x1 = int(self.border + round((gruppo.start - self.seq_start + myshift) / self.scale) - 1)
-        
-        #questo è il punto più basso dell'immagine. Serve solo per disegnare i gap
+        #This is the lower point drawn in image. It will be needed when representing GAPS
         y2 = self.y
         old_y1 = None
         
-        #devo costruire il colore
+        #Allocate color for this profile
         color = self.graph.colorAllocate(color)
         
-        #per le linee. Aumento lo spessore
+        #changing thickness for profile
         self.graph.setThickness(2)
         
-        #parto con il ciclo
-        while gruppo != None:
-            #Calcolo la lunghezza delle regione in questione. Anziche sommarè ogni volta
-            #lo ricalcolo ogni volta cosi come DrawRectangleIsocore
-            x2 = int(self.border + round((gruppo.end - self.seq_start + myshift) / self.scale) - 1)
+        #cicling through isochore list
+        for element in elements:
+            #the length of drawn isochore is derived considering image size and user shift
+            x2 = int(self.border + round((element.end - self.sequence_start + myshift) / self.scale) - 1)
         
-            logger.log(5, "Processo la regione %s : %s" %(gruppo.start, gruppo.end))
+            GClib.logger.log(5, "Considering %s" %(element))
             
-            if gruppo.classe == 'gap':
-                #come per draw_chromosome, il gap crea un rettangolo alto come
-                #tutto il grafico
+            if element.Class == 'gap':
+                #a grey rectangle which height is image height and lenght is gap length (x2-x1)
                 y1 = int(self.y - (self.y_max-self.y_min) * self.py)
                 
-                #ok, adesso posso picchiarci dentro un rettangolo
+                #draw the rectangle
                 self.graph.filledRectangle((x1,y1), (x2,y2), self.gray)
                 
-                #se c'è il gap, non voglio disegnare linee verticali
+                #each horizontal line is merged to previous line by a vertical
+                #line. In case of gap, no line is needed
                 old_y1 = None
                 
             else:
-                #se non sto trattando un Gap, allora devo disegnare una linea
-                #print gruppo.classe
+                #This is the true isochore
+                y1 = int(self.y - (getattr(element, attribute)-self.y_min) * self.py)
                 
-                y1 = int(self.y - (getattr(gruppo, media_attributo)-self.y_min) * self.py)
-                
-                #questa è la linea orizzontale
+                #the drawn horizontal line
                 self.graph.line((x1,y1), (x2,y1), color)
                 
-                #sarebbe bello disegnare anche le linee verticali
+                #draw a vertical line if it is needed
                 if old_y1 != None:
                     self.graph.line((x1,y1), (x1,old_y1), color)
                     
-                #aggiorno il valore di old_y1
+                #update old_y1 to draw the next element vertical line
                 old_y1 = y1
                 
-            #aggiorno i valori e passo alla isocora successiva
+            #this is the new starting point for the new element
             x1 = x2 + 1
             
-            gruppo = gruppo.GetNextGruppo()
-        
-        #per le linee. Ripristino lo spessore
+        #resetting the original thickness
         self.graph.setThickness(1)
         
-        #debug
-        logger.log(2, "Isocore disegnate")
+    def DrawIsochoreProfile(self, isochores, color=(0, 0, 0), myshift=0):
+        """This function draw isochores with a line, which heigth is equal to class 
+        avg_GClevel. This representation can be considered like a profile of isochores.
+        User havo to define an isochore list and the color of the line. Graphs can
+        be shifted by 'myshift' value"""
         
-        return
+        #call the generic function
+        self.DrawGenericProfile(elements=isochores, attribute="avg_GClevel", color=color, myshift=myshift)
         
-    def DrawColoredRectangles(self, elements):
-        """permette di disegnare dei rettangoli in corrispondenza delle
-        isocore individuate. Necessita di una struttura gruppo di partenza e
-        dell'attributo da graficare (media del GC del gruppo o TN)"""
+        GClib.logger.log(2, "Isochores profile drawn")
         
-        #ok posso procedere con le mie analisi. La prima cosa che mi manca
-        #Quindi devo partire dalla prima struttura e cominciare a fare i rettangoli
-        #in base alla classe decido se fare un rettangolo per un gap, oppure per un isocora
-        x1 = self.border
+    def DrawWindowProfile(self, windows, color=(0, 0, 0), myshift=0):
+        """This function draw windows with a line, which heigth is equal to window
+        GClevel. This representation can be considered like a profile of window.
+        User havo to define a windows list and the color of the line. Graphs can
+        be shifted by 'myshift' value"""
+        
+        #call the generic function
+        self.DrawGenericProfile(elements=windows, attribute="GClevel", color=color, myshift=myshift)
+        
+        GClib.logger.log(2, "Windows profile drawn")
+    
+    def DrawGenericRectangles(self, elements, attribute, myshift):
+        """Draw a rectangle in correspondence to elements found. This function needs
+        a list of elements to represent and the class attribute to determine rectanlges
+        hight. Called by DrawIsochoreRectangles and DrawWindowRectangles"""
+    
+        #Determining the left coordinataes of boxes. The x1 grap position is critical 
+        #to be determined. It depends from first element position and user shift value.
+        x1 = int(self.border + round((elements[0].start - self.sequence_start + myshift) / self.scale) - 1)
+        
+        #This is the lower point drawn in image. It will be needed when representing GAPS
         y2 = self.y
         
         for element in elements:
-            #devo determinare dove si posiziona questa regione. La larghezza della
-            #regione è valida allo stesso modo per i gap e per le isocore. Start e
-            #end devono essere scalati in modo opportuno
-            #x2 = x1 + math.ceil(gruppo.size / self.scale)-1
-            
-            #se aggingo un rettangolo a quello precedente, ogni volta che commetto un errore,
-            #lo trascino nella prossima isocora. Allora la coordinata x2 deve essere calcolata
-            #solamente in base alla lunghezza dell'isocora
-            x2 = int(self.border + round( (element.end - self.seq_start) / self.scale) - 1)
+            #the length of drawn element is derived considering image size and user shift.
+            #This value is derived starting from left side of the image every time to
+            #avoid that errors on position of first element will be added to last isochores
+            x2 = int(self.border + round((element.end - self.sequence_start + myshift) / self.scale) - 1)
             
             if element.Class == 'gap':
-                #come per draw_chromosome, il gap crea un rettangolo alto come
-                #tutto il grafico
+                #a grey rectangle which height is image height and lenght is gap length (x2-x1)
                 y1 = int(self.y - (self.y_max-self.y_min) * self.py)
                 
-                #ok, adesso posso picchiarci dentro un rettangolo
+                #draw the rectangle
                 self.graph.filledRectangle((x1,y1), (x2,y2), self.gray)
                 
             else:
-                #in questo caso, la media dell'attributo che voglio misurare mi darà
-                #l'altezza del rettangolo, e pure il colore delle storie
-                try:
-                    color = self.ResolveColor(getattr(element, "avg_GClevel"))
-                    y1 = int(self.y - (getattr(element, "avg_GClevel")-self.y_min) * self.py)
+                color = self.GetColorByGClevel(getattr(element, attribute))
+                y1 = int(self.y - (getattr(element, attribute)-self.y_min) * self.py)
                 
-                except AttributeError:
-                    color = self.ResolveColor(getattr(element, "GClevel"))
-                    y1 = int(self.y - (getattr(element, "GClevel")-self.y_min) * self.py)
-                
-                #provo a metterci un rettangolo colorato
+                #draw a colored filled rectangle
                 self.graph.filledRectangle((x1,y1), (x2,y2), color)
                 
-            #aggiorno x1 e passo alla isocora successiva
+            #updating x1
             x1 = x2 + 1
     
-    def DrawLegend(self):
-        """Serve per segnare sul grafico la legenda delle isocore."""
+    def DrawIsochoreRectangles(self, isochores, myshift=0):
+        """This function draw isochores with filled rectangles, which heigth is equal to 
+        class avg_GClevel. This representation can be considered similar to draw_chromosome.pl
+        User havo to define an isochore list and evetually provide a value 'myshift'
+        to shift the representation"""
         
-        #per i box
+        #call the generic function
+        self.DrawGenericRectangles(elements=isochores, attribute="avg_GClevel", myshift=myshift)
+        
+        GClib.logger.log(2, "Isochores rectangles drawn")
+        
+    def DrawWindowRectangles(self, windows, myshift=0):
+        """This function draw windows with filled rectangles, which heigth is equal to 
+        class GClevel. This representation can be considered similar to draw_chromosome.pl
+        User havo to define a window list and evetually provide a value 'myshift'
+        to shift the representation"""
+        
+        #call the generic function
+        self.DrawGenericRectangles(elements=windows, attribute="GClevel", myshift=myshift)
+        
+        GClib.logger.log(2, "Windows rectangles drawn")
+    
+    def DrawLegend(self):
+        """Draw a small legend on the right side of the graph (use with DrawIsochoreRectangles 
+        or DrawWindowRectangles and SetColorsList(colorbyclass=True)"""
+        
+        if self.colored_by_class == False:
+            raise DrawChromosomeError, "DrawLegend must be called after SetColorsList(colorbyclass=True)"
+        
+        #draw a colored box
         y1 = self.y - (self.y_max - self.y_min) * self.py
+        
+        #this is the upper box in legend
         self.graph.filledRectangle((self.x-self.border/5*4, y1), (self.x-self.border/5, self.y), self.colorslist[-1])
         
-        lista = range(self.n_of_colors-1)
-        lista.reverse()
+        #for all the other boxes
+        indexes = range(self.n_of_colors-1)
+        indexes.reverse()
         
-        for i in lista:
-            y1 = self.y - (self.isochore_proc[i]-self.y_min)*self.py
+        for i in indexes:
+            y1 = self.y - (self.isochore_values[i]-self.y_min)*self.py
             self.graph.filledRectangle((self.x-self.border/5*4, y1), (self.x-self.border/5, self.y), self.colorslist[i])
         
-        #per le etichette. Se non ho isochore label è perchè non ho colorato per famiglie
-        self.graph.string(gd.gdFontGiant, (self.x-self.border/5*3, self.y - (self.isochore_proc[-1]-self.y_max) * self.py + 5), self.isochore_label[-1], self.black)
+        #draw labels on legend. The upper label:
+        self.graph.string(gd.gdFontGiant, (self.x-self.border/5*3, self.y - (self.isochore_values[-1]-self.y_max) * self.py + 5), self.isochore_label[-1], self.black)
         
+        #all the remaining labels
         for i in range(self.n_of_colors-1):
-            y1 = self.y-(self.isochore_proc[i]-self.y_min) * self.py + 5
+            y1 = self.y-(self.isochore_values[i]-self.y_min) * self.py + 5
             self.graph.string(gd.gdFontGiant, (self.x-self.border/5*3, y1), self.isochore_label[i], self.black)
+            
+    
 
 #debug: define a test function to works on BaseGraph
 def test_BaseGraph(filename="test.png"):
