@@ -224,8 +224,9 @@ class Isochore():
         old_Class = self.Class
         self.Class = CalcClass(self.avg_GClevel)
         
+        #Pheraps this event isn't so significant
         if old_Class != self.Class:
-            GClib.logger.err(1, "The Class changed between %s and %s for %s" %(old_Class, self.Class, self))
+            GClib.logger.err(5, "The Class changed between %s and %s for %s" %(old_Class, self.Class, self))
         
         
     def TestHypoSTD(self,isochore1,isochore2=None):
@@ -788,7 +789,12 @@ class Chromosome:
                 csv_writer.writerow([isochore.start+1, isochore.end, isochore.size, isochore.Class, None, None])
                 
             else:
-                csv_writer.writerow([isochore.start+1, isochore.end, isochore.size, isochore.Class, "%.6f" %(isochore.avg_GClevel), "%.6f" %(isochore.stddev_GClevel)])
+                #If isochore is composed by one element, its stddev will be None
+                if len(isochore) > 1:
+                    csv_writer.writerow([isochore.start+1, isochore.end, isochore.size, isochore.Class, "%.6f" %(isochore.avg_GClevel), "%.6f" %(isochore.stddev_GClevel)])
+                    
+                else:
+                    csv_writer.writerow([isochore.start+1, isochore.end, isochore.size, isochore.Class, "%.6f" %(isochore.avg_GClevel), None])
                 
             outfile.flush()
             

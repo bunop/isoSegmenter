@@ -10,6 +10,7 @@ Main program for Isochore Definition
 
 """
 
+import os
 import argparse
 
 #Modules for dealing with GC content and graph
@@ -36,13 +37,19 @@ args = parser.parse_args()
 #TODO: Change isochore class boundaries
 #TODO: Switch to Isochore Profile and Isochore Rectangle Boxes
 #TODO: Calculating a determined chromosome from a multi fasta file
+#TODO: set the possibility to bypass the isochore file creation (only a graph)
 
 if __name__ == "__main__":
     #verify verbosity level
     if args.verbosity != GClib.logger.threshold:
         #setting user defined threshold of verbosity
         GClib.logger.threshold = args.verbosity
-        
+    
+    #Chromosome istance will not Dump isochore if file exist. So I can verify this 
+    #before reading fasta file. Outfile is a required option
+    if args.outfile != None and os.path.exists(args.outfile):
+        raise Exception, "file %s esists!!!" %(args.outfile)
+    
     #Open the sequence file
     FastaFile = GClib.Utility.FastaFile(args.infile)
     
