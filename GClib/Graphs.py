@@ -778,7 +778,9 @@ class DrawFamilies:
             raise DrawFamiliesError, "File %s exists!!!" %(filename)
             
         #save picture in file
-        pyplot.savefig(filename, dpi)
+        pyplot.savefig(filename, dpi=dpi)
+        
+        GClib.logger.log(1, "Image written in %s" %(filename))
 
 #debug: define a test function to works on BaseGraph
 def test_BaseGraph(filename="test.png"):

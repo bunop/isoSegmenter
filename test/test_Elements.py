@@ -642,5 +642,7 @@ class test_Chromosome(unittest.TestCase):
         #deleting the old file
         os.remove(testfile)
 
+#TODO: test code for families element
+
 if __name__ == "__main__":
     unittest.main()

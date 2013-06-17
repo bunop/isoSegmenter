@@ -50,6 +50,10 @@ if __name__ == "__main__":
     if args.outfile != None and os.path.exists(args.outfile):
         raise Exception, "file %s esists!!!" %(args.outfile)
     
+    #Checking for graph file existance
+    if args.graphfile != None and os.path.exists(args.graphfile):
+        raise Exception, "file %s esists!!!" %(args.graphfile)
+    
     #Open the sequence file
     FastaFile = GClib.Utility.FastaFile(args.infile)
     

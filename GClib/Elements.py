@@ -30,7 +30,7 @@ class ElementError(Exception) : pass
 class WindowError(ElementError) : pass
 class IsochoreError(Exception) : pass
 class ChromosomeError(Exception) : pass
-class FamilyException(Exception) : pass
+class FamilyError(Exception) : pass
 
 
 class Element:
@@ -893,7 +893,7 @@ class Families:
         by user defined pattern"""
         
         if not os.path.isdir(directory):
-            raise FamilyException, "%s seems not to be a directory!" %(directory)
+            raise FamilyError, "%s seems not to be a directory!" %(directory)
         
         #reset the file list
         self.files = []
@@ -919,14 +919,13 @@ class Families:
             GClib.logger.log(1, "%s files found for pattern '%s' in '%s' directory" %(self.n_of_files, pattern, directory))
             
         
-    
     def GroupByIsochores(self, min_value=30, max_value=65, bin_size=1):
         """Put Isochores sizes in bins relying on their average GC values. The user
         can specify the lower and the upper values of the bins graph, and also the
         bin dimensions."""
         
         if len(self.files) == 0:
-            raise FamilyException, "No files can be used to derive families" 
+            raise FamilyError, "No files can be used to derive families" 
             
         #make a dictionary for each GClevels relying on max and min values and bin precision
         precision = 1.0 / bin_size
@@ -954,6 +953,7 @@ class Families:
         
         #Now scanning files for isochores:
         for myfile in self.files:
+            GClib.logger.log(3, "Processing file %s" %(myfile))
             Chrom = GClib.Elements.Chromosome()
             Chrom.LoadIsochores(myfile)
             
@@ -982,6 +982,7 @@ class Families:
                             best_bin = bin
                     
                     #now adding isochore size to the best isochore bin
+                    GClib.logger.log(4, "Adding %s to bin %s" %(isochore, best_bin))
                     self.data[best_bin] += isochore.size
                     
                 #Condition Class != Gap
@@ -997,7 +998,48 @@ class Families:
         
         #Setting the bins labels list
         self.bins = self.data.keys()
+    
+    def _handle_output(self,outfile):
+        """This function open a file for writing if necessary"""
         
+        #A flag to determine if I have to close the file (don't close stdout)
+        flag_close = False
+        
+        if type(outfile) == types.StringType:
+            #testing for file existance
+            if os.path.exists(outfile):
+                raise FamilyError, "File %s exists. I cannot overwrite it"
+                
+            #else
+            outfile = open(outfile, "w")
+            
+            #I have to close this file once I've finished
+            flag_close = True
+            
+        elif type(outfile) != types.FileType:
+            raise FamilyError, "I don't know ho to handle %s : %s" %(outfile, type(outfile))
+            
+        return outfile, flag_close
+    
+    def DumpFamilies(self, outfile=sys.stdout):
+        """Dumps families in a CSV file"""
+        
+        if self.data == {}:
+            raise FamilyError, "Families must be calculated to call this function"
+            
+        #Assuming to work with a open filehandle
+        outfile, flag_close = self._handle_output(outfile)
+        
+        #Here, I must have an open file type
+        csv_writer = csv.writer(outfile, lineterminator="\n")
+        csv_writer.writerow(["Bin", "Size"])
+        
+        for bin in self.bins:
+            csv_writer.writerow([bin, self.data[bin]])
+            outfile.flush()
+            
+        #closing file if necessary
+        if flag_close == True: outfile.close()
 
 #A function to define the class of a sequence window
 def CalcClass(GClevel):
