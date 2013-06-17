@@ -347,5 +347,7 @@ class test_DrawChromosome(unittest.TestCase):
         self._test_DrawChromosome.DrawIsochoreRectangles(isochores=self.isochores)
         self._test_DrawChromosome.DrawLegend()
 
+#TODO: Define test code for drawing graphs
+
 if __name__ == "__main__":
     unittest.main()

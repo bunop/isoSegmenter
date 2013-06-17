@@ -30,6 +30,7 @@ class ElementError(Exception) : pass
 class WindowError(ElementError) : pass
 class IsochoreError(Exception) : pass
 class ChromosomeError(Exception) : pass
+class FamilyException(Exception) : pass
 
 
 class Element:
@@ -844,7 +845,159 @@ class Chromosome:
         
         #closing file if necessary
         if flag_close == True: infile.close()
+        
     
+#end of class Chromosome
+
+#This class will scan files with a pattern in a user defined directory, in order to
+#read isochores and memorize sizes and GClevels in a dictionary 
+class Families:
+    """A class to find isochore familes"""
+    
+    def __init__(self):
+        
+        #This will be the list for files to search for
+        self.files = []
+        self.n_of_files = None
+        
+        #all other useful attribute
+        self.n_of_bins = None
+        
+        #all bins will be put here
+        self.data = {}
+        self.max_value = None
+        self.min_value = None
+        self.precision = None
+        self.bin_size = None
+        self.bins = None
+    
+    def __str__(self):
+        """A method useful for debugging"""
+        
+        myclass = str(self.__class__)
+        myattributes = self.__dict__
+        
+        #the returned string
+        message = "\n %s Object\n\n" %(myclass)
+        
+        for key, value in myattributes.iteritems():
+            message += "\t%s -> %s\n" %(key, value)
+            
+        return message
+        
+    def __repr__(self):
+        return self.__str__()
+    
+    def Scan4Files(self, directory, pattern="*"):
+        """Scan a user directory in order to find isochores or window files specified
+        by user defined pattern"""
+        
+        if not os.path.isdir(directory):
+            raise FamilyException, "%s seems not to be a directory!" %(directory)
+        
+        #reset the file list
+        self.files = []
+        
+        #determine all files in a directory
+        all_files = os.listdir(directory)
+        
+        #Now search for file with pattern
+        for myfile in all_files:
+            if re.search(pattern, myfile):
+                self.files += [myfile]
+        
+        #determine the realtive path for each file
+        self.files = [os.path.join(directory,myfile) for myfile in self.files]
+        self.n_of_files = len(self.files)
+        
+        #Maybe if I found no files I have to throw an Exception. For the moment, i
+        #print an Error log with 0 priority
+        if self.n_of_files == 0:
+            GClib.logger.err(0, "Non files found for pattern '%s' in '%s' directory" %(pattern, directory))
+            
+        else:
+            GClib.logger.log(1, "%s files found for pattern '%s' in '%s' directory" %(self.n_of_files, pattern, directory))
+            
+        
+    
+    def GroupByIsochores(self, min_value=30, max_value=65, bin_size=1):
+        """Put Isochores sizes in bins relying on their average GC values. The user
+        can specify the lower and the upper values of the bins graph, and also the
+        bin dimensions."""
+        
+        if len(self.files) == 0:
+            raise FamilyException, "No files can be used to derive families" 
+            
+        #make a dictionary for each GClevels relying on max and min values and bin precision
+        precision = 1.0 / bin_size
+        
+        #determing the number of bins
+        self.n_of_bins = int(round((max_value - min_value) * precision,0)) + 1
+        
+        #setting the max and min values used for graphs
+        self.max_value = max_value
+        self.min_value = min_value
+        
+        #recording precision and bin size
+        self.precision = precision
+        self.bin_size = bin_size
+        
+        #initialize self.data
+        self.data = {}
+        
+        #A counter to count how many file will be processed by this function
+        counter = 0
+        
+        for i in range(self.n_of_bins):
+            x_value = min_value + i*bin_size
+            self.data[x_value] = 0
+        
+        #Now scanning files for isochores:
+        for myfile in self.files:
+            Chrom = GClib.Elements.Chromosome()
+            Chrom.LoadIsochores(myfile)
+            
+            #Iterating along of Chrom isochores
+            for isochore in Chrom.isochores:
+                if isochore.Class != "gap":
+                    #since bin_size could be 0.5, It's difficult to round GCvalue near its bin.
+                    #So I will calculate all the distance between bins and GClevel, then I will assign
+                    #isochore size to the best bin
+                    best_distance = None
+                    best_bin = None
+                    
+                    #test if avg_GClevel is outside max and min GCvalue
+                    if isochore.avg_GClevel < min_value or isochore.avg_GClevel > max_value:
+                        GClib.logger.err(1, "%s avg_GClevel outside margin. Maybe min_value (%s) and max_value (%s) have to be modified" %(isochore, max_value, min_value))
+                    
+                    
+                    #a bin is a key of self.data (a GClevel value)
+                    for bin in self.data.keys():
+                        #valuating distance
+                        distance = abs(isochore.avg_GClevel-bin)
+                        
+                        #controlling that best distance is defined of distance is better than best distance
+                        if distance <= best_distance or best_distance == None:
+                            best_distance = distance
+                            best_bin = bin
+                    
+                    #now adding isochore size to the best isochore bin
+                    self.data[best_bin] += isochore.size
+                    
+                #Condition Class != Gap
+                
+            #Iteration on Element (Gap or Isochore)
+            GClib.logger.log(2, "file %s processed" %(myfile))
+            
+            #Incrementing the counter
+            counter += 1
+        
+        #Iteration on Isochore file
+        GClib.logger.log(1, "%s files processed" %(counter))
+        
+        #Setting the bins labels list
+        self.bins = self.data.keys()
+        
 
 #A function to define the class of a sequence window
 def CalcClass(GClevel):
@@ -878,5 +1031,4 @@ def CalcClass(GClevel):
         
     return Class
     
-
 

@@ -115,4 +115,5 @@ class FastaFile:
         #return seq obj
         return self.seqs_list[idx]
         
-        
+
+#end of library

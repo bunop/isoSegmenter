@@ -19,11 +19,14 @@ import ImageDraw
 import ImageFont
 import tempfile
 
+from matplotlib import pyplot
+
 __author__ = "Paolo Cozzi <paolo.cozzi@tecnoparco.org>"
 
 #exception definition
 class BaseGraphError(Exception) : pass
 class DrawChromosomeError(BaseGraphError) : pass
+class DrawFamiliesError(Exception): pass
 
 class BaseGraph():
     """A base class to make graps like draw chromosomes"""
@@ -643,7 +646,139 @@ class DrawChromosome(BaseGraph):
             y1 = self.y-(self.isochore_values[i]-self.y_min) * self.py + 5
             self.graph.string(gd.gdFontGiant, (self.x-self.border/5*3, y1), self.isochore_label[i], self.black)
             
+        
     
+class DrawFamilies:
+    """A class to plot isochores families in histograms"""
+    
+    def __init__(self,families=None):
+        """Instantiate the class starting from Families Element"""
+        
+        if families.__class__ != GClib.Elements.Families or families.data == {} :
+            raise DrawFamiliesError, "This class must be instantiated only by a valid Families Element Class"""
+        
+        #setting families element
+        self.families = families
+        
+        #data will be plotted using bar plot
+        self.all_bar = []
+        
+        #Image proportions
+        scale = 20.0 / 12
+
+        self.fig = pyplot.figure(figsize=(13,13/scale))
+        self.fontsize=30 #"x-large"
+
+        #instantiate a bar graph
+        for bin, length in self.families.data.iteritems():
+            #print "%s:%s" %(bins[i], data[i]),
+            self.all_bar += [pyplot.bar(bin-families.bin_size*0.2, int(round(length/1e6,0)), width=0.4*families.bin_size, bottom=0)]
+        
+        #setting axes
+        self.x_min = int(round(families.min_value / families.precision,0))
+        self.x_max = int(round(families.max_value / families.precision,0))
+
+    def __str__(self):
+        """A method useful for debugging"""
+        
+        myclass = str(self.__class__)
+        myattributes = self.__dict__
+        
+        #the returned string
+        message = "\n %s Object\n\n" %(myclass)
+        
+        for key, value in myattributes.iteritems():
+            message += "\t%s -> %s\n" %(key, value)
+            
+        return message
+        
+    def __repr__(self):
+        return self.__str__()
+
+    def DrawAxisLabels(self):
+        """Set axis label"""
+        
+        myticks = []
+        mylabels = []
+        
+        #To evitate labels in axis origin
+        flag_ticks = False
+        
+        #To draw ticks on X axis, set a list for ticks and labels
+        for i in range(self.families.n_of_bins):
+            if i % self.families.precision == 0:
+                #A tick on each bin
+                myticks += [self.families.bins[i]]
+                
+                #a label every 2 bins
+                if i % (self.families.precision*2) == 0:
+                    if flag_ticks == False:
+                        flag_ticks = True
+                        mylabels += ['']
+                    
+                    else:
+                        mylabels += [int(self.families.bins[i])] 
+                    
+                else:
+                    mylabels += ['']
+        
+        #debug
+        #print myticks, len(myticks)
+        #print mylabels, len(mylabels)
+        
+        #draw the thicks and labels
+        pyplot.xticks([myticks[i] for i in range(0,len(myticks))],[mylabels[i] for i in range(0,len(myticks))],size=self.fontsize)
+        pyplot.yticks(size=self.fontsize)
+
+    def SetAxisLimits(self, axis=[0,0,0,0]):
+        """Setting axis [Xmin, Xmax, Ymin, Ymax]"""
+    
+        #recording the internal axis values
+        tmp_axis = list(pyplot.axis())
+    
+        #function call without parameters. Setting axis relying on x_max, x_min if both are equal to 0
+        if axis[0] == 0 and axis[1] == 0:
+            #changing x values
+            axis[0] = self.x_min
+            axis[1] = self.x_max
+        
+        #setting Y value if they are not defined by user   
+        if axis[2] == 0 and axis[3] == 0:
+            axis[2] = tmp_axis[2]
+            axis[3] = tmp_axis[3]
+        
+        #shift the axis down
+        #axis[2] -= int(round(axis[3]*(10.0/300),0))
+        
+        #Applying the axis
+        pyplot.axis(axis)
+
+    def DrawGrid(self):
+        """Draw grid in grapsh"""
+        
+        #this draws the grid in the graph
+        self.axes = pyplot.axes()
+        self.axes.grid(linewidth=2)
+
+    def DrawTitle(self, title):
+        """Draws title in graph"""
+        
+        pyplot.text(0.8, 0.8, title,
+            horizontalalignment='center',
+            verticalalignment='center',
+            transform = pyplot.gca().transAxes,
+            size=40
+        )
+        
+    def SaveFigure(self, filename, dpi=100):
+        """Draw the image in a new file. DPI quality can be specified"""
+        
+        #checking for file existance
+        if os.path.exists(filename):
+            raise DrawFamiliesError, "File %s exists!!!" %(filename)
+            
+        #save picture in file
+        pyplot.savefig(filename, dpi)
 
 #debug: define a test function to works on BaseGraph
 def test_BaseGraph(filename="test.png"):
