@@ -41,11 +41,11 @@ if __name__ == "__main__":
     #Chromosome istance will not Dump isochore if file exist. So I can verify this 
     #before reading fasta file. Outfile is a required option
     if args.outfile != None and os.path.exists(args.outfile):
-        raise Exception, "file %s esists!!!" %(args.outfile)
+        raise Exception, "file %s exists!!!" %(args.outfile)
     
     #Checking for graph file existance
     if args.graphfile != None and os.path.exists(args.graphfile):
-        raise Exception, "file %s esists!!!" %(args.graphfile)
+        raise Exception, "file %s exists!!!" %(args.graphfile)
 
     #instantiate a families element
     families = GClib.Elements.Families()
