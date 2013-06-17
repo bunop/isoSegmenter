@@ -670,8 +670,9 @@ class DrawFamilies:
         self.fontsize=30 #"x-large"
 
         #instantiate a bar graph
-        for bin, length in self.families.data.iteritems():
+        for bin, bin_data in self.families.data.iteritems():
             #print "%s:%s" %(bins[i], data[i]),
+            length = bin_data["size"]
             self.all_bar += [pyplot.bar(bin-families.bin_size*0.2, int(round(length/1e6,0)), width=0.4*families.bin_size, bottom=0)]
         
         #setting axes

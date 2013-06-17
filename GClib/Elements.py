@@ -947,9 +947,13 @@ class Families:
         #A counter to count how many file will be processed by this function
         counter = 0
         
+        #record isochore length and how many isochore belongs to this bin
         for i in range(self.n_of_bins):
-            x_value = min_value + i*bin_size
-            self.data[x_value] = 0
+            bin = min_value + i*bin_size
+            
+            #the first number will be the size of the isochore, the second will be the number
+            #of isochore belonging to this bin
+            self.data[bin] = {"size" : 0, "n_of_isochores" : 0}
         
         #Now scanning files for isochores:
         for myfile in self.files:
@@ -983,7 +987,8 @@ class Families:
                     
                     #now adding isochore size to the best isochore bin
                     GClib.logger.log(4, "Adding %s to bin %s" %(isochore, best_bin))
-                    self.data[best_bin] += isochore.size
+                    self.data[best_bin]["size"] += isochore.size
+                    self.data[best_bin]["n_of_isochores"] += 1
                     
                 #Condition Class != Gap
                 
@@ -1032,10 +1037,10 @@ class Families:
         
         #Here, I must have an open file type
         csv_writer = csv.writer(outfile, lineterminator="\n")
-        csv_writer.writerow(["Bin", "Size"])
+        csv_writer.writerow(["Bin", "N of isochores", "Size"])
         
         for bin in self.bins:
-            csv_writer.writerow([bin, self.data[bin]])
+            csv_writer.writerow([bin, self.data[bin]["n_of_isochores"], self.data[bin]["size"]])
             outfile.flush()
             
         #closing file if necessary
