@@ -826,7 +826,9 @@ class Chromosome:
             else:
                 #avg_GClevel, stddev_GClevel  must be float
                 avg_GClevel = round(float(avg_GClevel),6)
-                stddev_GClevel = round(float(stddev_GClevel),6)
+                
+                #Stddev will be none for isochore of length 0. Here I don't know isochore length (in windows)
+                if stddev_GClevel != "": stddev_GClevel = round(float(stddev_GClevel),6)
                 
                 #Instantiating a new isochore
                 isochore = Isochore()
