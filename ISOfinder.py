@@ -20,11 +20,17 @@ import GClib.Utility
 import GClib.Elements
 
 parser = argparse.ArgumentParser(description='Find Isochores in sequences')
-parser.add_argument('-i', '--infile', type=str, required=True, help="Input Fasta File (also compressed)")
+parser.add_argument('-i', '--infile', type=str, required=True, help="Input Fasta File (even compressed)")
 parser.add_argument('-o', '--outfile', type=str, required=True, help="Output isochore CSV files")
 parser.add_argument('-g', '--graphfile', type=str, required=False, help="Output graph filename (PNG)")
-parser.add_argument('-v', '--verbosity', type=int, required=False, default=GClib.logger.threshold, help="Verbosity level")
+parser.add_argument('-v', '--verbose', action="count", required=False, default=0, help="Verbosity level")
+parser.add_argument('--draw_legend', action='store_true', help="Draw legend on the right side of the image")
+parser.add_argument('--force_overwrite', action='store_true', help="Force overwrite")
+parser.add_argument('--sequence_start', type=int, required=False, default=1, help="start segmentation from this position (1-based coordionates)")
 args = parser.parse_args()
+
+#debug
+print args
 
 #TODO: Setting windows_size
 #TODO: Write windows in file
@@ -41,18 +47,33 @@ args = parser.parse_args()
 
 if __name__ == "__main__":
     #verify verbosity level
-    if args.verbosity != GClib.logger.threshold:
+    if args.verbose != GClib.logger.threshold:
         #setting user defined threshold of verbosity
-        GClib.logger.threshold = args.verbosity
+        GClib.logger.threshold = args.verbose
     
     #Chromosome istance will not Dump isochore if file exist. So I can verify this 
     #before reading fasta file. Outfile is a required option
     if args.outfile != None and os.path.exists(args.outfile):
-        raise Exception, "file %s exists!!!" %(args.outfile)
+        if args.force_overwrite == False:
+            raise Exception, "file %s exists!!!" %(args.outfile)
+        else:
+            #remove the file before calculation
+            os.remove(args.outfile)
     
     #Checking for graph file existance
     if args.graphfile != None and os.path.exists(args.graphfile):
-        raise Exception, "file %s exists!!!" %(args.graphfile)
+        if args.force_overwrite == False:
+            raise Exception, "file %s exists!!!" %(args.graphfile)
+        else:
+            #remove the file before calculation
+            os.remove(args.graphfile)
+    
+    #Internal coordinates are 0-based, not 1-based
+    args.sequence_start -= 1
+    
+    #sequence_start can't be negative
+    if args.sequence_start <= 0:
+        raise Exception, "Sequence start must be 1-based and > 0"
     
     #Open the sequence file
     FastaFile = GClib.Utility.FastaFile(args.infile)
@@ -75,7 +96,7 @@ if __name__ == "__main__":
     
     #Segmenting Sequence in windows
     #TODO: Here I can call ValueWindows with different windows sizes, or sequence coordinates
-    Chrom.ValueWindows()
+    Chrom.ValueWindows(From=args.sequence_start)
     
     #TODO: Here i can write windows CSV and PNG file
     
@@ -87,8 +108,8 @@ if __name__ == "__main__":
     
     #Instantiating graph if it is necessary
     if args.graphfile != None:
-        #Instantiating DrawChromosome Class
-        Graph = GClib.Graphs.DrawChromosome()
+        #Instantiating DrawChromosome Class. Look at sequence start (0-based sequence start, this has been fixed in the top of this main block)
+        Graph = GClib.Graphs.DrawChromosome(sequence_start=args.sequence_start)
         
         #Fixing appropriate values
         Graph.SetSequenceLength(Chrom.size)
@@ -96,7 +117,11 @@ if __name__ == "__main__":
         Graph.SetHorizontalLines([37, 41, 46, 53])
         Graph.SetColorsList(colorbyclass=True)
         Graph.DrawIsochoreRectangles(isochores=Chrom.isochores)
-        Graph.DrawLegend()
+        
+        #Draw legend or not
+        if args.draw_legend == True:
+            Graph.DrawLegend()
+        
         Graph.FinishPicture(drawlabels=False)
         Graph.EnlargeLabels()
         Graph.SaveFigure(args.graphfile)

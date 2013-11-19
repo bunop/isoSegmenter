@@ -512,7 +512,13 @@ class Chromosome:
         
         #Merge isocore below a certain limit (1 window)
         #TODO: define a parameter for a minimun size of an isochore
-        GClib.logger.log(4, "Step (1) completed. Starting Step (2)...")
+        GClib.logger.log(4, "Step (1) completed.")
+        
+        #debug
+        #return
+    
+        #Starting the 2° step
+        GClib.logger.log(4, "Starting Step (2)...")
         
         #Now we can merge isochore under a certain size. Since we are modifing the
         #isochore list by removing indexes, it is safer to procede by reversing array. To obtain the -2 value,
@@ -588,7 +594,12 @@ class Chromosome:
             #debug
             #break
         
-        GClib.logger.log(4, "Step (2) completed. Starting Step (3)...")
+        GClib.logger.log(4, "Step (2) completed.")
+        
+        #debug
+        #return
+    
+        GClib.logger.log(4, " Starting Step (3)...")
         
         #Now we could two distinct isochore with the same class, and we want to merge them
         for i in range(len(self.isochores)-2,0,-1):
