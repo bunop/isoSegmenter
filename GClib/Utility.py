@@ -2,7 +2,7 @@
 """
 
 
-    Copyright 2013 Paolo Cozzi
+    Copyright (C) 2013 Paolo Cozzi
 
     This file is part of ISOfinder.
 

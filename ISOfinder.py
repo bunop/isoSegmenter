@@ -3,7 +3,7 @@
 """
 
 
-    Copyright 2013 Paolo Cozzi
+    Copyright (C) 2013 Paolo Cozzi
 
     This file is part of ISOfinder.
 
@@ -40,19 +40,19 @@ import GClib.Elements
 
 parser = argparse.ArgumentParser(description='Find Isochores in sequences')
 parser.add_argument('-i', '--infile', type=str, required=True, help="Input Fasta File (even compressed)")
-parser.add_argument('-o', '--outfile', type=str, required=True, help="Output isochore CSV files")
+parser.add_argument('-o', '--outfile', type=str, required=False, help="Output isochores CSV file")
 parser.add_argument('-g', '--graphfile', type=str, required=False, help="Output graph filename (PNG)")
+parser.add_argument('-w', '--windowfile', type=str, required=False, help="Output windows CSV file")
 parser.add_argument('-v', '--verbose', action="count", required=False, default=0, help="Verbosity level")
 parser.add_argument('--draw_legend', action='store_true', help="Draw legend on the right side of the image")
 parser.add_argument('--force_overwrite', action='store_true', help="Force overwrite")
-parser.add_argument('--sequence_start', type=int, required=False, default=1, help="start segmentation from this position (1-based coordionates)")
+parser.add_argument('--sequence_start', type=int, required=False, default=1, help="start segmentation from this position (1-based coordinates)")
 args = parser.parse_args()
 
 #debug
 #print args
 
 #TODO: Setting windows_size
-#TODO: Write windows in file
 #TODO: Change GAP tolerance
 #TODO: Setting sequence start and end
 #TODO: Draw chr name
@@ -65,6 +65,10 @@ args = parser.parse_args()
 #TODO: set the possibility to bypass the isochore file creation (only a graph)
 
 if __name__ == "__main__":
+    #To continue work, I need almost one file to write
+    if args.outfile == None and args.graphfile == None:
+        raise Exception, "You must specify an output isochore file while calling this program, by graphfile or outfile option"
+        
     #verify verbosity level
     if args.verbose != GClib.logger.threshold:
         #setting user defined threshold of verbosity
@@ -86,6 +90,15 @@ if __name__ == "__main__":
         else:
             #remove the file before calculation
             os.remove(args.graphfile)
+    
+    #Checking for window file existance
+    if args.windowfile != None and os.path.exists(args.windowfile):
+        if args.force_overwrite == False:
+            raise Exception, "file %s exists!!!" %(args.windowfile)
+        else:
+            #remove the file before calculation
+            os.remove(args.windowfile)
+        
     
     #sequence_start can't be negative
     if args.sequence_start <= 0:
@@ -117,13 +130,16 @@ if __name__ == "__main__":
     #TODO: Here I can call ValueWindows with different windows sizes, or sequence coordinates
     Chrom.ValueWindows(From=args.sequence_start)
     
-    #TODO: Here i can write windows CSV and PNG file
-    
-    #Finding Isochores
+    #Writing windows in a file (if I need it)
+    if args.windowfile != None:
+        Chrom.DumpWindows(args.windowfile)
+        
+    #Finding Isochores. This program tries to segmenting genome into isochores, and so this calculation is always done
     Chrom.FindIsochores()
     
-    #Writing Isochores in file
-    Chrom.DumpIsochores(args.outfile)
+    if args.outfile != None:
+        #Writing Isochores in file
+        Chrom.DumpIsochores(args.outfile)
     
     #Instantiating graph if it is necessary
     if args.graphfile != None:
@@ -135,7 +151,13 @@ if __name__ == "__main__":
         Graph.InitPicture()
         Graph.SetHorizontalLines([37, 41, 46, 53])
         Graph.SetColorsList(colorbyclass=True)
+        
+        #Grep the correct values
         Graph.DrawIsochoreRectangles(isochores=Chrom.isochores)
+        
+        #TODO: make an option to draw windows
+        #To draw window instead of isochores. 
+        #Graph.DrawWindowRectangles(windows=Chrom.windows)
         
         #Draw legend or not
         if args.draw_legend == True:
