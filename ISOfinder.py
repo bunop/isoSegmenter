@@ -2,6 +2,25 @@
 # -*- coding: utf-8 -*-
 """
 
+
+    Copyright 2013 Paolo Cozzi
+
+    This file is part of ISOfinder.
+
+    ISOfinder is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    ISOfinder is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with ISOfinder.  If not, see <http://www.gnu.org/licenses/>.
+
+
 Created on Wed Jun 12 16:31:27 2013
 
 @author: Paolo Cozzi <paolo.cozzi@tecnoparco.it>
@@ -30,7 +49,7 @@ parser.add_argument('--sequence_start', type=int, required=False, default=1, hel
 args = parser.parse_args()
 
 #debug
-print args
+#print args
 
 #TODO: Setting windows_size
 #TODO: Write windows in file
@@ -68,12 +87,12 @@ if __name__ == "__main__":
             #remove the file before calculation
             os.remove(args.graphfile)
     
-    #Internal coordinates are 0-based, not 1-based
-    args.sequence_start -= 1
-    
     #sequence_start can't be negative
     if args.sequence_start <= 0:
         raise Exception, "Sequence start must be 1-based and > 0"
+    
+    #Internal coordinates are 0-based, not 1-based
+    args.sequence_start -= 1
     
     #Open the sequence file
     FastaFile = GClib.Utility.FastaFile(args.infile)

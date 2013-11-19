@@ -1,5 +1,25 @@
 # -*- coding: utf-8 -*-
 """
+
+
+    Copyright 2013 Paolo Cozzi
+
+    This file is part of ISOfinder.
+
+    ISOfinder is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    ISOfinder is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with ISOfinder.  If not, see <http://www.gnu.org/licenses/>.
+
+
 Created on Tue Jun  4 11:05:34 2013
 
 @author: Paolo Cozzi <paolo.cozzi@tecnoparco.org>
@@ -101,7 +121,8 @@ class BaseGraph():
         
         #All y values have to be scaled by this value
         self.py = int(round(float(self.y - self.top) / (max_value-min_value))) 
-        
+    
+    #TODO: define a function in order to set image width in pixels
     def SetSequenceLength(self, sequence_length):
         """Set sequence length and image width"""
         
@@ -332,11 +353,16 @@ class BaseGraph():
         #the ruler line
         self.graph.line((self.border, y1), (self.x-self.border, y1),self.black)
         
-        #A big notch on the ruler every "bigtick" bp
-        for i in range(self.sequence_start, self.sequence_length + self.sequence_start, bigtick):
+        #A big notch on the ruler every "bigtick" bp. If I will start from a sequence position
+        #different from 0, I have to put the tick on absolute positions
+        for i in range(0, self.sequence_length + self.sequence_start, bigtick):
+            if i < self.sequence_start:
+                continue
+                
             position = int((i - self.sequence_start) / self.scale + self.border)
             self.graph.line((position,y1-14),(position,y1),self.black)
             
+    
         #a line on the bottom of the graph
         self.graph.line((self.border, int(self.y +1)), (self.x-self.border, int(self.y +1)), self.black)
         
@@ -344,7 +370,10 @@ class BaseGraph():
         self.graph.setThickness(1)
         
         #Now put a small notch on the ruler every "tick" bp
-        for i in range(self.sequence_start, self.sequence_length + self.sequence_start, tick):
+        for i in range(0, self.sequence_length + self.sequence_start, tick):
+            if i < self.sequence_start:
+                continue
+                
             position = int((i - self.sequence_start) / self.scale + self.border)
             self.graph.line((position,y1-7),(position,y1),self.black)
         
@@ -353,7 +382,10 @@ class BaseGraph():
             #Setting the proper flag
             self.drawn_labels = True
             
-            for i in range(self.sequence_start, self.sequence_length + self.sequence_start, label * 2):
+            for i in range(0, self.sequence_length + self.sequence_start, label * 2):
+                if i < self.sequence_start:
+                    continue
+                
                 position = int((i - self.sequence_start) / self.scale + self.border)
                 self.graph.string(self.fontsize, (position-6,y1-30), str(i/label),self.black)
         
@@ -423,18 +455,27 @@ class BaseGraph():
         
         #the interval (in bp) in which labels will be drawn
         label = 1000000
+        iteration = 0
         
-        #Wrinting labels
-        for i in range(self.sequence_start, self.sequence_length + self.sequence_start, label*2):
-            position = int(round((i - self.sequence_start) / self.scale + self.border))
+        #Wrinting labels. Pay attention to sequence start, no label before sequence starts. 
+        for i in range(0, self.sequence_length + self.sequence_start, label):
+            if i < self.sequence_start:
+                continue
             
-            #a different X position for different label precision (1, 10, 100)
-            if i/label < 10:
-                draw.text((position-7,y1), str(i/label), font=myfont, fill=1)
-            elif i/label < 100:
-                draw.text((position-15,y1), str(i/label), font=myfont, fill=1)
-            else:
-                draw.text((position-23,y1), str(i/label), font=myfont, fill=1)
+            #Write a label in correspondance to thicks, every two "label" distance
+            if iteration % 2 == 0:
+                position = int(round((i - self.sequence_start) / self.scale + self.border))
+                
+                #a different X position for different label precision (1, 10, 100)
+                if i/label < 10:
+                    draw.text((position-7,y1), str(i/label), font=myfont, fill=1)
+                elif i/label < 100:
+                    draw.text((position-15,y1), str(i/label), font=myfont, fill=1)
+                else:
+                    draw.text((position-23,y1), str(i/label), font=myfont, fill=1)
+                    
+            #Next step
+            iteration += 1
             
         #For the Mb text
         position = self.x - self.border/5*4

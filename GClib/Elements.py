@@ -1,5 +1,25 @@
 # -*- coding: utf-8 -*-
 """
+
+
+    Copyright 2013 Paolo Cozzi
+
+    This file is part of ISOfinder.
+
+    ISOfinder is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    ISOfinder is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with ISOfinder.  If not, see <http://www.gnu.org/licenses/>.
+
+
 Created on Fri May  3 15:04:39 2013
 
 @author: Paolo Cozzi <paolo.cozzi@tecnoparco.org>
@@ -358,6 +378,11 @@ class Chromosome:
         if To == None:
             To = self.size
         
+        #It makes no sense to start segmenting genome with an higher position than sequence length
+        if From >= self.size:
+            raise ChromosomeError, "It makes no sense to start from a position higher than chromosome length (%s >= %s)" %(From+1, self.size)
+        
+        #debug
         GClib.logger.log(2, "Starting window calculation")
         
         #resetting self.windows if any
