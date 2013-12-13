@@ -441,10 +441,11 @@ class BaseGraph():
         #Setting the proper attribute to file position
         self.imagefile = imagefile
         
-        #Una volta salvato il grafico, è il momento di tirarsi le storie per la dimensione delle scritte
+        #Open the temporary image in order to modify it
         im = Image.open(imagefile)
         
-        #Carico i font con cui scrivere dentro l'immagine
+        #These are fonts used to draw images. Ensure thay you have the file specified in
+        #GClib/__init__.py module
         myfont = ImageFont.truetype(GClib.graph_font_type, 30)
         
         #Questo oggetto mi serve per scriverci dentro

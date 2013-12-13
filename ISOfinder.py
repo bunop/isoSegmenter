@@ -46,8 +46,9 @@ parser.add_argument('-w', '--windowfile', type=str, required=False, help="Output
 parser.add_argument('-v', '--verbose', action="count", required=False, default=0, help="Verbosity level")
 parser.add_argument('--draw_legend', action='store_true', help="Draw legend on the right side of the image")
 parser.add_argument('--force_overwrite', action='store_true', help="Force overwrite")
-parser.add_argument('--sequence_start', type=int, required=False, default=1, help="start segmentation from this position (1-based coordinates)")
-parser.add_argument('--draw_chname', type=str, required=False, default=None, help="draw chromosome name in figure")
+parser.add_argument('--sequence_start', type=int, required=False, default=1, help="Start segmentation from this position (1-based coordinates)")
+parser.add_argument('--draw_chname', type=str, required=False, default=None, help="Draw chromosome name in figure")
+parser.add_argument('--window_size', type=int, required=False, default=GClib.WINDOW_SIZE, help="Set window size in bp (default: '%(default)s')")
 args = parser.parse_args()
 
 #debug
@@ -127,8 +128,13 @@ if __name__ == "__main__":
     Chrom = GClib.Elements.Chromosome(seqRecord)
     
     #Segmenting Sequence in windows
-    #TODO: Here I can call ValueWindows with different windows sizes, or sequence coordinates
-    Chrom.ValueWindows(From=args.sequence_start)
+    if args.window_size == GClib.WINDOW_SIZE:
+        #This call only to print the warning string when we use the default window size
+        Chrom.ValueWindows(From=args.sequence_start)
+        
+    else:
+        #Call valuewindos with user defined window size
+        Chrom.ValueWindows(window_size=args.window_size, From=args.sequence_start)
     
     #Writing windows in a file (if I need it)
     if args.windowfile != None:
