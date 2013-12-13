@@ -47,6 +47,7 @@ parser.add_argument('-v', '--verbose', action="count", required=False, default=0
 parser.add_argument('--draw_legend', action='store_true', help="Draw legend on the right side of the image")
 parser.add_argument('--force_overwrite', action='store_true', help="Force overwrite")
 parser.add_argument('--sequence_start', type=int, required=False, default=1, help="start segmentation from this position (1-based coordinates)")
+parser.add_argument('--draw_chname', type=str, required=False, default=None, help="draw chromosome name in figure")
 args = parser.parse_args()
 
 #debug
@@ -55,7 +56,6 @@ args = parser.parse_args()
 #TODO: Setting windows_size
 #TODO: Change GAP tolerance
 #TODO: Setting sequence start and end
-#TODO: Draw chr name
 #TODO: Draw Genome Reasearch 2006 isochore profile
 #TODO: Draw window
 #TODO: Write GAP CSV file
@@ -162,6 +162,10 @@ if __name__ == "__main__":
         #Draw legend or not
         if args.draw_legend == True:
             Graph.DrawLegend()
+            
+        #Draw ChName
+        if args.draw_chname != None:
+            Graph.DrawChName(args.draw_chname)
         
         Graph.FinishPicture(drawlabels=False)
         Graph.EnlargeLabels()
