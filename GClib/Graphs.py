@@ -53,10 +53,10 @@ class BaseGraph():
     
     def __init__(self, sequence_start=0):
         #default values in points (pixel)
-        self.scale = 30000 #17500 #higher values shrink images
+        self.scale = 30000*4 #17500 #higher values shrink images
         self.border = 90 #the white space on the left and on the right of the figure
         self.top = 70 #the upper space before the X axis
-        self.y = 385 #the height of the graphic area (in which isocore are printed, not image height)
+        self.y = 250 #the height of the graphic area (in which isocore are printed, not image height)
         
         #Other default values
         self.sequence_start = sequence_start
@@ -85,6 +85,9 @@ class BaseGraph():
         self.white = None
         self.black = None
         self.gray = None
+        
+        #For chromosome name
+        self.chname = None
         
     def __str__(self):
         """A method useful for debugging"""
@@ -297,15 +300,18 @@ class BaseGraph():
             try:
                 chname = str(chname)
             except:
-                raise BaseGraphError, "Chromosome name must be a string, or something converible in string"
+                raise BaseGraphError, "Chromosome name must be a string, or something convertible in string"
+                
+        #Setting a class attribute: draw chromosome name by EnlargeLabel
+        self.chname = chname
         
-        #believe in these values. I could express these values in points, but when you
-        #will change self.scale, all these values have to be changed. So express all the
-        #coordinates relying on self parameters
-        [x1,y1] = [self.border / 6 * 3, int(self.top/6*3)] #the center of the label
-        self.graph.arc((x1,y1), (55,40), 0, 360, self.black)
-        self.graph.fill((x1,y1),self.black)
-        self.graph.string(gd.gdFontGiant,(x1-len(chname)*4,y1-8),chname,self.white);
+#        #believe in these values. I could express these values in points, but when you
+#        #will change self.scale, all these values have to be changed. So express all the
+#        #coordinates relying on self parameters
+#        [x1,y1] = [self.border / 6 * 3, int(self.top/6*3)] #the center of the label
+#        self.graph.arc((x1,y1), (55,40), 0, 360, self.black)
+#        self.graph.fill((x1,y1),self.black)
+#        self.graph.string(gd.gdFontGiant,(x1-len(chname)*4,y1-8),chname,self.white);
 
     def DrawMinMaxValues(self):
         """Draw labels for Min and Max values"""
@@ -319,15 +325,15 @@ class BaseGraph():
 
         y1 = int(round(self.y - (self.y_max - self.y_min) * self.py))
         
-        #pay attention to self.y_max and self.y_min
-        if type(self.y_max) == types.FloatType or type(self.y_min) == types.FloatType:
-            self.graph.string(self.fontsize,(int(self.border / 4), y1-8), "%.3f" %(self.y_max) + "%", self.black)
-            self.graph.string(self.fontsize,(int(self.border / 4),self.y-7), "%.3f" %(self.y_min) + "%",self.black)
-            
-        else:
-            #Si suppone che siano degli interi o stringhe            
-            self.graph.string(self.fontsize,(int(self.border / 3),y1-8),str(self.y_max)+"%",self.black)
-            self.graph.string(self.fontsize,(int(self.border / 3),self.y-7),str(self.y_min)+"%",self.black)
+        #pay attention to self.y_max and self.y_min (disabled)
+#        if type(self.y_max) == types.FloatType or type(self.y_min) == types.FloatType:
+#            self.graph.string(self.fontsize,(int(self.border / 4), y1-8), "%.3f" %(self.y_max) + "%", self.black)
+#            self.graph.string(self.fontsize,(int(self.border / 4),self.y-7), "%.3f" %(self.y_min) + "%",self.black)
+#            
+#        else:
+#            #Si suppone che siano degli interi o stringhe            
+#            self.graph.string(self.fontsize,(int(self.border / 3),y1-8),str(self.y_max)+"%",self.black)
+#            self.graph.string(self.fontsize,(int(self.border / 3),self.y-7),str(self.y_min)+"%",self.black)
 
     def DrawXaxes(self, drawlabels=False):
         """Draw X axis and graduated scale"""
@@ -339,7 +345,8 @@ class BaseGraph():
         if self.graph == None:
             raise BaseGraphError, "InitPicture must be called before this method"
         
-        tick = 100000 * 5
+        #A more large tick
+        tick = 1000000 * 5
         bigtick = tick * 2
         label = bigtick
         
@@ -369,13 +376,14 @@ class BaseGraph():
         #reset the thickness of all the line
         self.graph.setThickness(1)
         
+        #Commented out to write less thick on a thin image
         #Now put a small notch on the ruler every "tick" bp
-        for i in range(0, self.sequence_length + self.sequence_start, tick):
-            if i < self.sequence_start:
-                continue
-                
-            position = int((i - self.sequence_start) / self.scale + self.border)
-            self.graph.line((position,y1-7),(position,y1),self.black)
+#        for i in range(0, self.sequence_length + self.sequence_start, tick):
+#            if i < self.sequence_start:
+#                continue
+#                
+#            position = int((i - self.sequence_start) / self.scale + self.border)
+#            self.graph.line((position,y1-7),(position,y1),self.black)
         
         #Pheraps it's better to add labels via Python Image Library, because we can enlarge character dimension
         if drawlabels == True:
@@ -410,8 +418,8 @@ class BaseGraph():
             else:
                 label = str(label)
             
-            #Write the value on the left and a dotted line
-            self.graph.string(self.fontsize, (int(self.border / 3), y1-8), label + "%",self.black)
+            #Write the value on the left and a dotted line. Disabled string in thin images
+            #self.graph.string(self.fontsize, (int(self.border / 3), y1-8), label + "%",self.black)
             self.graph.line((self.border,y1), (self.x-self.border,y1), gd.gdStyled)
             
     def FinishPicture(self,drawlabels=True):
@@ -444,14 +452,14 @@ class BaseGraph():
         #Una volta salvato il grafico, è il momento di tirarsi le storie per la dimensione delle scritte
         im = Image.open(imagefile)
         
-        #Carico i font con cui scrivere dentro l'immagine
-        myfont = ImageFont.truetype(GClib.graph_font_type, 30)
+        #Carico i font con cui scrivere dentro l'immagine. More larger font
+        myfont = ImageFont.truetype(GClib.graph_font_type, 45)
         
         #Questo oggetto mi serve per scriverci dentro
         draw = ImageDraw.Draw(im)
         
         #Determining left size point y1
-        y1 = int(round(self.y - (self.y_max - self.y_min) * self.py)) - 45
+        y1 = int(round(self.y - (self.y_max - self.y_min) * self.py)) - 60
         
         #the interval (in bp) in which labels will be drawn
         label = 1000000
@@ -462,17 +470,17 @@ class BaseGraph():
             if i < self.sequence_start:
                 continue
             
-            #Write a label in correspondance to thicks, every two "label" distance
-            if iteration % 2 == 0:
+            #Write a label in correspondance to thicks, every twenty "label" distance
+            if iteration % 20 == 0:
                 position = int(round((i - self.sequence_start) / self.scale + self.border))
                 
                 #a different X position for different label precision (1, 10, 100)
                 if i/label < 10:
-                    draw.text((position-7,y1), str(i/label), font=myfont, fill=1)
+                    draw.text((position-12,y1), str(i/label), font=myfont, fill=1)
                 elif i/label < 100:
-                    draw.text((position-15,y1), str(i/label), font=myfont, fill=1)
+                    draw.text((position-21,y1), str(i/label), font=myfont, fill=1)
                 else:
-                    draw.text((position-23,y1), str(i/label), font=myfont, fill=1)
+                    draw.text((position-28,y1), str(i/label), font=myfont, fill=1)
                     
             #Next step
             iteration += 1
@@ -480,6 +488,11 @@ class BaseGraph():
         #For the Mb text
         position = self.x - self.border/5*4
         draw.text((position+5,y1), "Mb", font=myfont, fill=1)
+        
+        #TODO: Write chromsome name
+        chrfont = ImageFont.truetype(GClib.graph_font_type, 60)
+        draw.text((self.border/4,self.y/2), self.chname, font=chrfont, fill=1)
+        
         
         #save the new figure
         im.save(imagefile)
@@ -679,13 +692,14 @@ class DrawChromosome(BaseGraph):
             y1 = self.y - (self.isochore_values[i]-self.y_min)*self.py
             self.graph.filledRectangle((self.x-self.border/5*4, y1), (self.x-self.border/5, self.y), self.colorslist[i])
         
+        #Disabled in a shorter image
         #draw labels on legend. The upper label:
-        self.graph.string(gd.gdFontGiant, (self.x-self.border/5*3, self.y - (self.isochore_values[-1]-self.y_max) * self.py + 5), self.isochore_label[-1], self.black)
-        
-        #all the remaining labels
-        for i in range(self.n_of_colors-1):
-            y1 = self.y-(self.isochore_values[i]-self.y_min) * self.py + 5
-            self.graph.string(gd.gdFontGiant, (self.x-self.border/5*3, y1), self.isochore_label[i], self.black)
+#        self.graph.string(gd.gdFontGiant, (self.x-self.border/5*3, self.y - (self.isochore_values[-1]-self.y_max) * self.py + 5), self.isochore_label[-1], self.black)
+#        
+#        #all the remaining labels
+#        for i in range(self.n_of_colors-1):
+#            y1 = self.y-(self.isochore_values[i]-self.y_min) * self.py + 5
+#            self.graph.string(gd.gdFontGiant, (self.x-self.border/5*3, y1), self.isochore_label[i], self.black)
             
         
     
