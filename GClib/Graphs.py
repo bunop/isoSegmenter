@@ -307,28 +307,6 @@ class BaseGraph():
         self.graph.fill((x1,y1),self.black)
         self.graph.string(gd.gdFontGiant,(x1-len(chname)*4,y1-8),chname,self.white);
 
-    def DrawMinMaxValues(self):
-        """Draw labels for Min and Max values"""
-        
-        if self.y_min == None or self.y_max == None:
-            raise BaseGraphError, "Max and Min y values must be defined by SetMinMaxValues"
-        
-        if self.graph == None:
-            #if GD image isn't instantiated yed, I couldn't instantiate colors
-            raise BaseGraphError, "InitPicture must be called before this method"
-
-        y1 = int(round(self.y - (self.y_max - self.y_min) * self.py))
-        
-        #pay attention to self.y_max and self.y_min
-        if type(self.y_max) == types.FloatType or type(self.y_min) == types.FloatType:
-            self.graph.string(self.fontsize,(int(self.border / 4), y1-8), "%.3f" %(self.y_max) + "%", self.black)
-            self.graph.string(self.fontsize,(int(self.border / 4),self.y-7), "%.3f" %(self.y_min) + "%",self.black)
-            
-        else:
-            #Si suppone che siano degli interi o stringhe            
-            self.graph.string(self.fontsize,(int(self.border / 3),y1-8),str(self.y_max)+"%",self.black)
-            self.graph.string(self.fontsize,(int(self.border / 3),self.y-7),str(self.y_min)+"%",self.black)
-
     def DrawXaxes(self, drawlabels=False):
         """Draw X axis and graduated scale"""
         
@@ -393,10 +371,34 @@ class BaseGraph():
             position = self.x - self.border/5*4
             self.graph.string(self.fontsize,(position,y1-30),"Mb",self.black)
         
-    def DrawHorizontalLines(self):
+    def DrawHorizontalLines(self, drawlabels=True):
         """Draw Horyzontal lines and their value on the left of the graph"""
         
-        #per le linee
+        if self.y_min == None or self.y_max == None:
+            raise BaseGraphError, "Max and Min y values must be defined by SetMinMaxValues"
+        
+        if self.graph == None:
+            #if GD image isn't instantiated yed, I couldn't instantiate colors
+            raise BaseGraphError, "InitPicture must be called before this method"
+        
+        y1 = int(round(self.y - (self.y_max - self.y_min) * self.py))
+        
+        y_max, y_min = None, None
+        
+        #pay attention to self.y_max and self.y_min
+        if type(self.y_max) == types.FloatType or type(self.y_min) == types.FloatType:
+            y_max = "%.3f" %(self.y_max) + "%"
+            y_min = "%.3f" %(self.y_min) + "%"
+            
+        else:
+            y_max = str(self.y_max)+"%"
+            y_min = str(self.y_min)+"%"
+            
+        if drawlabels == True:
+            self.graph.string(self.fontsize,(int(self.border / 3), y1-8), y_max, self.black)
+            self.graph.string(self.fontsize,(int(self.border / 3),self.y-7), y_min, self.black)
+        
+        #this is the line style
         self.graph.setStyle((self.black, gd.gdTransparent))
         
         #Sono le percentuali a SX dell'immagine e le loro linee orizzontali (nuova versione)
@@ -410,17 +412,18 @@ class BaseGraph():
             else:
                 label = str(label)
             
-            #Write the value on the left and a dotted line
-            self.graph.string(self.fontsize, (int(self.border / 3), y1-8), label + "%",self.black)
             self.graph.line((self.border,y1), (self.x-self.border,y1), gd.gdStyled)
+            
+            if drawlabels == True:
+                #Write the value on the left and a dotted line
+                self.graph.string(self.fontsize, (int(self.border / 3), y1-8), label + "%",self.black)
             
     def FinishPicture(self,drawlabels=True):
         """Call functions for x,y axis and horizontal lines. Drawlabels flag specifies
         if labels are drawn or not"""
         
-        self.DrawMinMaxValues()
         self.DrawXaxes(drawlabels=drawlabels)
-        self.DrawHorizontalLines()
+        self.DrawHorizontalLines(drawlabels=drawlabels)
         
     def EnlargeLabels(self):
         """Enlarge labels in picture"""
@@ -482,6 +485,37 @@ class BaseGraph():
         position = self.x - self.border/5*4
         draw.text((position+5,y1), "Mb", font=myfont, fill=1)
         
+        #Now write the percentage labels:
+        y1 = int(round(self.y - (self.y_max - self.y_min) * self.py))
+        
+        y_max, y_min = None, None
+        
+        #pay attention to self.y_max and self.y_min
+        if type(self.y_max) == types.FloatType or type(self.y_min) == types.FloatType:
+            y_max = "%.3f" %(self.y_max) + "%"
+            y_min = "%.3f" %(self.y_min) + "%"
+            
+        else:
+            y_max = str(self.y_max)+"%"
+            y_min = str(self.y_min)+"%"
+        
+        #Draw max and min values with PIL
+        draw.text((int(self.border / 3)-8, y1-12), y_max, font=myfont, fill=1)
+        draw.text((int(self.border / 3)-8, self.y-12), y_min, font=myfont, fill=1)
+         
+        #Sono le percentuali a SX dell'immagine e le loro linee orizzontali (nuova versione)
+        for i in range(self.n_of_h_lines):
+            y1 = int(round(self.y - (self.h_lines[i]-self.y_min) * self.py))
+            label = self.h_lines[i]
+            
+            if type(label) == types.FloatType:
+                label = "%.3f" %(label)
+            
+            else:
+                label = str(label)
+            
+            draw.text((int(self.border / 3)-8, y1-12), label + "%", font=myfont, fill=1)
+            
         #save the new figure
         im.save(imagefile)
 
@@ -835,7 +869,6 @@ def test_BaseGraph(filename="test.png"):
     graph.SetHorizontalLines(5)
     graph.SetColorsList(colorbyclass=True)
     graph.DrawChName("21")
-    graph.DrawMinMaxValues()
     graph.DrawXaxes(drawlabels=True)
     graph.DrawHorizontalLines()
     

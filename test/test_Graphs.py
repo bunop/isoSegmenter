@@ -187,21 +187,6 @@ class test_BaseGraph(unittest.TestCase):
         #Draw Chromosome name
         self._test_BaseGrap.DrawChName("21")
         
-    def test_DrawMinMaxValues(self):
-        """Testing DrawMinMaxValues"""
-        
-        #testing methods before SetMaxMinValues
-        self.assertRaises(GClib.Graphs.BaseGraphError, self._test_BaseGrap.SetColorsList)
-        
-        #testing methods before InitPicture
-        self._test_BaseGrap.SetMinMaxValues(65,30)
-        self.assertRaises(GClib.Graphs.BaseGraphError, self._test_BaseGrap.SetColorsList)
-        
-        #Instatiating the class
-        self._test_BaseGrap.SetSequenceLength(1e6)
-        self._test_BaseGrap.InitPicture()
-        self._test_BaseGrap.DrawMinMaxValues()
-        
     def test_DrawXaxes(self):
         """Testing DrawXaxis"""
         
