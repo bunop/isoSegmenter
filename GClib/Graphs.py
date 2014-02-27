@@ -54,7 +54,7 @@ class BaseGraph():
     def __init__(self, sequence_start=0):
         #default values in points (pixel)
         self.scale = 30000*4 #17500 #higher values shrink images
-        self.border = 90 #the white space on the left and on the right of the figure
+        self.border = 100 #the white space on the left and on the right of the figure
         self.top = 70 #the upper space before the X axis
         self.y = 250 #the height of the graphic area (in which isocore are printed, not image height)
         
@@ -305,35 +305,8 @@ class BaseGraph():
         #Setting a class attribute: draw chromosome name by EnlargeLabel
         self.chname = chname
         
-#        #believe in these values. I could express these values in points, but when you
-#        #will change self.scale, all these values have to be changed. So express all the
-#        #coordinates relying on self parameters
-#        [x1,y1] = [self.border / 6 * 3, int(self.top/6*3)] #the center of the label
-#        self.graph.arc((x1,y1), (55,40), 0, 360, self.black)
-#        self.graph.fill((x1,y1),self.black)
-#        self.graph.string(gd.gdFontGiant,(x1-len(chname)*4,y1-8),chname,self.white);
+        #Chromosome name will be drawn by EnlargeLabels function
 
-    def DrawMinMaxValues(self):
-        """Draw labels for Min and Max values"""
-        
-        if self.y_min == None or self.y_max == None:
-            raise BaseGraphError, "Max and Min y values must be defined by SetMinMaxValues"
-        
-        if self.graph == None:
-            #if GD image isn't instantiated yed, I couldn't instantiate colors
-            raise BaseGraphError, "InitPicture must be called before this method"
-
-        y1 = int(round(self.y - (self.y_max - self.y_min) * self.py))
-        
-        #pay attention to self.y_max and self.y_min (disabled)
-#        if type(self.y_max) == types.FloatType or type(self.y_min) == types.FloatType:
-#            self.graph.string(self.fontsize,(int(self.border / 4), y1-8), "%.3f" %(self.y_max) + "%", self.black)
-#            self.graph.string(self.fontsize,(int(self.border / 4),self.y-7), "%.3f" %(self.y_min) + "%",self.black)
-#            
-#        else:
-#            #Si suppone che siano degli interi o stringhe            
-#            self.graph.string(self.fontsize,(int(self.border / 3),y1-8),str(self.y_max)+"%",self.black)
-#            self.graph.string(self.fontsize,(int(self.border / 3),self.y-7),str(self.y_min)+"%",self.black)
 
     def DrawXaxes(self, drawlabels=False):
         """Draw X axis and graduated scale"""
@@ -401,10 +374,34 @@ class BaseGraph():
             position = self.x - self.border/5*4
             self.graph.string(self.fontsize,(position,y1-30),"Mb",self.black)
         
-    def DrawHorizontalLines(self):
+    def DrawHorizontalLines(self, drawlabels=True):
         """Draw Horyzontal lines and their value on the left of the graph"""
         
-        #per le linee
+        if self.y_min == None or self.y_max == None:
+            raise BaseGraphError, "Max and Min y values must be defined by SetMinMaxValues"
+        
+        if self.graph == None:
+            #if GD image isn't instantiated yed, I couldn't instantiate colors
+            raise BaseGraphError, "InitPicture must be called before this method"
+        
+        y1 = int(round(self.y - (self.y_max - self.y_min) * self.py))
+        
+        y_max, y_min = None, None
+        
+        #pay attention to self.y_max and self.y_min
+        if type(self.y_max) == types.FloatType or type(self.y_min) == types.FloatType:
+            y_max = "%.3f" %(self.y_max) + "%"
+            y_min = "%.3f" %(self.y_min) + "%"
+            
+        else:
+            y_max = str(self.y_max)+"%"
+            y_min = str(self.y_min)+"%"
+            
+        if drawlabels == True:
+            self.graph.string(self.fontsize,(int(self.border / 3), y1-8), y_max, self.black)
+            self.graph.string(self.fontsize,(int(self.border / 3),self.y-7), y_min, self.black)
+        
+        #this is the line style
         self.graph.setStyle((self.black, gd.gdTransparent))
         
         #Sono le percentuali a SX dell'immagine e le loro linee orizzontali (nuova versione)
@@ -418,17 +415,19 @@ class BaseGraph():
             else:
                 label = str(label)
             
-            #Write the value on the left and a dotted line. Disabled string in thin images
-            #self.graph.string(self.fontsize, (int(self.border / 3), y1-8), label + "%",self.black)
+
             self.graph.line((self.border,y1), (self.x-self.border,y1), gd.gdStyled)
+            
+            if drawlabels == True:
+                #Write the value on the left and a dotted line
+                self.graph.string(self.fontsize, (int(self.border / 3), y1-8), label + "%",self.black)
             
     def FinishPicture(self,drawlabels=True):
         """Call functions for x,y axis and horizontal lines. Drawlabels flag specifies
         if labels are drawn or not"""
         
-        self.DrawMinMaxValues()
         self.DrawXaxes(drawlabels=drawlabels)
-        self.DrawHorizontalLines()
+        self.DrawHorizontalLines(drawlabels=drawlabels)
         
     def EnlargeLabels(self):
         """Enlarge labels in picture"""
@@ -449,7 +448,7 @@ class BaseGraph():
         #Setting the proper attribute to file position
         self.imagefile = imagefile
         
-        #Una volta salvato il grafico, è il momento di tirarsi le storie per la dimensione delle scritte
+        #Open the temporary image in order to modify it
         im = Image.open(imagefile)
         
         #Carico i font con cui scrivere dentro l'immagine. More larger font
@@ -489,11 +488,12 @@ class BaseGraph():
         position = self.x - self.border/5*4
         draw.text((position+5,y1), "Mb", font=myfont, fill=1)
         
-        #TODO: Write chromsome name
-        chrfont = ImageFont.truetype(GClib.graph_font_type, 60)
-        draw.text((self.border/4,self.y/2), self.chname, font=chrfont, fill=1)
-        
-        
+        #Write chromosome name if necessary
+        if self.chname != None:
+            #Draw chromosome name on the left side of the graph, instead of percentage values
+            chrfont = ImageFont.truetype(GClib.graph_font_type, 60)
+            draw.text((self.border/4,self.y/2), self.chname, font=chrfont, fill=1)
+    
         #save the new figure
         im.save(imagefile)
 
@@ -680,9 +680,11 @@ class DrawChromosome(BaseGraph):
         
         #draw a colored box
         y1 = self.y - (self.y_max - self.y_min) * self.py
+        x1 = self.x-self.border/5*4 +10
+        x2 = x1 + 40
         
         #this is the upper box in legend
-        self.graph.filledRectangle((self.x-self.border/5*4, y1), (self.x-self.border/5, self.y), self.colorslist[-1])
+        self.graph.filledRectangle((x1, y1), (x2, self.y), self.colorslist[-1])
         
         #for all the other boxes
         indexes = range(self.n_of_colors-1)
@@ -690,16 +692,7 @@ class DrawChromosome(BaseGraph):
         
         for i in indexes:
             y1 = self.y - (self.isochore_values[i]-self.y_min)*self.py
-            self.graph.filledRectangle((self.x-self.border/5*4, y1), (self.x-self.border/5, self.y), self.colorslist[i])
-        
-        #Disabled in a shorter image
-        #draw labels on legend. The upper label:
-#        self.graph.string(gd.gdFontGiant, (self.x-self.border/5*3, self.y - (self.isochore_values[-1]-self.y_max) * self.py + 5), self.isochore_label[-1], self.black)
-#        
-#        #all the remaining labels
-#        for i in range(self.n_of_colors-1):
-#            y1 = self.y-(self.isochore_values[i]-self.y_min) * self.py + 5
-#            self.graph.string(gd.gdFontGiant, (self.x-self.border/5*3, y1), self.isochore_label[i], self.black)
+            self.graph.filledRectangle((x1, y1), (x2, self.y), self.colorslist[i])
             
         
     
@@ -848,7 +841,6 @@ def test_BaseGraph(filename="test.png"):
     graph.SetHorizontalLines(5)
     graph.SetColorsList(colorbyclass=True)
     graph.DrawChName("21")
-    graph.DrawMinMaxValues()
     graph.DrawXaxes(drawlabels=True)
     graph.DrawHorizontalLines()
     

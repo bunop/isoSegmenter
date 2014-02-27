@@ -666,13 +666,17 @@ class Chromosome:
         #A flag to determine if I have to close the file (don't close stdout)
         flag_close = False
         
+        #The output filename
+        filename = None
+        
         if type(outfile) == types.StringType:
             #testing for file existance
             if os.path.exists(outfile):
                 raise ChromosomeError, "File %s exists. I cannot overwrite it"
                 
             #else
-            outfile = open(outfile, "w")
+            filename = outfile
+            outfile = open(filename, "w")
             
             #I have to close this file once I've finished
             flag_close = True
@@ -680,7 +684,7 @@ class Chromosome:
         elif type(outfile) != types.FileType:
             raise ChromosomeError, "I don't know ho to handle %s : %s" %(outfile, type(outfile))
             
-        return outfile, flag_close
+        return filename, outfile, flag_close
         
     def _handle_input(self,infile):
         """This function open a file for reading"""
@@ -708,7 +712,7 @@ class Chromosome:
             raise ChromosomeError, "Gaps must be calculated to call this function"
             
         #Assuming to work with a open filehandle
-        outfile, flag_close = self._handle_output(outfile)
+        filename, outfile, flag_close = self._handle_output(outfile)
         
         #Here, I must have an open file type
         csv_writer = csv.writer(outfile, lineterminator="\n")
@@ -719,7 +723,9 @@ class Chromosome:
             outfile.flush()
             
         #closing file if necessary
-        if flag_close == True: outfile.close()
+        if flag_close == True:
+            outfile.close()
+            GClib.logger.log(1, "Gaps CSV file written in %s" %(filename))
     
     def LoadGaps(self, infile):
         """Load Gaps from file into chromosome istance. You can pass also a filename
@@ -753,7 +759,7 @@ class Chromosome:
             raise ChromosomeError, "Windows must be calculated with ValueWindows to call this function"
         
         #Assuming to work with a open filehandle
-        outfile, flag_close = self._handle_output(outfile)
+        filename, outfile, flag_close = self._handle_output(outfile)
         
         #Here, I must have an open file type
         csv_writer = csv.writer(outfile, lineterminator="\n")
@@ -770,7 +776,9 @@ class Chromosome:
             outfile.flush()
             
         #closing file if necessary
-        if flag_close == True: outfile.close()  
+        if flag_close == True:
+            outfile.close()
+            GClib.logger.log(1, "Windows CSV file written in %s" %(filename))
         
     def LoadWindows(self, infile):
         """Load windows from file into chromosome istance. Filename or open file 
@@ -814,7 +822,7 @@ class Chromosome:
             raise ChromosomeError, "Isochores must be calculated to call this function"
         
         #Assuming to work with a open filehandle
-        outfile, flag_close = self._handle_output(outfile)
+        filename, outfile, flag_close = self._handle_output(outfile)
         
         #Here, I must have an open file type
         csv_writer = csv.writer(outfile, lineterminator="\n")
@@ -836,7 +844,9 @@ class Chromosome:
             outfile.flush()
             
         #closing file if necessary
-        if flag_close == True: outfile.close()
+        if flag_close == True:
+            outfile.close()
+            GClib.logger.log(1, "Isochores CSV file written in %s" %(filename))
         
     def LoadIsochores(self, infile):
         """Load isochores from file into chromosome istance. Filename or open file 
@@ -1052,7 +1062,8 @@ class Families:
                 raise FamilyError, "File %s exists. I cannot overwrite it"
                 
             #else
-            outfile = open(outfile, "w")
+            filename = outfile
+            outfile = open(filename, "w")
             
             #I have to close this file once I've finished
             flag_close = True
@@ -1060,7 +1071,7 @@ class Families:
         elif type(outfile) != types.FileType:
             raise FamilyError, "I don't know ho to handle %s : %s" %(outfile, type(outfile))
             
-        return outfile, flag_close
+        return filename, outfile, flag_close
     
     def DumpFamilies(self, outfile=sys.stdout):
         """Dumps families in a CSV file"""
@@ -1069,7 +1080,7 @@ class Families:
             raise FamilyError, "Families must be calculated to call this function"
             
         #Assuming to work with a open filehandle
-        outfile, flag_close = self._handle_output(outfile)
+        filename, outfile, flag_close = self._handle_output(outfile)
         
         #Here, I must have an open file type
         csv_writer = csv.writer(outfile, lineterminator="\n")
@@ -1080,7 +1091,9 @@ class Families:
             outfile.flush()
             
         #closing file if necessary
-        if flag_close == True: outfile.close()
+        if flag_close == True:
+            outfile.close()
+            GClib.logger.log(1, "Families CSV file written in %s" %(filename))
 
 #A function to define the class of a sequence window
 def CalcClass(GClevel):
