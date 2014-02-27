@@ -30,6 +30,7 @@ Main program for Isochore Definition
 """
 
 import os
+import csv
 import argparse
 
 #Modules for dealing with GC content and graph
@@ -37,6 +38,9 @@ import GClib
 import GClib.Graphs
 import GClib.Utility
 import GClib.Elements
+
+#To define ReadReference2006 function
+from GClib.Elements import Isochore, CalcClass
 
 parser = argparse.ArgumentParser(description='Find Isochores in sequences')
 parser.add_argument('-i', '--infile', type=str, required=True, help="Input Fasta File (even compressed)")
@@ -57,13 +61,61 @@ args = parser.parse_args()
 
 #TODO: Change GAP tolerance
 #TODO: Setting sequence start and end
-#TODO: Draw Genome Reasearch 2006 isochore profile
 #TODO: Draw window
 #TODO: Write GAP CSV file
 #TODO: Change isochore class boundaries
 #TODO: Switch to Isochore Profile and Isochore Rectangle Boxes
 #TODO: Calculating a determined chromosome from a multi fasta file
 
+#A function to read Genome Reasearch 2006 isochore profile. Will override Chromosome.LoadIsochore function
+def ReadReference2006(self, filename="Supp_Table_2006.csv", chrom="21"):
+    """Read the 2006 reference isochore table and instantiate a Chromosome with
+    isochores"""
+    
+    #debug
+    GClib.logger.log(1, "Loading %s reference file. Scan for chromosome %s" %(filename, chrom))
+    
+    filein = open(filename, "rU")
+    csvin = csv.reader(filein)
+    
+    #resetting isochores
+    self.isochores = []
+    
+    for line in csvin:
+        #se la prima colonna coincide con il cromosoma specificato, leggo i dati
+        #altrimenti continuo. Devo però agire solo sulle colonne dove ho un cromosoma
+        try:
+            if line[0] != str(chrom):
+                #in questo caso il cromosoma non mi interessa
+                continue
+        
+        except ValueError:
+            #in questo caso ho a che fare con una riga vuota o di intestazione
+            continue
+        
+        #le colonne che mi servono sono la [2], [3], [5]. Attenzione alle Mb
+        start = int(round(float(line[2]) * 1000000))
+        end = int(round(float(line[3]) * 1000000))
+        avg_GClevel = round(float(line[5]),6)
+        stddev_GClevel = round(float(line[7]),6)
+        
+        #Instantiating a new isochore
+        isochore = Isochore()
+        isochore.start = start - 1 #beware to the 1 based coordinate
+        isochore.end = end
+        isochore.size = end-start
+        isochore.Class = CalcClass(avg_GClevel)
+        isochore.avg_GClevel = avg_GClevel
+        isochore.stddev_GClevel = stddev_GClevel
+        
+        #adding this isochore to isochore list
+        self.isochores += [isochore]
+        
+    #Closing input file
+    filein.close()
+    
+#Setting my function to Isochore Class
+GClib.Elements.Chromosome.LoadIsochores = ReadReference2006
 
 if __name__ == "__main__":
     #To continue work, I need almost one file to write
@@ -135,6 +187,12 @@ if __name__ == "__main__":
     #Instantiating Chromosome Class with seqRecord object (gaps are determined automatically)
     Chrom = GClib.Elements.Chromosome(seqRecord)
     
+    #Instantiate a Chromosome class for 2006 isochore reference
+    Ref2006 = GClib.Elements.Chromosome()
+    
+    #TODO: define the possibility to specify the chromosome to analyze
+    Ref2006.LoadIsochores()
+    
     #Segmenting Sequence in windows
     if args.window_size == GClib.WINDOW_SIZE:
         #This call only to print the warning string when we use the default window size
@@ -195,6 +253,9 @@ if __name__ == "__main__":
         
         #Draw the correct values
         Graph.DrawIsochoreRectangles(isochores=Chrom.isochores)
+        
+        #Draw the reference profile
+        Graph.DrawIsochoreProfile(isochores=Ref2006.isochores)
         
         #Draw legend or not
         if args.draw_legend == True:
