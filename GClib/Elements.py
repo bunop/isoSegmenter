@@ -727,6 +727,11 @@ class Chromosome:
         
         #Now we could two distinct isochore with the same class, and we want to merge them
         for i in range(len(self.isochores)-2,0,-1):
+            #After windows shuffling, I could find two adjacent gaps
+            if self.isochores[i].Class == "gap":
+                GClib.logger.log(5, "Ignoring %s" %(self.isochores[i]))
+                continue
+                
             if self.isochores[i].Class == self.isochores[i+1].Class:
                 #debug
                 GClib.logger.log(4, "Merging %s to %s" %(self.isochores[i],self.isochores[i+1]))
