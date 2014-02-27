@@ -35,9 +35,11 @@ import re
 import csv
 import sys
 import Bio
+import copy
 import numpy
 import GClib
 import types
+import random
 import Bio.SeqUtils
 
 
@@ -47,6 +49,7 @@ __author__ = "Paolo Cozzi <paolo.cozzi@tecnoparco.org>"
 
 #Exceptions for each methods definitions
 class ElementError(Exception) : pass
+class GapError(ElementError): pass
 class WindowError(ElementError) : pass
 class IsochoreError(Exception) : pass
 class ChromosomeError(Exception) : pass
@@ -128,6 +131,31 @@ class Window(Element):
         self.GClevel = GClevel
         self.Class = CalcClass(GClevel)
 
+#A class to deal shuffled windows
+class ShuffledWindow(Window):
+    """The Shuffled Window Class"""
+    
+    def __init__(self, start, end, window):
+        """Define a new SuffledWindow istance from a Window istance. The new windows
+        positions are needed"""
+        
+        #pay attention to shuffled gap size
+        test_size = end-start
+        if test_size != window.size:
+            raise WindowError, "ShuffledWindow size is different from provided window size (%s != %s)" %(test_size, window.size)
+        
+        #Define a new istance like a window one
+        Window.__init__(self, start, end, GClevel=window.GClevel)
+        
+        #And setting the old genome positions
+        self.ref_start = window.start
+        self.ref_end = window.end
+        
+    def __str__(self):
+        """Print Window in 0-Based coordinates"""
+        
+        return "ShuffledWindow: start:%s,end:%s,size:%s,GClevel:%.6f,Class:%s (ref_start:%s,ref_end:%s)" %(self.start, self.end, self.size, self.GClevel, self.Class, self.ref_start, self.ref_end)
+
 #need to define a window class? (which doesn't contain values like average GC, and so on)?
 
 #A class for dealing isochores
@@ -179,8 +207,8 @@ class Isochore():
         non overlapped"""
         
         #Add only a instatiated Window Element
-        if window.__class__ != Window or window.Class == None:
-            raise IsochoreError, "You can add only an instantiated window to an isochore with AddWindow"
+        if (window.__class__ != Window and window.__class__ != ShuffledWindow) or window.Class == None:
+            raise IsochoreError, "You can add only an instantiated window to an isochore with AddWindow (%s, %s)" %(self.__str__(), window.__str__())
         
         #Raising an exception when adding a non contiguous window. This condition
         #ensures that no windows already inside this isochore will be added. Note that
@@ -273,7 +301,31 @@ class Gap(Element):
         
         return "Gap: start:%s,end:%s,size:%s,Class:%s" %(self.start, self.end, self.size, self.Class)
     
-
+#A class to deal shuffled gaps
+class ShuffledGap(Gap):
+    """The Shuffled Gap Class"""
+    
+    def __init__(self, start, end, gap):
+        """Define a new SuffledGap istance from a Gap istance. The new gap
+        positions are needed"""
+        
+        #pay attention to shuffled gap size
+        test_size = end-start
+        if test_size != gap.size:
+            raise GapError, "ShuffledGap size is different from provided gap size (%s != %s)" %(test_size, gap.size)
+        
+        #Define a new istance like a window one
+        Gap.__init__(self, start, end)
+        
+        #And setting the old genome positions
+        self.ref_start = gap.start
+        self.ref_end = gap.end
+        
+    def __str__(self):
+        """Print Gap in 0-Based coordinates"""
+        
+        return "ShuffledGap: start:%s,end:%s,size:%s,Class:%s (ref_start:%s,ref_end:%s)" %(self.start, self.end, self.size, self.Class, self.ref_start, self.ref_end)
+        
 #A generic chromosome Class
 class Chromosome:
     """A class to deal with chromosomes. This class need a Bio.Seq object to work
@@ -502,7 +554,54 @@ class Chromosome:
             
             #update start coordinate for next step
             start = end
+    
+    def ShuffleWindows(self):
+        """A function for shuffling windows"""
         
+        if self.windows == []:
+            raise ChromosomeError, "Windows must be calculated to call this function"
+        
+        #debug
+        GClib.logger.log(2, "Starting window shuffling")
+        
+        #Where I will put the suffled windows.
+        shuffled_windows = []
+        
+        #The chromosome start and end positions. Start is first window start, and 
+        #end is last window end
+        chrom_start = self.windows[0].start
+        chrom_end = self.windows[-1].end
+        
+        #shuffling windows
+        windows = copy.deepcopy(self.windows)
+        random.shuffle(windows)
+        start = chrom_start
+        
+        for window in windows:
+            end = start + window.size
+            Class = window.Class
+            
+            if Class == "gap":
+                shuffled_window = ShuffledGap(start, end, window)
+            else:
+                shuffled_window = ShuffledWindow(start, end, window)
+                
+            #Adding Shuffled instance to shuffled windows list
+            shuffled_windows += [shuffled_window]
+            
+            #fixing start coordinates
+            start = end
+            
+        #Check cromosome start and end coordinates
+        if chrom_end != shuffled_windows[-1].end:
+            raise ChromosomeError, "Chromosome end position doesn't match"
+            
+        #Setting the new windows value
+        self.windows = shuffled_windows
+        
+        #debug
+        GClib.logger.log(2, "Windows shuffling finished")
+    
     def FindIsochores(self):
         """A function for calculating isochores for this chromosome. Windows must be
         calculated to call this function (call ValueWindows())"""

@@ -38,7 +38,7 @@ import GClib.Graphs
 import GClib.Utility
 import GClib.Elements
 
-parser = argparse.ArgumentParser(description='Find Isochores in sequences')
+parser = argparse.ArgumentParser(description='Shuffle windows positions and find Isochores in sequences')
 parser.add_argument('-i', '--infile', type=str, required=True, help="Input Fasta File (even compressed)")
 parser.add_argument('-o', '--outfile', type=str, required=False, help="Output isochores CSV file")
 parser.add_argument('-g', '--graphfile', type=str, required=False, help="Output graph filename (PNG)")
@@ -136,6 +136,9 @@ if __name__ == "__main__":
         #Call valuewindos with user defined window size
         Chrom.ValueWindows(window_size=args.window_size, From=args.sequence_start)
     
+    #Shuffle windows positions
+    Chrom.ShuffleWindows()
+    
     #Writing windows in a file (if I need it)
     if args.windowfile != None:
         Chrom.DumpWindows(args.windowfile)
@@ -159,11 +162,11 @@ if __name__ == "__main__":
         Graph.SetColorsList(colorbyclass=True)
         
         #Grep the correct values
-        Graph.DrawIsochoreRectangles(isochores=Chrom.isochores)
+        #Graph.DrawIsochoreRectangles(isochores=Chrom.isochores)
         
         #TODO: make an option to draw windows
         #To draw window instead of isochores. 
-        #Graph.DrawWindowRectangles(windows=Chrom.windows)
+        Graph.DrawWindowRectangles(windows=Chrom.windows)
         
         #Draw legend or not
         if args.draw_legend == True:
