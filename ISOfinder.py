@@ -44,6 +44,7 @@ parser.add_argument('-o', '--outfile', type=str, required=False, help="Output is
 parser.add_argument('-g', '--graphfile', type=str, required=False, help="Output graph filename (PNG)")
 parser.add_argument('-w', '--windowfile', type=str, required=False, help="Output windows CSV file")
 parser.add_argument('-v', '--verbose', action="count", required=False, default=0, help="Verbosity level")
+parser.add_argument('--windowgraph', type=str, required=False, help="Output windows Graph file")
 parser.add_argument('--draw_legend', action='store_true', help="Draw legend on the right side of the image")
 parser.add_argument('--force_overwrite', action='store_true', help="Force overwrite")
 parser.add_argument('--sequence_start', type=int, required=False, default=1, help="Start segmentation from this position (1-based coordinates)")
@@ -54,7 +55,6 @@ args = parser.parse_args()
 #debug
 #print args
 
-#TODO: Setting windows_size
 #TODO: Change GAP tolerance
 #TODO: Setting sequence start and end
 #TODO: Draw Genome Reasearch 2006 isochore profile
@@ -63,7 +63,7 @@ args = parser.parse_args()
 #TODO: Change isochore class boundaries
 #TODO: Switch to Isochore Profile and Isochore Rectangle Boxes
 #TODO: Calculating a determined chromosome from a multi fasta file
-#TODO: set the possibility to bypass the isochore file creation (only a graph)
+
 
 if __name__ == "__main__":
     #To continue work, I need almost one file to write
@@ -99,6 +99,14 @@ if __name__ == "__main__":
         else:
             #remove the file before calculation
             os.remove(args.windowfile)
+        
+    #Checking for window graph file existance
+    if args.windowgraph != None and os.path.exists(args.windowgraph):
+        if args.force_overwrite == False:
+            raise Exception, "file %s exists!!!" %(args.windowgraph)
+        else:
+            #remove the file before calculation
+            os.remove(args.windowgraph)
         
     
     #sequence_start can't be negative
@@ -142,7 +150,34 @@ if __name__ == "__main__":
     #Writing windows in a file (if I need it)
     if args.windowfile != None:
         Chrom.DumpWindows(args.windowfile)
+    
+    #Writing the window graph file, if is needed
+    if args.windowgraph != None:
+        #Instantiating DrawChromosome Class. Look at sequence start (0-based sequence start, this has been fixed in the top of this main block)
+        Graph = GClib.Graphs.DrawChromosome(sequence_start=args.sequence_start)
         
+        #Fixing appropriate values
+        Graph.SetSequenceLength(Chrom.size)
+        Graph.InitPicture()
+        Graph.SetHorizontalLines([37, 41, 46, 53])
+        Graph.SetColorsList(colorbyclass=True)
+        
+        #Draw the correct values
+        Graph.DrawWindowRectangles(windows=Chrom.windows)
+        
+        #Draw legend or not
+        if args.draw_legend == True:
+            Graph.DrawLegend()
+            
+        #Draw ChName
+        if args.draw_chname != None:
+            Graph.DrawChName(args.draw_chname)
+        
+        #Finishing picture
+        Graph.FinishPicture(drawlabels=False)
+        Graph.EnlargeLabels()
+        Graph.SaveFigure(args.windowgraph)
+
     #Finding Isochores. This program tries to segmenting genome into isochores, and so this calculation is always done
     Chrom.FindIsochores()
     
@@ -161,12 +196,8 @@ if __name__ == "__main__":
         Graph.SetHorizontalLines([37, 41, 46, 53])
         Graph.SetColorsList(colorbyclass=True)
         
-        #Grep the correct values
-        #Graph.DrawIsochoreRectangles(isochores=Chrom.isochores)
-        
-        #TODO: make an option to draw windows
-        #To draw window instead of isochores. 
-        Graph.DrawWindowRectangles(windows=Chrom.windows)
+        #Draw the correct values
+        Graph.DrawIsochoreRectangles(isochores=Chrom.isochores)
         
         #Draw legend or not
         if args.draw_legend == True:
