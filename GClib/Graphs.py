@@ -665,6 +665,15 @@ class DrawChromosome(BaseGraph):
                 color = self.GetColorByGClevel(getattr(element, attribute))
                 y1 = int(self.y - (getattr(element, attribute)-self.y_min) * self.py)
                 
+                #Warning when drawing objects outside max and min values. 
+                #getattr(element, attribute) returns GClevel of windows or isochores
+                #depending on the type of the class
+                if getattr(element, attribute) > self.y_max:
+                    GClib.logger.err(1, "Element drawn outside max values (%s > %s). Increase picture max value" %(getattr(element, attribute), self.y_max))
+                    
+                if getattr(element, attribute) < self.y_min:
+                    GClib.logger.err(1, "Element drawn outside min values (%s < %s). Decrease picture min value" %(getattr(element, attribute), self.y_min))
+                
                 #draw a colored filled rectangle
                 self.graph.filledRectangle((x1,y1), (x2,y2), color)
                 
