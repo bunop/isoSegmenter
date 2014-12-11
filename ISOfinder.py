@@ -43,11 +43,12 @@ parser.add_argument('-i', '--infile', type=str, required=True, help="Input Fasta
 parser.add_argument('-o', '--outfile', type=str, required=False, help="Output isochores CSV file")
 parser.add_argument('-g', '--graphfile', type=str, required=False, help="Output graph filename (PNG)")
 parser.add_argument('-w', '--windowfile', type=str, required=False, help="Output windows CSV file")
-parser.add_argument('-v', '--verbose', action="count", required=False, default=1, help="Verbosity level")
+parser.add_argument('-v', '--verbose', action="count", required=False, default=0, help="Verbosity level")
 parser.add_argument('--windowgraph', type=str, required=False, help="Output windows Graph file")
 parser.add_argument('--draw_legend', action='store_true', help="Draw legend on the right side of the image")
 parser.add_argument('--force_overwrite', action='store_true', help="Force overwrite")
 parser.add_argument('--sequence_start', type=int, required=False, default=1, help="Start segmentation from this position (1-based coordinates)")
+parser.add_argument('--max_length', type=int, required=False, default=None, help="Scan for isochores until for this dimension in bp")
 parser.add_argument('--draw_chname', type=str, required=False, default=None, help="Draw chromosome name in figure")
 parser.add_argument('--window_size', type=int, required=False, default=GClib.WINDOW_SIZE, help="Set window size in bp (default: '%(default)s')")
 parser.add_argument('--y_max', type=int, required=False, default=None, help="Set max value in graph")
@@ -118,6 +119,15 @@ if __name__ == "__main__":
     #Internal coordinates are 0-based, not 1-based
     args.sequence_start -= 1
     
+    #To is the position in which isochore calculation ends. None will be threated
+    #as chromosome end position
+    To = None
+    
+    #Checking user max_length of sequence analysis
+    if args.max_length != None:
+        #Setting max_length as To coordinates, starting from sequence start
+        To = args.sequence_start + args.max_length
+    
     #Open the sequence file
     FastaFile = GClib.Utility.FastaFile(args.infile)
     
@@ -140,11 +150,11 @@ if __name__ == "__main__":
     #Segmenting Sequence in windows
     if args.window_size == GClib.WINDOW_SIZE:
         #This call only to print the warning string when we use the default window size
-        Chrom.ValueWindows(From=args.sequence_start)
+        Chrom.ValueWindows(From=args.sequence_start, To=To)
         
     else:
         #Call valuewindos with user defined window size
-        Chrom.ValueWindows(window_size=args.window_size, From=args.sequence_start)
+        Chrom.ValueWindows(window_size=args.window_size, From=args.sequence_start, To=To)
     
     #Writing windows in a file (if I need it)
     if args.windowfile != None:
@@ -168,7 +178,13 @@ if __name__ == "__main__":
             Graph.SetMinMaxValues(args.y_min, args.y_max)
         
         #Fixing appropriate values
-        Graph.SetSequenceLength(Chrom.size)
+        if args.max_length != None:
+            #SetSequencelength needs the To position (the absolute end position)
+            Graph.SetSequenceLength(To)
+        
+        else:
+            Graph.SetSequenceLength(Chrom.size)
+        
         Graph.InitPicture()
         Graph.SetHorizontalLines([37, 41, 46, 53])
         Graph.SetColorsList(colorbyclass=True)
@@ -214,7 +230,13 @@ if __name__ == "__main__":
             Graph.SetMinMaxValues(args.y_min, args.y_max)
         
         #Fixing appropriate values
-        Graph.SetSequenceLength(Chrom.size)
+        if args.max_length != None:
+            #SetSequencelength needs the To position (the absolute end position)
+            Graph.SetSequenceLength(To)
+        
+        else:
+            Graph.SetSequenceLength(Chrom.size)
+        
         Graph.InitPicture()
         Graph.SetHorizontalLines([37, 41, 46, 53])
         Graph.SetColorsList(colorbyclass=True)
