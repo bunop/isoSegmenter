@@ -1,8 +1,8 @@
 
 How to install isochoreFinder
-======================
+=============================
 
-#dependencies
+##dependencies
 
 The following programs and libraries are require to compile and run python code
 
@@ -28,15 +28,29 @@ And this will also check and resolve any dependancies. In case you are not a sys
 $ sudo apt-get install libgd2-xpm libgd2-xpm-dev libgif-dev
 ```
 
-The recommend way to install python packages is by using [pip](http://dubroy.com/blog/so-you-want-to-install-a-python-package/). In this case:
+The recommend way to install manually python packages is by using [pip](http://dubroy.com/blog/so-you-want-to-install-a-python-package/). In this case:
 
 ```
 $ pip install Pillow
 $ pip install matplotlib
 $ pip install gdmodule
 $ pip install biopython
-
 ```
+
 (or use sudo if you don't have required permissions)
 
+##installing isochoreFinder using GIT
 
+Once dependencies are satisfied, simply install isochoreFinder using git:
+
+```
+$ git clone https://github.com/bunop/isochoreFinder.git
+```
+
+To test isochoreFinder installation, enter the isochoreFinder directory and simply type
+
+```
+$ ./ISOfinder.py --help
+```
+
+If the installation is ok, you will see the help message of ISOfinder.py
