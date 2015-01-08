@@ -27,11 +27,10 @@ Created on Fri May 31 17:07:40 2013
 import os
 import csv
 import sys
+import numpy
 import tempfile
 import unittest
 import Bio.SeqUtils
-
-from numpy.numarray import mlab
 
 sys.path.append("..")
 
@@ -202,8 +201,8 @@ class test_Isochore(unittest.TestCase):
         self.assertEqual(self._test_Isochore.GClevels, [38,40])
         self.assertEqual(self._test_Isochore.start, 200000)
         self.assertEqual(self._test_Isochore.end, 400000)
-        self.assertEqual(self._test_Isochore.avg_GClevel, round(mlab.mean([38,40]),6))
-        self.assertEqual(self._test_Isochore.stddev_GClevel, round(mlab.std([38,40]),6))
+        self.assertEqual(self._test_Isochore.avg_GClevel, round(numpy.mean([38,40]),6))
+        self.assertEqual(self._test_Isochore.stddev_GClevel, round(numpy.std([38,40], ddof=1),6))
         
         #Adding a window before this element (why one can do this?)
         window = GClib.Elements.Window(start=100000, end=200000, GClevel=39)
@@ -211,8 +210,8 @@ class test_Isochore(unittest.TestCase):
         self.assertEqual(self._test_Isochore.GClevels, [38,40, 39])
         self.assertEqual(self._test_Isochore.start, 100000)
         self.assertEqual(self._test_Isochore.end, 400000)
-        self.assertEqual(self._test_Isochore.avg_GClevel, round(mlab.mean([38,40,39]),6))
-        self.assertEqual(self._test_Isochore.stddev_GClevel, round(mlab.std([38,40,39]),6))
+        self.assertEqual(self._test_Isochore.avg_GClevel, round(numpy.mean([38,40,39]),6))
+        self.assertEqual(self._test_Isochore.stddev_GClevel, round(numpy.std([38,40,39], ddof=1),6))
         
         #Adding a non contiguous window
         window = GClib.Elements.Window(start=500000, end=600000, GClevel=39)
@@ -258,8 +257,8 @@ class test_Isochore(unittest.TestCase):
         self.assertEqual(self._test_Isochore.GClevels, [38,40, 39, 39, 38, 40])
         self.assertEqual(self._test_Isochore.start, 100000)
         self.assertEqual(self._test_Isochore.end, 700000)
-        self.assertEqual(self._test_Isochore.avg_GClevel, round(mlab.mean([38,40,39, 39, 38, 40]),6))
-        self.assertEqual(self._test_Isochore.stddev_GClevel, round(mlab.std([38,40,39, 39, 38, 40]),6))
+        self.assertEqual(self._test_Isochore.avg_GClevel, round(numpy.mean([38,40,39, 39, 38, 40]),6))
+        self.assertEqual(self._test_Isochore.stddev_GClevel, round(numpy.std([38,40,39, 39, 38, 40], ddof=1),6))
         
         #Adding a non contiguous isochore
         window = GClib.Elements.Window(start=1000000, end=1100000, GClevel=39)

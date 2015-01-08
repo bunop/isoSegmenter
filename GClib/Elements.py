@@ -40,9 +40,6 @@ import GClib
 import types
 import Bio.SeqUtils
 
-
-from numpy.numarray import mlab
-
 __author__ = "Paolo Cozzi <paolo.cozzi@tecnoparco.org>"
 
 #Exceptions for each methods definitions
@@ -146,7 +143,7 @@ class Isochore():
         
         if window != None:
             self.GClevels = [window.GClevel]
-            self.avg_GClevel = round(mlab.mean(self.GClevels),6)
+            self.avg_GClevel = round(numpy.mean(self.GClevels),6)
             self.start = window.start
             self.end = window.end
             self.size = window.size
@@ -189,10 +186,10 @@ class Isochore():
             raise IsochoreError, "Windows must be contiguous to be added to current isochore"
         
         self.GClevels += [window.GClevel]
-        self.avg_GClevel = round(mlab.mean(self.GClevels),6)
+        self.avg_GClevel = round(numpy.mean(self.GClevels),6)
         
         if len(self.GClevels) > 1:
-            self.stddev_GClevel = round(mlab.std(self.GClevels),6)
+            self.stddev_GClevel = round(numpy.std(self.GClevels, ddof=1),6)
 
         #now I have to find the position of this elements
         if window.start < self.start:
@@ -229,8 +226,8 @@ class Isochore():
         self.GClevels += isochore.GClevels
         
         #calculating the isochore parameters
-        self.avg_GClevel = round(mlab.mean(self.GClevels),6)
-        self.stddev_GClevel = round(mlab.std(self.GClevels),6)
+        self.avg_GClevel = round(numpy.mean(self.GClevels),6)
+        self.stddev_GClevel = round(numpy.std(self.GClevels, ddof=1),6)
         
         if isochore.start < self.start:
             self.start = isochore.start
@@ -258,7 +255,7 @@ class Isochore():
         if isochore2 != None:
             GClevels += isochore2.GClevels
         
-        return mlab.std(GClevels)
+        return numpy.std(GClevels, ddof=1)
         
         
 class Gap(Element):
@@ -335,8 +332,17 @@ class Chromosome:
         #A gaps list
         gaps = []
         
-        #A very quick method to find gaps on chromosome
-        for match in re.finditer("N+", self.seqRecord.seq.tostring(), flags=re.IGNORECASE):
+        #handle deprecated method seq.tostring from biopython release 1.64
+        seq_str = None
+        
+        if Bio.__version__ > 1.64:
+            seq_str = str(self.seqRecord.seq)
+            
+        else:
+            seq_str = self.seqRecord.seq.tostring()
+        
+        #A very quick method to find gaps on chromosome.
+        for match in re.finditer("N+", seq_str, flags=re.IGNORECASE):
             GClib.logger.log(3, "Gap found from %s to %s" %(match.start(), match.end()))
             
             #Adding this gap to the gaps list
