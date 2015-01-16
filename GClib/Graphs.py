@@ -417,9 +417,12 @@ class BaseGraph():
         #this is the line style
         self.graph.setStyle((self.black, gd.gdTransparent))
         
-        #TODO: Fix horizontal line where max value is imposed by the user
         #Draw percentage on the rigth side and horizontal lines
         for i in range(self.n_of_h_lines):
+            #don't write a line outside y_max and y_min
+            if self.h_lines[i] > self.y_max or self.h_lines[i] < self.y_min:
+                continue
+            
             y1 = int(round(self.y - (self.h_lines[i]-self.y_min) * self.py))
             label = self.h_lines[i]
             
@@ -520,8 +523,12 @@ class BaseGraph():
         draw.text((int(self.border / 3)-8, y1-12), y_max, font=myfont, fill=1)
         draw.text((int(self.border / 3)-8, self.y-12), y_min, font=myfont, fill=1)
          
-        #Sono le percentuali a SX dell'immagine e le loro linee orizzontali (nuova versione)
+        #Draw percentage on the rigth side and horizontal lines
         for i in range(self.n_of_h_lines):
+            #don't write a line outside y_max and y_min
+            if self.h_lines[i] > self.y_max or self.h_lines[i] < self.y_min:
+                continue
+         
             y1 = int(round(self.y - (self.h_lines[i]-self.y_min) * self.py))
             label = self.h_lines[i]
             
@@ -686,13 +693,13 @@ class DrawChromosome(BaseGraph):
                 #getattr(element, attribute) returns GClevel of windows or isochores
                 #depending on the type of the class
                 if getattr(element, attribute) > self.y_max:
-                    GClib.logger.err(1, "Maximum graph point reached (%s > %s). Increase picture max value" %(getattr(element, attribute), self.y_max))
+                    GClib.logger.err(0, "Maximum graph point reached (%s > %s). Increase picture max value" %(getattr(element, attribute), self.y_max))
                     
                     #don't write a line outside graph
                     y1 = int(self.y - (self.y_max-self.y_min) * self.py)
                     
                 if getattr(element, attribute) < self.y_min:
-                    GClib.logger.err(1, "Minimum graph point reached (%s < %s). Decrease picture min value" %(getattr(element, attribute), self.y_min))
+                    GClib.logger.err(0, "Minimum graph point reached (%s < %s). Decrease picture min value" %(getattr(element, attribute), self.y_min))
                     
                     #don't write a line outside graph
                     y1 = self.y
@@ -744,7 +751,7 @@ class DrawChromosome(BaseGraph):
         
         for i in indexes:
             #don't write anything outside margins
-            if self.isochore_values[i] > self.y_max:
+            if self.isochore_values[i] > self.y_max or self.isochore_values[i] < self.y_min :
                 continue
         
             #determining where I have to draw
@@ -757,7 +764,7 @@ class DrawChromosome(BaseGraph):
         #all the remaining labels
         for i in indexes:
             #don't write anything outside margins
-            if self.isochore_values[i] > self.y_max:
+            if self.isochore_values[i] > self.y_max or self.isochore_values[i] < self.y_min:
                 continue
             
             y1 = self.y-(self.isochore_values[i]-self.y_min) * self.py + 5
