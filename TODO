@@ -1,0 +1,23 @@
+
+* Support for graphs profiles/ratio
+
+* Insert code to value DN, TN profile
+
+* Insert code for genome, window and isochore shuffling
+
+* Support for chromosome aligment
+
+* Main program ISOfinder (extension)
+
+* Graphics support for families
+
+* Main program for families
+
+* Multi FASTA sequence support
+
+* Add code to modify isochore boundaries
+
+* add code to remove or add a new isochore family
+
+* check that output filenames are different
+
