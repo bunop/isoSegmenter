@@ -51,8 +51,8 @@ parser.add_argument('--sequence_start', type=int, required=False, default=1, hel
 parser.add_argument('--max_length', type=int, required=False, default=None, help="Scan for isochores until for this dimension in bp")
 parser.add_argument('--draw_chname', type=str, required=False, default=None, help="Draw chromosome name in figure")
 parser.add_argument('--window_size', type=int, required=False, default=GClib.WINDOW_SIZE, help="Set window size in bp (default: '%(default)s')")
-parser.add_argument('--y_max', type=int, required=False, default=None, help="Set max value in graph")
-parser.add_argument('--y_min', type=int, required=False, default=None, help="Set min value in graph")
+parser.add_argument('--y_max', type=int, required=False, default=GClib.Graphs.GRAPH_Y_MAX, help="Set max value in graph (default: '%(default)s')")
+parser.add_argument('--y_min', type=int, required=False, default=GClib.Graphs.GRAPH_Y_MIN, help="Set min value in graph (default: '%(default)s')")
 args = parser.parse_args()
 
 #debug

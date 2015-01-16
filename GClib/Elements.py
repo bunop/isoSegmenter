@@ -42,6 +42,8 @@ import Bio.SeqUtils
 
 __author__ = "Paolo Cozzi <paolo.cozzi@tecnoparco.org>"
 
+from . import __copyright__, __license__, __version__
+
 #Exceptions for each methods definitions
 class ElementError(Exception) : pass
 class WindowError(ElementError) : pass

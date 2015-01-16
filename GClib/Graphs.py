@@ -35,6 +35,7 @@ import GClib
 import shutil
 import types
 import tempfile
+import GClib.Elements
 
 from PIL import Image
 from PIL import ImageDraw
@@ -44,10 +45,16 @@ from matplotlib import pyplot
 
 __author__ = "Paolo Cozzi <paolo.cozzi@tecnoparco.org>"
 
+from . import __copyright__, __license__, __version__
+
 #exception definition
 class BaseGraphError(Exception) : pass
 class DrawChromosomeError(BaseGraphError) : pass
 class DrawFamiliesError(Exception): pass
+
+#The maximum and minumu values of DrawChromosome graph (in percentage)
+GRAPH_Y_MAX = 65
+GRAPH_Y_MIN = 30
 
 class BaseGraph():
     """A base class to make graps like draw chromosomes"""
@@ -285,6 +292,14 @@ class BaseGraph():
         
         #return a GD color ID
         return color
+        
+    def GetLabelByGClevel(self, GClevel):
+        """Starting from a GClevel values, returns the class using GClib.Elements.CalcClass"""
+        
+        if self.colorslist == None:
+            raise BaseGraphError, "SetColorsList must be called before retrive class by GClevel"
+            
+        return GClib.Elements.CalcClass(GClevel)
 
     def DrawChName(self,chname):
         """Draws chromosome name inside the graph"""
@@ -402,7 +417,8 @@ class BaseGraph():
         #this is the line style
         self.graph.setStyle((self.black, gd.gdTransparent))
         
-        #Sono le percentuali a SX dell'immagine e le loro linee orizzontali (nuova versione)
+        #TODO: Fix horizontal line where max value is imposed by the user
+        #Draw percentage on the rigth side and horizontal lines
         for i in range(self.n_of_h_lines):
             y1 = int(round(self.y - (self.h_lines[i]-self.y_min) * self.py))
             label = self.h_lines[i]
@@ -557,7 +573,7 @@ class DrawChromosome(BaseGraph):
         
         #The y max and min values are decided by graph type. In this case, GClevel values
         #comprised by 30 and 65 are expected
-        self.SetMinMaxValues(30,65)
+        self.SetMinMaxValues(GRAPH_Y_MIN, GRAPH_Y_MAX)
     
     def DrawGenericProfile(self, elements, attribute, color, myshift):
         """This function draw elements with a line, which heigth is equal to 'attribute'
@@ -670,10 +686,16 @@ class DrawChromosome(BaseGraph):
                 #getattr(element, attribute) returns GClevel of windows or isochores
                 #depending on the type of the class
                 if getattr(element, attribute) > self.y_max:
-                    GClib.logger.err(1, "Element drawn outside max values (%s > %s). Increase picture max value" %(getattr(element, attribute), self.y_max))
+                    GClib.logger.err(1, "Maximum graph point reached (%s > %s). Increase picture max value" %(getattr(element, attribute), self.y_max))
+                    
+                    #don't write a line outside graph
+                    y1 = int(self.y - (self.y_max-self.y_min) * self.py)
                     
                 if getattr(element, attribute) < self.y_min:
-                    GClib.logger.err(1, "Element drawn outside min values (%s < %s). Decrease picture min value" %(getattr(element, attribute), self.y_min))
+                    GClib.logger.err(1, "Minimum graph point reached (%s < %s). Decrease picture min value" %(getattr(element, attribute), self.y_min))
+                    
+                    #don't write a line outside graph
+                    y1 = self.y
                 
                 #draw a colored filled rectangle
                 self.graph.filledRectangle((x1,y1), (x2,y2), color)
@@ -710,25 +732,34 @@ class DrawChromosome(BaseGraph):
         if self.colored_by_class == False:
             raise DrawChromosomeError, "DrawLegend must be called after SetColorsList(colorbyclass=True)"
         
-        #draw a colored box
+        #draw a colored box. This is the upper box in legend
         y1 = self.y - (self.y_max - self.y_min) * self.py
         
-        #this is the upper box in legend
-        self.graph.filledRectangle((self.x-self.border/5*4, y1), (self.x-self.border/5, self.y), self.colorslist[-1])
+        #don't write anything outside margins. Draw the first correct colour
+        self.graph.filledRectangle((self.x-self.border/5*4, y1), (self.x-self.border/5, self.y), self.GetColorByGClevel(self.y_max))
         
         #for all the other boxes
         indexes = range(self.n_of_colors-1)
         indexes.reverse()
         
         for i in indexes:
+            #don't write anything outside margins
+            if self.isochore_values[i] > self.y_max:
+                continue
+        
+            #determining where I have to draw
             y1 = self.y - (self.isochore_values[i]-self.y_min)*self.py
             self.graph.filledRectangle((self.x-self.border/5*4, y1), (self.x-self.border/5, self.y), self.colorslist[i])
         
         #draw labels on legend. The upper label:
-        self.graph.string(gd.gdFontGiant, (self.x-self.border/5*3, self.y - (self.isochore_values[-1]-self.y_max) * self.py + 5), self.isochore_label[-1], self.black)
+        self.graph.string(gd.gdFontGiant, (self.x-self.border/5*3, self.y - (self.y_max - self.y_min) * self.py + 5), self.GetLabelByGClevel(self.y_max), self.black)
         
         #all the remaining labels
-        for i in range(self.n_of_colors-1):
+        for i in indexes:
+            #don't write anything outside margins
+            if self.isochore_values[i] > self.y_max:
+                continue
+            
             y1 = self.y-(self.isochore_values[i]-self.y_min) * self.py + 5
             self.graph.string(gd.gdFontGiant, (self.x-self.border/5*3, y1), self.isochore_label[i], self.black)
             
