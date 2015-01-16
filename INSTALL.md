@@ -47,10 +47,11 @@ Once dependencies are satisfied, simply install isochoreFinder using git:
 $ git clone https://github.com/bunop/isochoreFinder.git
 ```
 
-To test isochoreFinder installation, enter the isochoreFinder directory and simply type
+To test isochoreFinder installation, enter the isochoreFinder directory and simply type:
 
 ```
 $ ./ISOfinder.py --help
 ```
 
-If the installation is ok, you will see the help message of ISOfinder.py
+If the installation is ok, you will see the help message of ISOfinder.py:
+
