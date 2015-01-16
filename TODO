@@ -14,3 +14,10 @@
 * Main program for families
 
 * Multi FASTA sequence support
+
+* Add code to modify isochore boundaries
+
+* add code to remove or add a new isochore family
+
+* check that output filenames are different
+

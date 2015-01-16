@@ -2,22 +2,22 @@
 """
 
 
-    Copyright (C) 2013 ITB - CNR
+    Copyright (C) 2013-2015 ITB - CNR
 
-    This file is part of ISOfinder.
+    This file is part of isochoreFinder.
 
-    ISOfinder is free software: you can redistribute it and/or modify
+    isochoreFinder is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    ISOfinder is distributed in the hope that it will be useful,
+    isochoreFinder is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with ISOfinder.  If not, see <http://www.gnu.org/licenses/>.
+    along with isochoreFinder.  If not, see <http://www.gnu.org/licenses/>.
 
 
 Created on Tue Jun  4 11:05:34 2013
@@ -34,10 +34,11 @@ import os
 import GClib
 import shutil
 import types
-import Image
-import ImageDraw
-import ImageFont
 import tempfile
+
+from PIL import Image
+from PIL import ImageDraw
+from PIL import ImageFont
 
 from matplotlib import pyplot
 
@@ -642,6 +643,15 @@ class DrawChromosome(BaseGraph):
             else:
                 color = self.GetColorByGClevel(getattr(element, attribute))
                 y1 = int(self.y - (getattr(element, attribute)-self.y_min) * self.py)
+                
+                #Warning when drawing objects outside max and min values. 
+                #getattr(element, attribute) returns GClevel of windows or isochores
+                #depending on the type of the class
+                if getattr(element, attribute) > self.y_max:
+                    GClib.logger.err(1, "Element drawn outside max values (%s > %s). Increase picture max value" %(getattr(element, attribute), self.y_max))
+                    
+                if getattr(element, attribute) < self.y_min:
+                    GClib.logger.err(1, "Element drawn outside min values (%s < %s). Decrease picture min value" %(getattr(element, attribute), self.y_min))
                 
                 #draw a colored filled rectangle
                 self.graph.filledRectangle((x1,y1), (x2,y2), color)
