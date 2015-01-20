@@ -53,8 +53,8 @@ class DrawChromosomeError(BaseGraphError) : pass
 class DrawFamiliesError(Exception): pass
 
 #The maximum and minumu values of DrawChromosome graph (in percentage)
-GRAPH_Y_MAX = 65
-GRAPH_Y_MIN = 30
+GRAPH_GC_MAX = 65
+GRAPH_GC_MIN = 30
 
 class BaseGraph():
     """A base class to make graps like draw chromosomes"""
@@ -580,7 +580,7 @@ class DrawChromosome(BaseGraph):
         
         #The y max and min values are decided by graph type. In this case, GClevel values
         #comprised by 30 and 65 are expected
-        self.SetMinMaxValues(GRAPH_Y_MIN, GRAPH_Y_MAX)
+        self.SetMinMaxValues(GRAPH_GC_MIN, GRAPH_GC_MAX)
     
     def DrawGenericProfile(self, elements, attribute, color, myshift):
         """This function draw elements with a line, which heigth is equal to 'attribute'

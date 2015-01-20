@@ -45,6 +45,8 @@ parser.add_argument('-g', '--graphfile', type=str, required=False, help="Output 
 parser.add_argument('-r', '--regexp', type=str, required=False, default=".csv", help="pattern for isochore file search (default: '%(default)s')")
 parser.add_argument('-v', '--verbose', action="count", required=False, default=0, help="verbose level")
 parser.add_argument('--force_overwrite', action='store_true', default=False, help="Force overwrite")
+parser.add_argument('--x_max', type=int, required=False, default=GClib.Graphs.GRAPH_GC_MAX, help="Set X max value in graph (default: '%(default)s')")
+parser.add_argument('--x_min', type=int, required=False, default=GClib.Graphs.GRAPH_GC_MIN, help="Set X min value in graph (default: '%(default)s')")
 args = parser.parse_args()
 
 #TODO: Adding option for chainging Xmax and Xmin values
@@ -87,6 +89,10 @@ if __name__ == "__main__":
         #Setting Grids and axis Labels
         graph.DrawAxisLabels()
         graph.DrawGrid()
+        
+        #Override Xmax and Xmin values
+        axes = [args.x_min, args.x_max, 0, 0]
+        graph.SetAxisLimits(axis=axes)
         
         #save image
         #TODO: change figure quality
