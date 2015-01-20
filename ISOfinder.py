@@ -80,37 +80,16 @@ if __name__ == "__main__":
     
     #Chromosome istance will not Dump isochore if file exist. So I can verify this 
     #before reading fasta file. Outfile is a required option
-    if args.outfile != None and os.path.exists(args.outfile):
-        if args.force_overwrite == False:
-            raise Exception, "file %s exists!!!" %(args.outfile)
-        else:
-            #remove the file before calculation
-            os.remove(args.outfile)
+    GClib.Utility.FileExists(args.outfile, remove_if_exists=args.force_overwrite)
     
     #Checking for graph file existance
-    if args.graphfile != None and os.path.exists(args.graphfile):
-        if args.force_overwrite == False:
-            raise Exception, "file %s exists!!!" %(args.graphfile)
-        else:
-            #remove the file before calculation
-            os.remove(args.graphfile)
+    GClib.Utility.FileExists(args.graphfile, remove_if_exists=args.force_overwrite)
     
     #Checking for window file existance
-    if args.windowfile != None and os.path.exists(args.windowfile):
-        if args.force_overwrite == False:
-            raise Exception, "file %s exists!!!" %(args.windowfile)
-        else:
-            #remove the file before calculation
-            os.remove(args.windowfile)
+    GClib.Utility.FileExists(args.windowfile, remove_if_exists=args.force_overwrite)
         
     #Checking for window graph file existance
-    if args.windowgraph != None and os.path.exists(args.windowgraph):
-        if args.force_overwrite == False:
-            raise Exception, "file %s exists!!!" %(args.windowgraph)
-        else:
-            #remove the file before calculation
-            os.remove(args.windowgraph)
-        
+    GClib.Utility.FileExists(args.windowgraph, remove_if_exists=args.force_overwrite)
     
     #sequence_start can't be negative
     if args.sequence_start <= 0:

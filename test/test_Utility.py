@@ -26,10 +26,12 @@ A test module for Utility library
 
 """
 
+import os
 import sys
 import Bio
 import types
 import StringIO
+import tempfile
 import unittest
 
 
@@ -122,6 +124,34 @@ class TestFastaFile(unittest.TestCase):
         self.assertEqual(types.GeneratorType, type(self.test_seqObj.IterSeqs()))
     
 
+class TestFileExists(unittest.TestCase):
+    #To verify a seqObject
+    def setUp(self):
+        """Testing FileExists utility"""
+        
+        #create an empty temporary file
+        fd, filename = tempfile.mkstemp()
+        
+        #my filename
+        self.filename = filename
+    
+    def test_RaiseIfExists(self):
+        """Raise Exception if file exists"""
+        
+        self.assertRaises(IOError, GClib.Utility.FileExists, self.filename)
+        
+    def test_RemoveIfExists(self):
+        """Remove if file exists (no exception raised)"""
+        
+        GClib.Utility.FileExists(self.filename, remove_if_exists=True)
+        
+    def tearDown(self):
+        """Removing tempfile"""
+        
+        if os.path.exists(self.filename):
+            os.remove(self.filename)
+
+
 if __name__ == "__main__":
     unittest.main()
-    
+

@@ -35,6 +35,7 @@ import argparse
 
 import GClib
 import GClib.Graphs
+import GClib.Utility
 import GClib.Elements
 
 parser = argparse.ArgumentParser(description='Find Isochores Families in a user defined directory')
@@ -42,7 +43,8 @@ parser.add_argument('-i', '--indir', type=str, required=True, help="Input direct
 parser.add_argument('-o', '--outfile', type=str, required=True, help="Output families CSV files")
 parser.add_argument('-g', '--graphfile', type=str, required=False, help="Output graph filename (PNG)")
 parser.add_argument('-r', '--regexp', type=str, required=False, default=".csv", help="pattern for isochore file search (default: '%(default)s')")
-parser.add_argument('-v', '--verbosity', type=int, required=False, default=GClib.logger.threshold, help="Verbosity level")
+parser.add_argument('-v', '--verbose', action="count", required=False, default=0, help="verbose level")
+parser.add_argument('--force_overwrite', action='store_true', default=False, help="Force overwrite")
 args = parser.parse_args()
 
 #TODO: Adding option for chainging Xmax and Xmin values
@@ -54,18 +56,15 @@ args = parser.parse_args()
 
 if __name__ == "__main__":
     #verify verbosity level
-    if args.verbosity != GClib.logger.threshold:
+    if args.verbose != GClib.logger.threshold:
         #setting user defined threshold of verbosity
-        GClib.logger.threshold = args.verbosity
+        GClib.logger.threshold = args.verbose
     
-    #Chromosome istance will not Dump isochore if file exist. So I can verify this 
-    #before reading fasta file. Outfile is a required option
-    if args.outfile != None and os.path.exists(args.outfile):
-        raise Exception, "file %s exists!!!" %(args.outfile)
+    #chceking for csv existance
+    GClib.Utility.FileExists(args.outfile, remove_if_exists=args.force_overwrite)
     
     #Checking for graph file existance
-    if args.graphfile != None and os.path.exists(args.graphfile):
-        raise Exception, "file %s exists!!!" %(args.graphfile)
+    GClib.Utility.FileExists(args.graphfile, remove_if_exists=args.force_overwrite)
 
     #instantiate a families element
     families = GClib.Elements.Families()

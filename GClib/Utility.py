@@ -138,4 +138,19 @@ class FastaFile:
         return self.seqs_list[idx]
         
 
+#a function to check file existance and remove file if needed
+def FileExists(filename, remove_if_exists=False):
+    """Testing for file existance and removing file if needed"""
+    
+    if os.path.exists(filename):
+        if remove_if_exists == False:
+            raise IOError, "file %s exists!!!" %(filename)
+            
+        else:
+            #remove the file before calculation
+            GClib.logger.log(2, "file %s removed" %(filename))
+            os.remove(filename)
+            
+    #this function return nothing is successful
+
 #end of library
