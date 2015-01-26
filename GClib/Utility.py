@@ -142,6 +142,10 @@ class FastaFile:
 def FileExists(filename, remove_if_exists=False):
     """Testing for file existance and removing file if needed"""
     
+    #return if filenames is None
+    if filename == None:
+        return
+    
     if os.path.exists(filename):
         if remove_if_exists == False:
             raise IOError, "file %s exists!!!" %(filename)
