@@ -2,22 +2,22 @@
 """
 
 
-    Copyright (C) 2013 ITB - CNR
+    Copyright (C) 2013-2015 ITB - CNR
 
-    This file is part of ISOfinder.
+    This file is part of isochoreFinder.
 
-    ISOfinder is free software: you can redistribute it and/or modify
+    isochoreFinder is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    ISOfinder is distributed in the hope that it will be useful,
+    isochoreFinder is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with ISOfinder.  If not, see <http://www.gnu.org/licenses/>.
+    along with isochoreFinder.  If not, see <http://www.gnu.org/licenses/>.
 
 
 Created on Fri May  3 15:04:39 2013
@@ -40,10 +40,9 @@ import GClib
 import types
 import Bio.SeqUtils
 
-
-from numpy.numarray import mlab
-
 __author__ = "Paolo Cozzi <paolo.cozzi@tecnoparco.org>"
+
+from . import __copyright__, __license__, __version__
 
 #Exceptions for each methods definitions
 class ElementError(Exception) : pass
@@ -146,7 +145,7 @@ class Isochore():
         
         if window != None:
             self.GClevels = [window.GClevel]
-            self.avg_GClevel = round(mlab.mean(self.GClevels),6)
+            self.avg_GClevel = round(numpy.mean(self.GClevels),6)
             self.start = window.start
             self.end = window.end
             self.size = window.size
@@ -189,10 +188,10 @@ class Isochore():
             raise IsochoreError, "Windows must be contiguous to be added to current isochore"
         
         self.GClevels += [window.GClevel]
-        self.avg_GClevel = round(mlab.mean(self.GClevels),6)
+        self.avg_GClevel = round(numpy.mean(self.GClevels),6)
         
         if len(self.GClevels) > 1:
-            self.stddev_GClevel = round(mlab.std(self.GClevels),6)
+            self.stddev_GClevel = round(numpy.std(self.GClevels, ddof=1),6)
 
         #now I have to find the position of this elements
         if window.start < self.start:
@@ -229,8 +228,8 @@ class Isochore():
         self.GClevels += isochore.GClevels
         
         #calculating the isochore parameters
-        self.avg_GClevel = round(mlab.mean(self.GClevels),6)
-        self.stddev_GClevel = round(mlab.std(self.GClevels),6)
+        self.avg_GClevel = round(numpy.mean(self.GClevels),6)
+        self.stddev_GClevel = round(numpy.std(self.GClevels, ddof=1),6)
         
         if isochore.start < self.start:
             self.start = isochore.start
@@ -258,7 +257,7 @@ class Isochore():
         if isochore2 != None:
             GClevels += isochore2.GClevels
         
-        return mlab.std(GClevels)
+        return numpy.std(GClevels, ddof=1)
         
         
 class Gap(Element):
@@ -335,8 +334,17 @@ class Chromosome:
         #A gaps list
         gaps = []
         
-        #A very quick method to find gaps on chromosome
-        for match in re.finditer("N+", self.seqRecord.seq.tostring(), flags=re.IGNORECASE):
+        #handle deprecated method seq.tostring from biopython release 1.64
+        seq_str = None
+        
+        if Bio.__version__ > 1.64:
+            seq_str = str(self.seqRecord.seq)
+            
+        else:
+            seq_str = self.seqRecord.seq.tostring()
+        
+        #A very quick method to find gaps on chromosome.
+        for match in re.finditer("N+", seq_str, flags=re.IGNORECASE):
             GClib.logger.log(3, "Gap found from %s to %s" %(match.start(), match.end()))
             
             #Adding this gap to the gaps list
@@ -539,7 +547,7 @@ class Chromosome:
         #TODO: define a parameter for a minimun size of an isochore
         GClib.logger.log(4, "Step (1) completed.")
         
-        #debug
+        #HINT: decomment this line to draw back isochore after step1
         #return
     
         #Starting the 2° step
@@ -621,7 +629,7 @@ class Chromosome:
         
         GClib.logger.log(4, "Step (2) completed.")
         
-        #debug
+        #HINT: decomment this line to draw back isochore after step2
         #return
     
         GClib.logger.log(4, " Starting Step (3)...")

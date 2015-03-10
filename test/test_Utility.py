@@ -1,6 +1,23 @@
 # -*- coding: utf-8 -*-
 """
 
+    Copyright (C) 2013-2015 ITB - CNR
+
+    This file is part of isochoreFinder.
+
+    isochoreFinder is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    isochoreFinder is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with isochoreFinder.  If not, see <http://www.gnu.org/licenses/>.
+
 Created on Fri May 31 16:33:03 2013
 
 @author: Paolo Cozzi <paolo.cozzi@tecnoparco.it>
@@ -9,10 +26,12 @@ A test module for Utility library
 
 """
 
+import os
 import sys
 import Bio
 import types
 import StringIO
+import tempfile
 import unittest
 
 
@@ -105,6 +124,34 @@ class TestFastaFile(unittest.TestCase):
         self.assertEqual(types.GeneratorType, type(self.test_seqObj.IterSeqs()))
     
 
+class TestFileExists(unittest.TestCase):
+    #To verify a seqObject
+    def setUp(self):
+        """Testing FileExists utility"""
+        
+        #create an empty temporary file
+        fd, filename = tempfile.mkstemp()
+        
+        #my filename
+        self.filename = filename
+    
+    def test_RaiseIfExists(self):
+        """Raise Exception if file exists"""
+        
+        self.assertRaises(IOError, GClib.Utility.FileExists, self.filename)
+        
+    def test_RemoveIfExists(self):
+        """Remove if file exists (no exception raised)"""
+        
+        GClib.Utility.FileExists(self.filename, remove_if_exists=True)
+        
+    def tearDown(self):
+        """Removing tempfile"""
+        
+        if os.path.exists(self.filename):
+            os.remove(self.filename)
+
+
 if __name__ == "__main__":
     unittest.main()
-    
+
