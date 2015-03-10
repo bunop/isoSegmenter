@@ -547,7 +547,7 @@ class Chromosome:
         #TODO: define a parameter for a minimun size of an isochore
         GClib.logger.log(4, "Step (1) completed.")
         
-        #debug
+        #HINT: decomment this line to draw back isochore after step1
         #return
     
         #Starting the 2° step
@@ -629,7 +629,7 @@ class Chromosome:
         
         GClib.logger.log(4, "Step (2) completed.")
         
-        #debug
+        #HINT: decomment this line to draw back isochore after step2
         #return
     
         GClib.logger.log(4, " Starting Step (3)...")
