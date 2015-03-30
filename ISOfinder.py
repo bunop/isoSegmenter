@@ -69,9 +69,10 @@ args = parser.parse_args()
 #TODO: Change isochore class boundaries
 #TODO: Switch to Isochore Profile and Isochore Rectangle Boxes
 #TODO: Calculating a determined chromosome from a multi fasta file
+#TODO: Pass reference chromosome as an argument
 
 #A function to read Genome Reasearch 2006 isochore profile. Will override Chromosome.LoadIsochore function
-def ReadReference2006(self, filename="Supp_Table_2006.csv", chrom="21"):
+def ReadReference2006(self, filename="Supp_Table_2006.csv", chrom="1"):
     """Read the 2006 reference isochore table and instantiate a Chromosome with
     isochores"""
     
