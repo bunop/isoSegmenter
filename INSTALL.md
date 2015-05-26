@@ -63,7 +63,7 @@ $ ./ISOfinder.py --help
 
 If the installation is ok, you will see the help message of ISOfinder.py by invoking it:
 
-```bash 
+```
 usage: ISOfinder.py [-h] -i INFILE [-o OUTFILE] [-g GRAPHFILE] [-w WINDOWFILE]
                     [-v] [--windowgraph WINDOWGRAPH] [--draw_legend]
                     [--force_overwrite] [--sequence_start SEQUENCE_START]
@@ -100,3 +100,7 @@ optional arguments:
   --y_max Y_MAX         Set max value in graph (default: '65')
   --y_min Y_MIN         Set min value in graph (default: '30')
 ```
+
+## Installing isochoreFinder using docker
+
+There are instructions on how to build and run a isochoreFinder image in the Docker subdirectory in isochoreFinder project. Please look at README.md inside that directory.
