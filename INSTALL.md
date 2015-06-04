@@ -10,7 +10,7 @@ The following programs and libraries are require to compile and run python code
 * [libgd](http://libgd.bitbucket.org/)
 * [giflib](http://sourceforge.net/projects/giflib/)
 
-And the following python libraries are required to run ISOfinder.py and ISOfamilies.py:
+And the following python libraries are required to run isochoreFinder.py and isochoreFamilies.py:
 
 * [gdmodule](https://github.com/Solomoriah/gdmodule)
 * [Pillow](http://python-pillow.github.io/)
@@ -26,7 +26,7 @@ The most easy way to install dependancies is via your linux distribution package
 $ sudo apt-get install python-gd python-imaging python-matplotlib python-biopython
 ```
 
-And this will also check and resolve any dependancies. 
+And this will also check and resolve any dependancies.
 
 ### Installing dependencies using pip
 
@@ -58,13 +58,13 @@ $ git clone https://github.com/bunop/isochoreFinder.git
 To test isochoreFinder installation, enter the isochoreFinder directory and simply type:
 
 ```bash
-$ ./ISOfinder.py --help
+$ ./isochoreFinder.py --help
 ```
 
-If the installation is ok, you will see the help message of ISOfinder.py by invoking it:
+If the installation is ok, you will see the help message of isochoreFinder.py by invoking it:
 
 ```
-usage: ISOfinder.py [-h] -i INFILE [-o OUTFILE] [-g GRAPHFILE] [-w WINDOWFILE]
+usage: isochoreFinder.py [-h] -i INFILE [-o OUTFILE] [-g GRAPHFILE] [-w WINDOWFILE]
                     [-v] [--windowgraph WINDOWGRAPH] [--draw_legend]
                     [--force_overwrite] [--sequence_start SEQUENCE_START]
                     [--max_length MAX_LENGTH] [--draw_chname DRAW_CHNAME]

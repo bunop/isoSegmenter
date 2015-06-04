@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y libgd2-xpm-dev \
 
 # Clean packages and histories
 RUN apt-get clean && rm -rf /var/lib/apt/lists/
-    
+
 # Install isochoreFinder requirements
 RUN pip install Pillow matplotlib biopython
 
@@ -47,12 +47,12 @@ WORKDIR /opt/isochoreFinder
 RUN python -m compileall -f GClib
 
 # simbolick linking
-RUN ln -s /opt/isochoreFinder/ISOfinder.py /usr/local/bin && \
-    ln -s /opt/isochoreFinder/ISOfamilies.py /usr/local/bin 
+RUN ln -s /opt/isochoreFinder/isochoreFinder.py /usr/local/bin && \
+    ln -s /opt/isochoreFinder/isochoreFamilies.py /usr/local/bin
 
 # Adding a volume
 RUN mkdir /data
 VOLUME /data
 
 # executing a default command
-CMD [ "python", "/opt/isochoreFinder/ISOfinder.py", "--help" ]
+CMD [ "python", "/opt/isochoreFinder/isochoreFinder.py", "--help" ]
