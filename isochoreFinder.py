@@ -184,11 +184,17 @@ if __name__ == "__main__":
     #Instantiating Chromosome Class with seqRecord object (gaps are determined automatically)
     Chrom = GClib.Elements.Chromosome(seqRecord)
     
+    #Get chromosome name (in order to load the reference profile correctly)
+    chrom_name = seqRecord.name.lower()
+    
+    #replace the chr prefix
+    chrom_name = chrom_name.replace("chr","")
+    
     #Instantiate a Chromosome class for 2006 isochore reference
     Ref2006 = GClib.Elements.Chromosome()
     
-    #TODO: define the possibility to specify the chromosome to analyze
-    Ref2006.LoadIsochores()
+    #set the chromosome to analyze (relying on sequence)
+    Ref2006.LoadIsochores(chrom=chrom_name)
     
     #Segmenting Sequence in windows
     if args.window_size == GClib.WINDOW_SIZE:
