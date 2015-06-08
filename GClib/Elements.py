@@ -900,6 +900,95 @@ class Chromosome:
         #closing file if necessary
         if flag_close == True: infile.close()
         
+    def LoadIsochoresFromBED(self, bedfile):
+        """Load isochores from a bed file into chromosome istance. Filename or open file 
+        handle are accepted"""
+        
+        #verify to work with an open file handle
+        infile, flag_close = self._handle_input(bedfile)
+        
+        #discarding the header
+        csv_reader = csv.reader(infile, delimiter="\t")
+        csv_reader.next()
+        
+        #resetting isochores
+        self.isochores = []
+        
+        #A flag to set the chromosome name
+        flag_name = False
+        
+        #The (Schmidt and Frishman 2008) bed file put GC levels inside name, eg: H1_(GC_58.72)
+        pattern = re.compile("(\w+)\_\(GC\_(.*)\)")
+        
+        #bed format file is described here: https://genome.ucsc.edu/FAQ/FAQformat.html#format1
+        for line in csv_reader:
+            #the bed file has at least three columns. If I don't see three column, is a track comment
+            if len(line) < 3:
+                continue
+            
+            if flag_name is False:
+                self.name = line[0]
+                flag_name = True
+                
+            #check that the chromosome name is the same
+            else:
+                if self.name != line[0]:
+                    raise ChromosomeError, "Chromosome name has changed in bed file %s -> %s" %(self.name, line[0])
+            
+            #beware to integer values. Pay attention to GAPs
+            start, end, Class, score = int(line[1]), int(line[2]), line[3], float(line[4])
+            
+            #TODO: handle stddev
+            #STDDEV is not in BED file
+            stddev_GClevel = ""
+            
+            #calc size
+            size = abs(end-start)
+            
+            #check if bed file is like (Schmidt and Frishman 2008)
+            match = re.search(pattern, Class)
+            
+            if match is not None:
+                Class, avg_GClevel = match.groups()
+            
+            else:
+                #Set avg_GClevel as score
+                avg_GClevel = score
+            
+            #GAP could be in upper cases
+            if re.search("gap", Class, re.IGNORECASE):
+                #bed coordinates are 0 based
+                self.isochores += [Gap(start=start,end=end)]
+            
+            else:
+                #avg_GClevel, stddev_GClevel  must be float
+                avg_GClevel = round(float(avg_GClevel),6)
+                
+                #Stddev will be none for isochore of length 0. Here I don't know isochore length (in windows)
+                if stddev_GClevel != "": stddev_GClevel = round(float(stddev_GClevel),6)
+                
+                #Instantiating a new isochore
+                isochore = Isochore()
+                isochore.start = start #deb files are 0 based
+                isochore.end = end
+                isochore.size = size
+                isochore.Class = Class
+                isochore.avg_GClevel = avg_GClevel
+                isochore.stddev_GClevel = stddev_GClevel
+                
+                #adding this isochore to isochore list
+                self.isochores += [isochore]
+        
+        #Setting the final size as the end of the last element
+        self.size = self.isochores[-1].end
+        
+        #closing file if necessary
+        if flag_close == True: infile.close()
+        
+        # Check that the first element starts from 0
+        if self.isochores[0].start == 1:
+            self.isochores[0].start = 0
+            self.isochores[0].size += 1
     
 #end of class Chromosome
 
