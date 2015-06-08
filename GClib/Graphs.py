@@ -610,33 +610,47 @@ class DrawChromosome(BaseGraph):
         
             GClib.logger.log(5, "Considering %s" %(element))
             
-            if element.Class == 'gap':
-                #a grey rectangle which height is image height and lenght is gap length (x2-x1)
-                y1 = int(self.y - (self.y_max-self.y_min) * self.py)
-                
-                #draw the rectangle
-                self.graph.filledRectangle((x1,y1), (x2,y2), self.gray)
-                
-                #each horizontal line is merged to previous line by a vertical
-                #line. In case of gap, no line is needed
-                old_y1 = None
-                
-            else:
-                #This is the true isochore
-                y1 = int(self.y - (getattr(element, attribute)-self.y_min) * self.py)
-                
-                #the drawn horizontal line
-                self.graph.line((x1,y1), (x2,y1), color)
-                
-                #draw a vertical line if it is needed
-                if old_y1 != None:
-                    self.graph.line((x1,y1), (x1,old_y1), color)
+            #When reading from 2006 profile I have more data than what I have to draw
+            if x2 > self.border:
+                #fix x1 if needed
+                if  x1 < self.border:
+                    x1 = self.border
                     
-                #update old_y1 to draw the next element vertical line
-                old_y1 = y1
+                #resize x2 if needed
+                if x2 > self.x-self.border:
+                    x2 = self.x-self.border
+                    
+                if element.Class == 'gap':
+                    #a grey rectangle which height is image height and lenght is gap length (x2-x1)
+                    y1 = int(self.y - (self.y_max-self.y_min) * self.py)
+                    
+                    #draw the rectangle
+                    self.graph.filledRectangle((x1,y1), (x2,y2), self.gray)
+                    
+                    #each horizontal line is merged to previous line by a vertical
+                    #line. In case of gap, no line is needed
+                    old_y1 = None
+                    
+                else:
+                    #This is the true isochore
+                    y1 = int(self.y - (getattr(element, attribute)-self.y_min) * self.py)
+                    
+                    #the drawn horizontal line
+                    self.graph.line((x1,y1), (x2,y1), color)
+                    
+                    #draw a vertical line if it is needed
+                    if old_y1 != None:
+                        self.graph.line((x1,y1), (x1,old_y1), color)
+                        
+                    #update old_y1 to draw the next element vertical line
+                    old_y1 = y1
                 
             #this is the new starting point for the new element
             x1 = x2 + 1
+            
+            #condition: breack if the left size is reached
+            if x1 > self.x-self.border:
+                break
             
         #resetting the original thickness
         self.graph.setThickness(1)
