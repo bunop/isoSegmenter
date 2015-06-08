@@ -934,25 +934,39 @@ class DrawBarChromosome(BaseGraph):
             #avoid that errors on position of first element will be added to last isochores
             x2 = int(self.border + round((element.end - self.sequence_start + myshift) / self.scale) - 1)
             
-            if element.Class == 'gap':
-                #a grey rectangle which height is image height and lenght is gap length (x2-x1)
-                y1 = self.top
-                
-                #draw the rectangle
-                self.graph.filledRectangle((x1,y1), (x2,y2), self.gray)
-                
-            else:
-                #Set the color of isochore
-                color = self.GetColorByGClevel(getattr(element, attribute))
-                
-                #a colored rectangle which height is image height and lenght is isochore length (x2-x1)
-                y1 = self.top
-                
-                #draw a colored filled rectangle
-                self.graph.filledRectangle((x1,y1), (x2,y2), color)
+            #When reading from 2006 profile I have more data than what I have to draw
+            if x2 > self.border:
+                #fix x1 if needed
+                if  x1 < self.border:
+                    x1 = self.border
+                    
+                #resize x2 if needed
+                if x2 > self.x-self.border:
+                    x2 = self.x-self.border
+            
+                if element.Class == 'gap':
+                    #a grey rectangle which height is image height and lenght is gap length (x2-x1)
+                    y1 = self.top
+                    
+                    #draw the rectangle
+                    self.graph.filledRectangle((x1,y1), (x2,y2), self.gray)
+                    
+                else:
+                    #Set the color of isochore
+                    color = self.GetColorByGClevel(getattr(element, attribute))
+                    
+                    #a colored rectangle which height is image height and lenght is isochore length (x2-x1)
+                    y1 = self.top
+                    
+                    #draw a colored filled rectangle
+                    self.graph.filledRectangle((x1,y1), (x2,y2), color)
                 
             #updating x1
             x1 = x2 + 1
+            
+            #condition: breack if the left size is reached
+            if x1 > self.x-self.border:
+                break
             
     def DrawIsochoreRectangles(self, isochores, myshift=0):
         """This function draw isochores with filled rectangles, which heigth is equal to 
