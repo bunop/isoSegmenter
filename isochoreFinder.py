@@ -42,13 +42,14 @@ parser = argparse.ArgumentParser(description='Find Isochores in sequences')
 parser.add_argument('-i', '--infile', type=str, required=True, help="Input Fasta File (even compressed)")
 parser.add_argument('-o', '--outfile', type=str, required=False, help="Output isochores CSV file")
 parser.add_argument('-g', '--graphfile', type=str, required=False, help="Output graph filename (PNG)")
+parser.add_argument('-b', '--barfile', type=str, required=False, help="Output bar graph filename (PNG)")
 parser.add_argument('-w', '--windowfile', type=str, required=False, help="Output windows CSV file")
 parser.add_argument('-v', '--verbose', action="count", required=False, default=0, help="Verbosity level")
 parser.add_argument('--windowgraph', type=str, required=False, help="Output windows Graph file")
 parser.add_argument('--draw_legend', action='store_true', help="Draw legend on the right side of the image")
 parser.add_argument('--force_overwrite', action='store_true', help="Force overwrite")
 parser.add_argument('--sequence_start', type=int, required=False, default=1, help="Start segmentation from this position (1-based coordinates)")
-parser.add_argument('--max_length', type=int, required=False, default=None, help="Scan for isochores until for this dimension in bp")
+parser.add_argument('--max_length', type=float, required=False, default=None, help="Scan for isochores until for this dimension in bp")
 parser.add_argument('--draw_chname', type=str, required=False, default=None, help="Draw chromosome name in figure")
 parser.add_argument('--window_size', type=int, required=False, default=GClib.WINDOW_SIZE, help="Set window size in bp (default: '%(default)s')")
 parser.add_argument('--y_max', type=int, required=False, default=GClib.Graphs.GRAPH_GC_MAX, help="Set max value in graph (default: '%(default)s')")
@@ -60,8 +61,7 @@ args = parser.parse_args()
 
 #TODO: Change GAP tolerance
 #TODO: Setting sequence start and end
-#TODO: Draw Genome Reasearch 2006 isochore profile
-#TODO: Draw window
+#TODO: Draw Genome Research 2006 isochore profile
 #TODO: Write GAP CSV file
 #TODO: Change isochore class boundaries
 #TODO: Switch to Isochore Profile and Isochore Rectangle Boxes
@@ -85,6 +85,9 @@ if __name__ == "__main__":
     #Checking for graph file existance
     GClib.Utility.FileExists(args.graphfile, remove_if_exists=args.force_overwrite)
     
+    #Checking for graph file existance
+    GClib.Utility.FileExists(args.barfile, remove_if_exists=args.force_overwrite)    
+    
     #Checking for window file existance
     GClib.Utility.FileExists(args.windowfile, remove_if_exists=args.force_overwrite)
         
@@ -104,6 +107,9 @@ if __name__ == "__main__":
     
     #Checking user max_length of sequence analysis
     if args.max_length != None:
+        #coerce max_length into integer
+        args.max_length = int(args.max_length)
+        
         #Setting max_length as To coordinates, starting from sequence start
         To = args.sequence_start + args.max_length
     
@@ -234,5 +240,40 @@ if __name__ == "__main__":
         Graph.FinishPicture(drawlabels=False)
         Graph.EnlargeLabels()
         Graph.SaveFigure(args.graphfile)
+        
+        
+    #Create bar graph isocore grap (as Schmidt and Frishman 2008) if it is necessary
+    if args.barfile != None:
+        #Instantiating DrawBarChromosome Class. Look at sequence start (0-based sequence start, this has been fixed in the top of this main block)
+        Graph = GClib.Graphs.DrawBarChromosome(sequence_start=args.sequence_start)
+        
+        #there are no min and max values in this graph style
+        
+        #Fixing appropriate values
+        if args.max_length != None:
+            #SetSequencelength needs the To position (the absolute end position)
+            Graph.SetSequenceLength(To)
+        
+        else:
+            Graph.SetSequenceLength(Chrom.size)
+        
+        Graph.InitPicture()
+        # No horyzontal lines
+        Graph.SetColorsList(colorbyclass=True)
+        
+        #Draw the correct values
+        Graph.DrawIsochoreRectangles(isochores=Chrom.isochores)
+        
+        #Draw legend or not
+        if args.draw_legend == True:
+            Graph.DrawLegend()
+            
+        #Draw ChName
+        if args.draw_chname != None:
+            Graph.DrawChName(args.draw_chname)
+        
+        Graph.FinishPicture(drawlabels=False)
+        Graph.EnlargeLabels()
+        Graph.SaveFigure(args.barfile)
     
     

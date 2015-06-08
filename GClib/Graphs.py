@@ -64,7 +64,10 @@ class BaseGraph():
         self.scale = 30000 #17500 #higher values shrink images
         self.border = 90 #the white space on the left and on the right of the figure
         self.top = 70 #the upper space before the X axis
+        self.bottom = 45 # the bottom size border  
         self.y = 385 #the height of the graphic area (in which isocore are printed, not image height)
+        
+        #image heigth = self.y + self.bottom
         
         #Other default values
         self.sequence_start = sequence_start
@@ -164,8 +167,8 @@ class BaseGraph():
         GClib.logger.log(2, "Starting figure...")
         
         #A gd image. Note that image height is equal to graphic height (self.y) plus
-        #upper space (self.top) in which put labels and bottom space (self.top/2) for aesthetic
-        self.graph = gd.image((self.x, self.y + self.top / 2))
+        #upper space (self.top) in which put labels and bottom space (self.bottom) for aesthetic
+        self.graph = gd.image((self.x, self.y + self.bottom))
         
         #Allocate base colors
         self.white = self.graph.colorAllocate((255, 255, 255))
@@ -770,7 +773,244 @@ class DrawChromosome(BaseGraph):
             y1 = self.y-(self.isochore_values[i]-self.y_min) * self.py + 5
             self.graph.string(gd.gdFontGiant, (self.x-self.border/5*3, y1), self.isochore_label[i], self.black)
             
+    
+# End of DrawChromosome class
+
+# A class to draw isochores like isobase (Schmidt and Frishman 2008 style)
+class DrawBarChromosome(BaseGraph):
+    """The main class which simulates the behaviour of draw_chromsome.pl"""
+    
+    def __init__(self, sequence_start=0):
+        """Instantiate the class"""
         
+        #Instantiate the base methods and the default attribute class
+        BaseGraph.__init__(self, sequence_start=sequence_start)
+
+        #re modulate bottom border        
+        self.bottom = 60
+        
+        #Shrink image
+        self.scale = 40000
+        
+    #override basegrap set colour list
+    def SetColorsList(self, colorbyclass=True):
+        """Set the possible colors that can be used in an image. The colorbyclass
+        values set a distinct color for each class"""
+        
+        if self.graph == None:
+            #if GD image isn't instantiated yed, I couldn't instantiate colors
+            raise BaseGraphError, "InitPicture must be called before this method"
+
+        if colorbyclass == True:
+            #setting the flag value in class attribute
+            self.colored_by_class = True
+            
+            #One color for each class. Getting the possible values sorted by GClevel
+            #note that GClib.CLASS_TO_LEVEL is a dictionary, so keys could be in random order
+            items = sorted(GClib.CLASS_TO_LEVEL.items(), key=lambda x: x[1])
+            
+            #items are somethin like this: [('L1', 37), ('L2', 41), ('H1', 46), ('H2', 53), ('H3', 100)]
+            self.isochore_label = [element[0] for element in items] #isochores names used to draw legend
+            self.isochore_values = [element[1] for element in items] #isocores values used to print horizontal lines and their values
+            
+            #setting the color list
+            mycolorslist = []
+            
+            #Each self.graph.colorAllocate call assign one of 256 true 
+            #colors in PNG image and return an ordinal integer of the
+            #color already instantiated
+            mycolorslist += [self.graph.colorAllocate((0, 100, 255))]
+            mycolorslist += [self.graph.colorAllocate((0, 200, 255))]
+            mycolorslist += [self.graph.colorAllocate((255, 255, 0))]
+            mycolorslist += [self.graph.colorAllocate((255, 130, 0))]
+            mycolorslist += [self.graph.colorAllocate((255, 0, 0))]
+            
+        else:
+            #try to define a continue color palette
+            raise BaseGraphError, "Not yet implemented"
+        
+        #memorizzo la lista dei colori
+        self.colorslist = mycolorslist
+        self.n_of_colors = len(mycolorslist)
+    
+    #Overriding X axes
+    def DrawXaxes(self, drawlabels=False):
+        """Draw X axis and graduated scale"""
+            
+        if self.graph == None:
+            raise BaseGraphError, "InitPicture must be called before this method"
+        
+        tick = 100000 * 5
+        bigtick = tick * 2
+        label = bigtick
+        
+        #y1 is the y coordinate (in the final image) in which pass the ruled line
+        y1 = self.top
+        
+        #this affects temporarily the thickness of all the line. Later in the code I will
+        #reset this values to the original values (which I think to be 1)
+        self.graph.setThickness(2)
+        
+        #the ruler line
+        self.graph.line((self.border, y1), (self.x-self.border, y1),self.black)
+        
+        #A big notch on the ruler every "bigtick" bp. If I will start from a sequence position
+        #different from 0, I have to put the tick on absolute positions
+        for i in range(0, self.sequence_length + self.sequence_start, bigtick):
+            if i < self.sequence_start:
+                continue
+                
+            position = int((i - self.sequence_start) / self.scale + self.border)
+            self.graph.line((position,y1-14),(position,y1),self.black)
+            
+    
+        #a line on the bottom of the graph
+        self.graph.line((self.border, int(self.y +1)), (self.x-self.border, int(self.y +1)), self.black)
+        
+        #reset the thickness of all the line
+        self.graph.setThickness(1)
+        
+        #Now put a small notch on the ruler every "tick" bp
+        for i in range(0, self.sequence_length + self.sequence_start, tick):
+            if i < self.sequence_start:
+                continue
+                
+            position = int((i - self.sequence_start) / self.scale + self.border)
+            self.graph.line((position,y1-7),(position,y1),self.black)
+        
+        #Pheraps it's better to add labels via Python Image Library, because we can enlarge character dimension
+        if drawlabels == True:
+            #Setting the proper flag
+            self.drawn_labels = True
+            
+            for i in range(0, self.sequence_length + self.sequence_start, label * 2):
+                if i < self.sequence_start:
+                    continue
+                
+                position = int((i - self.sequence_start) / self.scale + self.border)
+                self.graph.string(self.fontsize, (position-6,y1-30), str(i/label),self.black)
+        
+            #Write MB at bottom of the ruler
+            position = self.x - self.border/5*4
+            self.graph.string(self.fontsize,(position,y1-30),"Mb",self.black)
+            
+    def FinishPicture(self,drawlabels=True):
+        """Call functions for x,y axis and horizontal lines. Drawlabels flag specifies
+        if labels are drawn or not"""
+        
+        self.DrawXaxes(drawlabels=drawlabels)
+        #self.DrawHorizontalLines(drawlabels=drawlabels)
+
+        
+    def DrawGenericRectangles(self, elements, attribute, myshift):
+        """Draw a rectangle in correspondence to elements found. This function needs
+        a list of elements to represent and the class attribute to determine rectanlges
+        hight. Called by DrawIsochoreRectangles"""
+    
+        #Determining the left coordinataes of boxes. The x1 grap position is critical 
+        #to be determined. It depends from first element position and user shift value.
+        x1 = int(self.border + round((elements[0].start - self.sequence_start + myshift) / self.scale) - 1)
+        
+        #This is the lower point drawn in image
+        y2 = self.y
+        
+        for element in elements:
+            #the length of drawn element is derived considering image size and user shift.
+            #This value is derived starting from left side of the image every time to
+            #avoid that errors on position of first element will be added to last isochores
+            x2 = int(self.border + round((element.end - self.sequence_start + myshift) / self.scale) - 1)
+            
+            if element.Class == 'gap':
+                #a grey rectangle which height is image height and lenght is gap length (x2-x1)
+                y1 = self.top
+                
+                #draw the rectangle
+                self.graph.filledRectangle((x1,y1), (x2,y2), self.gray)
+                
+            else:
+                #Set the color of isochore
+                color = self.GetColorByGClevel(getattr(element, attribute))
+                
+                #a colored rectangle which height is image height and lenght is isochore length (x2-x1)
+                y1 = self.top
+                
+                #draw a colored filled rectangle
+                self.graph.filledRectangle((x1,y1), (x2,y2), color)
+                
+            #updating x1
+            x1 = x2 + 1
+            
+    def DrawIsochoreRectangles(self, isochores, myshift=0):
+        """This function draw isochores with filled rectangles, which heigth is equal to 
+        class avg_GClevel. This representation can be considered similar to draw_chromosome.pl
+        User havo to define an isochore list and evetually provide a value 'myshift'
+        to shift the representation"""
+        
+        #call the generic function
+        self.DrawGenericRectangles(elements=isochores, attribute="avg_GClevel", myshift=myshift)
+        
+        GClib.logger.log(2, "Isochores bar rectangles drawn")
+        
+    #Overriding enlarge labels
+    def EnlargeLabels(self):
+        """Enlarge labels in picture"""
+        
+        if self.drawn_labels == True:
+            raise BaseGraphError, "Labels were drawn by DrawXaxes, and cannot be overwritten by this function"
+        
+        #determining a temp file for image
+        imagefile = tempfile.mktemp(suffix=".png")
+        
+        #Save the image for the first time
+        self.SaveFigure(imagefile)
+        
+        #Setting the proper attribute to file position
+        self.imagefile = imagefile
+        
+        #Open the temporary image in order to modify it
+        im = Image.open(imagefile)
+        
+        #These are fonts used to draw images. Ensure thay you have the file specified in
+        #GClib/__init__.py module
+        myfont = ImageFont.truetype(GClib.graph_font_type, 30)
+        
+        #Questo oggetto mi serve per scriverci dentro
+        draw = ImageDraw.Draw(im)
+        
+        #Determining left size point y1
+        y1 = self.top - 45
+        
+        #the interval (in bp) in which labels will be drawn
+        label = 1000000
+        iteration = 0
+        
+        #Wrinting labels. Pay attention to sequence start, no label before sequence starts. 
+        for i in range(0, self.sequence_length + self.sequence_start, label):
+            if i < self.sequence_start:
+                continue
+            
+            #Write a label in correspondance to thicks, every two "label" distance
+            if iteration % 2 == 0:
+                position = int(round((i - self.sequence_start) / self.scale + self.border))
+                
+                #a different X position for different label precision (1, 10, 100)
+                if i/label < 10:
+                    draw.text((position-7,y1), str(i/label), font=myfont, fill=1)
+                elif i/label < 100:
+                    draw.text((position-15,y1), str(i/label), font=myfont, fill=1)
+                else:
+                    draw.text((position-23,y1), str(i/label), font=myfont, fill=1)
+                    
+            #Next step
+            iteration += 1
+            
+        #For the Mb text
+        position = self.x - self.border/5*4
+        draw.text((position+5,y1), "Mb", font=myfont, fill=1)
+            
+        #save the new figure
+        im.save(imagefile)
+
     
 class DrawFamilies:
     """A class to plot isochores families in histograms"""
