@@ -423,38 +423,6 @@ class test_MoreGraphs(unittest.TestCase):
         
         #check that image is initialized
         self.assertRaises(GClib.Graphs.MoreGraphsError, self._test_MoreGraphs.AddGraph, test)
-        
-    def test_HandleGraph2(self):
-        """Test reading temporary image file, if present"""
-        
-        #Now create image and its tempfile with EnlargeLabels. Ensure that the temporary
-        #imagefile is readed
-        
-        #disable log temporarily
-        old_threshold = GClib.logger.threshold
-        GClib.logger.threshold = 0
-        
-        #Now generate a second image
-        test = GClib.Graphs.DrawChromosome()
-        test.SetMinMaxValues(65,30)
-        test.SetSequenceLength(self.sequence_length)
-        test.InitPicture()
-        test.SetHorizontalLines([37, 41, 46, 53])
-        test.SetColorsList(colorbyclass=True)
-        test.DrawWindowRectangles(windows=self.windows)
-        test.DrawLegend()   
-        test.FinishPicture(drawlabels=False)
-        
-        #Since the label were enlarged with PIL, image is in a temporary file
-        test.EnlargeLabels()
-        
-        #re enabling log
-        GClib.logger.threshold = old_threshold
-        
-        #Now unset the test.graph attribute class. The tempfile need to be readed
-        test.graph = None
-        self._test_MoreGraphs.AddGraph(test)
-        
     
     def test_AddGraph(self):
         """Testing AddGraph by adding a first Graph"""
@@ -501,7 +469,7 @@ class test_MoreGraphs(unittest.TestCase):
         #Save the figure
         self._test_MoreGraphs.SaveFigure(testfile)
         
-        #check no file are overwritten
+        #check that no file are overwritten
         self.assertRaises(GClib.Graphs.MoreGraphsError, self._test_MoreGraphs.SaveFigure, testfile)
         
         #remove temporary file

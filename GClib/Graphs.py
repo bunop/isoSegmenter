@@ -105,7 +105,7 @@ class BaseGraph():
         myattributes = self.__dict__
         
         #the returned string
-        message = "\n %s Object\n\n" %(myclass)
+        message = "\n %s instance at %s\n\n" %(myclass, hex(id(self)))
         
         for key, value in myattributes.iteritems():
             message += "\t%s -> %s\n" %(key, value)
@@ -1032,6 +1032,38 @@ class MoreGraphs():
         # This records the number of BaseGraph classed loaded in this image
         self.n_of_graphs = 0
         
+    def __str__(self):
+        """A method useful for debugging"""
+        
+        myclass = str(self.__class__)
+        myattributes = self.__dict__
+        
+        #the returned string
+        message = "\n %s instance at %s\n\n" %(myclass, hex(id(self)))
+        
+        for key, value in myattributes.iteritems():
+            message += "\t%s -> %s\n" %(key, value)
+            
+        return message
+        
+    def __repr__(self):
+        return self.__str__()
+        
+    def AddGraph(self, Graph):
+        """Adding more BaseGraph or derived to the same image"""
+        
+        #check that Graph is a BaseGraph instance or its derivate
+        if not hasattr(Graph, "graph"):
+            raise MoreGraphsError, "%s Object doesn't seem to be a BaseGraph or its derivate" %(Graph)
+            
+        if Graph.graph is None:
+            raise MoreGraphsError, "%s doesn't seem to be initialized" %(Graph)
+        
+    def SaveFigure(self, filename, check=True):
+        """Save figure to a file. Check file existance"""
+        
+        pass
+        
         
 
 
@@ -1073,7 +1105,7 @@ class DrawFamilies:
         myattributes = self.__dict__
         
         #the returned string
-        message = "\n %s Object\n\n" %(myclass)
+        message = "\n %s instance at %s\n\n" %(myclass, hex(id(self)))
         
         for key, value in myattributes.iteritems():
             message += "\t%s -> %s\n" %(key, value)

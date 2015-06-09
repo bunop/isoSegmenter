@@ -120,7 +120,7 @@ class Window(Element):
     def __str__(self):
         """Print Window in 0-Based coordinates"""
         
-        return "Window: start:%s,end:%s,size:%s,GClevel:%.6f,Class:%s" %(self.start, self.end, self.size, self.GClevel, self.Class)
+        return "Window instance at %s : start:%s,end:%s,size:%s,GClevel:%.6f,Class:%s" %(hex(id(self)), self.start, self.end, self.size, self.GClevel, self.Class)
 
     def SetGClevel(self, GClevel):
         """To set GClevel and class for a window"""
@@ -154,7 +154,7 @@ class Isochore():
     def __str__(self):
         """Print Isochore in 0-Based coordinates"""
         
-        return "Isochore: start:%s,end:%s,size:%s,Class:%s,avg_GClevel:%s,stddev_GClevel:%s" %(self.start, self.end, self.size, self.Class, self.avg_GClevel, self.stddev_GClevel)
+        return "Isochore instance at %s : start:%s,end:%s,size:%s,Class:%s,avg_GClevel:%s,stddev_GClevel:%s" %(hex(id(self)), self.start, self.end, self.size, self.Class, self.avg_GClevel, self.stddev_GClevel)
         
     def __repr__(self):
         return self.__str__()
@@ -270,7 +270,7 @@ class Gap(Element):
     def __str__(self):
         """Print Gap in 0-Based coordinates"""
         
-        return "Gap: start:%s,end:%s,size:%s,Class:%s" %(self.start, self.end, self.size, self.Class)
+        return "Gap instance at %s : start:%s,end:%s,size:%s,Class:%s" %(hex(id(self)), self.start, self.end, self.size, self.Class)
     
 
 #A generic chromosome Class
@@ -304,7 +304,7 @@ class Chromosome:
         if self.seqRecord != None and self.GClevel == 0:
             self.GClevel = self.WholeGCcontent()
             
-        return "Chromosome: name:%s, size:%s, whole GCcontent:%.3f" %(self.name, self.size, self.GClevel)
+        return "Chromosome instance at %s : name:%s, size:%s, whole GCcontent:%.3f" %(hex(id(self)), self.name, self.size, self.GClevel)
     
     def __repr__(self):
         return self.__str__()
@@ -1021,7 +1021,7 @@ class Families:
         myattributes = self.__dict__
         
         #the returned string
-        message = "\n %s Object\n\n" %(myclass)
+        message = "\n %s instance at %s\n\n" %(myclass, hex(id(self)))
         
         for key, value in myattributes.iteritems():
             message += "\t%s -> %s\n" %(key, value)
