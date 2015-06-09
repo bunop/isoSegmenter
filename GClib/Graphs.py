@@ -64,7 +64,7 @@ class BaseGraph():
         self.scale = 30000 #17500 #higher values shrink images
         self.border = 90 #the white space on the left and on the right of the figure
         self.top = 70 #the upper space before the X axis
-        self.bottom = 45 # the bottom size border  
+        self.bottom = 35 # the bottom size border  
         self.y = 385 #the height of the graphic area (in which isocore are printed, not image height)
         
         #image heigth = self.y + self.bottom
@@ -89,7 +89,7 @@ class BaseGraph():
         
         #To control image labels with PIL
         self.drawn_labels = False #if labels are drawn by DrawXaxes, it will be True
-        self.imagefile = None #if labels are drawn by PIL, this will be the path of image file
+        self.tempfile = None #if labels are drawn by PIL, this will be the path of image file
         
         #Defined by InitPicture method
         self.graph = None #GD graph instance will be put here
@@ -117,9 +117,12 @@ class BaseGraph():
     def __del__(self):
         """Delete temporary file if exists"""
         
-        if self.imagefile != None:
-            if os.path.exists(self.imagefile):
-                os.remove(self.imagefile)
+        if self.tempfile != None:
+            GClib.logger.log(5, "Found %s temporary file..." %(self.tempfile))
+            
+            if os.path.exists(self.tempfile):
+                GClib.logger.log(4, "Removing %s temporary file..." %(self.tempfile))
+                os.unlink(self.tempfile)
         
     def SetMinMaxValues(self, min_value, max_value):
         """Set the maximum and minimum values printable in the graphs"""
@@ -459,13 +462,13 @@ class BaseGraph():
             raise BaseGraphError, "Labels were drawn by DrawXaxes, and cannot be overwritten by this function"
         
         #determining a temp file for image
-        imagefile = tempfile.mktemp(suffix=".png")
+        fd, imagefile = tempfile.mkstemp(suffix=".png")
         
         #Save the image for the first time
-        self.SaveFigure(imagefile)
+        self.SaveFigure(imagefile, check=False)
         
         #Setting the proper attribute to file position
-        self.imagefile = imagefile
+        self.tempfile = imagefile
         
         #Open the temporary image in order to modify it
         im = Image.open(imagefile)
@@ -546,19 +549,19 @@ class BaseGraph():
         #save the new figure
         im.save(imagefile)
 
-    def SaveFigure(self, filename):
-        """Draw the image in a new file"""
+    def SaveFigure(self, filename, check=True):
+        """Draw the image in a new file. Check for file existance before writing"""
         
         if self.graph == None:
             #if GD image isn't instantiated yed, I couldn't instantiate colors
             raise BaseGraphError, "InitPicture must be called before this method"
         
         #checking for file existance
-        if os.path.exists(filename):
+        if os.path.exists(filename) and check == True:
             raise BaseGraphError, "File %s exists!!!" %(filename)
         
         #Determing if the Image is already drawn in temporary files
-        if self.imagefile == None:
+        if self.tempfile == None:
             #write a new image
             self.graph.writePng(filename)
             
@@ -566,7 +569,7 @@ class BaseGraph():
             
         else:
             #move the temporary image in user files
-            shutil.move(self.imagefile, filename)
+            shutil.move(self.tempfile, filename)
         
             GClib.logger.log(1, "Image moved in %s" %(filename))
         
@@ -959,13 +962,13 @@ class DrawBarChromosome(BaseGraph):
             raise BaseGraphError, "Labels were drawn by DrawXaxes, and cannot be overwritten by this function"
         
         #determining a temp file for image
-        imagefile = tempfile.mktemp(suffix=".png")
+        fd, imagefile = tempfile.mkstemp(suffix=".png")
         
         #Save the image for the first time
-        self.SaveFigure(imagefile)
+        self.SaveFigure(imagefile, check=False)
         
         #Setting the proper attribute to file position
-        self.imagefile = imagefile
+        self.tempfile = imagefile
         
         #Open the temporary image in order to modify it
         im = Image.open(imagefile)
