@@ -314,33 +314,49 @@ if __name__ == "__main__":
         #Instantiating DrawBarChromosome Class. Look at sequence start (0-based sequence start, this has been fixed in the top of this main block)
         Graph = GClib.Graphs.DrawBarChromosome(sequence_start=args.sequence_start)
         
+        #Instantiating a graph for the reference
+        Reference = GClib.Graphs.DrawBarChromosome(sequence_start=args.sequence_start)
+        
         #there are no min and max values in this graph style
         
         #Fixing appropriate values
         if args.max_length != None:
             #SetSequencelength needs the To position (the absolute end position)
             Graph.SetSequenceLength(To)
+            Reference.SetSequenceLength(To)
         
         else:
             Graph.SetSequenceLength(Chrom.size)
+            Reference.SetSequenceLength(Chrom.size)
         
         Graph.InitPicture()
+        Reference.InitPicture()
+        
         # No horyzontal lines
         Graph.SetColorsList(colorbyclass=True)
+        Reference.SetColorsList(colorbyclass=True)
         
         #Draw the correct values
         Graph.DrawIsochoreRectangles(isochores=Chrom.isochores)
+        Reference.DrawIsochoreRectangles(isochores=Ref2006.isochores)
         
         #Draw legend or not
         if args.draw_legend == True:
             Graph.DrawLegend()
+            Reference.DrawLegend()
             
         #Draw ChName
         if args.draw_chname != None:
             Graph.DrawChName(args.draw_chname)
+            Reference.DrawChName(args.draw_chname)
         
         Graph.FinishPicture(drawlabels=False)
+        Reference.FinishPicture(drawlabels=False)
+        
         Graph.EnlargeLabels()
+        Reference.EnlargeLabels()
+        
+        #Save reference or Graph?
         Graph.SaveFigure(args.barfile)
     
     
