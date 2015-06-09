@@ -51,6 +51,7 @@ from . import __copyright__, __license__, __version__
 class BaseGraphError(Exception) : pass
 class DrawChromosomeError(BaseGraphError) : pass
 class DrawFamiliesError(Exception): pass
+class MoreGraphsError(Exception): pass
 
 #The maximum and minumu values of DrawChromosome graph (in percentage)
 GRAPH_GC_MAX = 65
@@ -1015,6 +1016,25 @@ class DrawBarChromosome(BaseGraph):
         im.save(imagefile)
 
     
+# End of DrawBarChromosome class
+
+# Now a class to put two or more BaseGraph instances in the same image
+class MoreGraphs():
+    """This class allows to put two BaseGraph images in the same image"""
+    
+    def __init__(self):
+        """Instantiate the class"""
+ 
+        # Set image dimension
+        self.x = None
+        self.y = None
+         
+        # This records the number of BaseGraph classed loaded in this image
+        self.n_of_graphs = 0
+        
+        
+
+
 class DrawFamilies:
     """A class to plot isochores families in histograms"""
     
