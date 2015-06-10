@@ -791,10 +791,17 @@ class DrawBarChromosome(BaseGraph):
         BaseGraph.__init__(self, sequence_start=sequence_start)
 
         #re modulate bottom border        
-        self.bottom = 60
+        self.bottom = 70
+        self.top = 80 #the upper space before the X axis
+        
+        # re modulate borders
+        self.border = 110 #the white space on the left and on the right of the figure
+        
+        # A more thin image
+        self.y = 300
         
         #Shrink image
-        self.scale = 40000
+        self.scale = 50000
         
     #override basegrap set colour list
     def SetColorsList(self, colorbyclass=True):
@@ -976,13 +983,13 @@ class DrawBarChromosome(BaseGraph):
         
         #These are fonts used to draw images. Ensure thay you have the file specified in
         #GClib/__init__.py module
-        myfont = ImageFont.truetype(GClib.graph_font_type, 30)
+        myfont = ImageFont.truetype(GClib.graph_font_type, 40)
         
         #Questo oggetto mi serve per scriverci dentro
         draw = ImageDraw.Draw(im)
         
         #Determining left size point y1
-        y1 = self.top - 45
+        y1 = self.top - 55
         
         #the interval (in bp) in which labels will be drawn
         label = 1000000
@@ -994,22 +1001,22 @@ class DrawBarChromosome(BaseGraph):
                 continue
             
             #Write a label in correspondance to thicks, every two "label" distance
-            if iteration % 2 == 0:
+            if iteration % 4 == 0:
                 position = int(round((i - self.sequence_start) / self.scale + self.border))
                 
                 #a different X position for different label precision (1, 10, 100)
                 if i/label < 10:
-                    draw.text((position-7,y1), str(i/label), font=myfont, fill=1)
+                    draw.text((position-10,y1), str(i/label), font=myfont, fill=1)
                 elif i/label < 100:
-                    draw.text((position-15,y1), str(i/label), font=myfont, fill=1)
+                    draw.text((position-18,y1), str(i/label), font=myfont, fill=1)
                 else:
-                    draw.text((position-23,y1), str(i/label), font=myfont, fill=1)
+                    draw.text((position-26,y1), str(i/label), font=myfont, fill=1)
                     
             #Next step
             iteration += 1
             
         #For the Mb text
-        position = self.x - self.border/5*4
+        position = self.x - self.border * 0.90
         draw.text((position+5,y1), "Mb", font=myfont, fill=1)
             
         #save the new figure
