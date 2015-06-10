@@ -569,10 +569,10 @@ class BaseGraph():
             GClib.logger.log(1, "Image written in %s" %(filename))
             
         else:
-            #move the temporary image in user files
-            shutil.move(self.tempfile, filename)
+            #copy the temporary image in user files. I such way I can save file more times
+            shutil.copy(self.tempfile, filename)
         
-            GClib.logger.log(1, "Image moved in %s" %(filename))
+            GClib.logger.log(1, "Image copied in %s" %(filename))
         
 
 #The main class which simulates the behaviour of draw_chromsome.pl
@@ -1026,8 +1026,11 @@ class MoreGraphs():
         """Instantiate the class"""
  
         # Set image dimension
-        self.x = None
-        self.y = None
+        self.x = 0
+        self.y = 0
+        
+        # The image class attribute
+        self.image = None
          
         # This records the number of BaseGraph classed loaded in this image
         self.n_of_graphs = 0
@@ -1058,11 +1061,57 @@ class MoreGraphs():
             
         if Graph.graph is None:
             raise MoreGraphsError, "%s doesn't seem to be initialized" %(Graph)
+            
+        #Ok. If I had a basegraph object, I need to save the figure in a temporary file
+        fd, imagefile = tempfile.mkstemp(suffix=".png")
+        
+        #Save the image for the first time
+        Graph.SaveFigure(imagefile, check=False)
+        
+        #Open the image file
+        graph_image = Image.open(imagefile)
+        
+        #get current size
+        x, y = graph_image.size
+        
+        #create a new temporary image
+        tmp_image = Image.new('RGB',(max(x,self.x),y+self.y),color=(255,255,255))
+        
+        #Copy old data in the new image if necessary
+        if self.n_of_graphs > 0:
+            box = (0,0,self.x, self.y)
+            region = self.image.crop(box)
+            tmp_image.paste(region, box)
+        
+        #cut the graph_image. Define a box
+        box = (0,0,x,y)
+        region = graph_image.crop(box)
+        
+        #Define a box in which put an image. X will ne 0, by Y will be image heigth
+        box = (0,self.y, x, y+self.y)
+        tmp_image.paste(region, box)
+        
+        #updating class attributes
+        self.image = tmp_image
+        self.n_of_graphs += 1
+        self.x, self.y = self.image.size
+        
         
     def SaveFigure(self, filename, check=True):
         """Save figure to a file. Check file existance"""
         
-        pass
+        if self.image == None:
+            #I have no image to save
+            raise MoreGraphsError, "No BaseGraph or derivate were added to this class instance"
+        
+        #checking for file existance
+        if os.path.exists(filename) and check == True:
+            raise MoreGraphsError, "File %s exists!!!" %(filename)
+        
+        #Determing if the Image is already drawn in temporary files
+        self.image.save(filename)
+        
+        GClib.logger.log(1, "Image saved in %s" %(filename))
         
         
 

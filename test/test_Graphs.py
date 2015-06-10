@@ -426,8 +426,15 @@ class test_MoreGraphs(unittest.TestCase):
     
     def test_AddGraph(self):
         """Testing AddGraph by adding a first Graph"""
+
+        #disable log temporarily
+        old_threshold = GClib.logger.threshold
+        GClib.logger.threshold = 0
         
         self._test_MoreGraphs.AddGraph(self.First)
+                
+        #resetting threshold
+        GClib.logger.threshold = old_threshold
         
         #getting size
         test_x, test_y = self._test_MoreGraphs.x, self._test_MoreGraphs.y
@@ -439,8 +446,15 @@ class test_MoreGraphs(unittest.TestCase):
     def test_AddGraph2(self):
         """Testing AddGraph by adding a second Graph"""
         
+        #disable log temporarily
+        old_threshold = GClib.logger.threshold
+        GClib.logger.threshold = 0
+        
         self._test_MoreGraphs.AddGraph(self.First)
         self._test_MoreGraphs.AddGraph(self.Second)
+        
+        #resetting threshold
+        GClib.logger.threshold = old_threshold
         
         #getting size
         test_x, test_y = self._test_MoreGraphs.x, self._test_MoreGraphs.y
@@ -455,16 +469,16 @@ class test_MoreGraphs(unittest.TestCase):
     def test_SaveFigure(self):
         """Testing SaveImage"""
         
+        #disable log temporarily
+        old_threshold = GClib.logger.threshold
+        GClib.logger.threshold = 0
+        
         #Call the function in the correct way
         self._test_MoreGraphs.AddGraph(self.First)
         self._test_MoreGraphs.AddGraph(self.Second)
         
         #Get a temporary filename for testing
-        testfile = tempfile.mktemp()
-        
-        #disable log temporarily
-        old_threshold = GClib.logger.threshold
-        GClib.logger.threshold = 0
+        testfile = tempfile.mktemp() + ".png"
         
         #Save the figure
         self._test_MoreGraphs.SaveFigure(testfile)
