@@ -190,6 +190,8 @@ class test_BaseGraph(unittest.TestCase):
         
         GClib.logger.errfile = old_errfile
         
+    #TODO: test GetLabelByGClevel
+        
     def test_DrawChName(self):
         """Testing DrawChName"""
         
@@ -284,7 +286,7 @@ class test_BaseGraph(unittest.TestCase):
         
         #remove temporary file
         if os.path.exists(testfile):
-            os.remove(testfile)
+            os.unlink(testfile)
             
         #resetting threshold
         GClib.logger.threshold = old_threshold
@@ -348,6 +350,149 @@ class test_DrawChromosome(unittest.TestCase):
         self._test_DrawChromosome.SetColorsList(colorbyclass=True)
         self._test_DrawChromosome.DrawIsochoreRectangles(isochores=self.isochores)
         self._test_DrawChromosome.DrawLegend()
+
+#TODO: Test code for DrawBarChromosome
+
+#The testing methods for MoreGraphs classes
+class test_MoreGraphs(unittest.TestCase):
+    # load data to test graphs
+    chromosome = GClib.Elements.Chromosome()
+    
+    #read isochore from isochores list
+    chromosome.LoadIsochores("test_isochores3_chr21.csv")
+    isochores = chromosome.isochores
+    
+    #read windows from windows list
+    chromosome.LoadWindows("test_windows_chr21.csv")
+    windows = chromosome.windows
+    
+    #determing sequence length from isochore coordinates
+    start = isochores[0].start
+    end = isochores[-1].end
+    
+    sequence_length = end-start
+    
+    def setUp(self):
+        #disable log temporarily
+        old_threshold = GClib.logger.threshold
+        GClib.logger.threshold = 0
+        
+        #Now generate images from data
+        First = GClib.Graphs.DrawChromosome()
+        First.SetMinMaxValues(65,30)
+        First.SetSequenceLength(self.sequence_length)
+        First.InitPicture()
+        First.SetHorizontalLines([37, 41, 46, 53])
+        First.SetColorsList(colorbyclass=True)
+        First.DrawWindowRectangles(windows=self.windows)
+        First.DrawLegend()   
+        First.FinishPicture(drawlabels=False)
+        
+        #Since the label were enlarged with PIL, image is in a temporary file
+        First.EnlargeLabels()
+        
+        #Set First as a class attributes
+        self.First = First
+        
+        #Now generate a second image
+        Second = GClib.Graphs.DrawChromosome()
+        Second.SetMinMaxValues(65,30)
+        Second.SetSequenceLength(self.sequence_length)
+        Second.InitPicture()
+        Second.SetHorizontalLines([37, 41, 46, 53])
+        Second.SetColorsList(colorbyclass=True)
+        Second.DrawWindowRectangles(windows=self.windows)
+        Second.DrawLegend()   
+        Second.FinishPicture(drawlabels=False)
+        
+        #Since the label were enlarged with PIL, image is in a temporary file
+        Second.EnlargeLabels()
+        
+        #Set Second as a class attributes
+        self.Second = Second
+        
+        #re enabling log
+        GClib.logger.threshold = old_threshold
+    
+        self._test_MoreGraphs = GClib.Graphs.MoreGraphs()
+        
+    def test_HandleGraph(self):
+        """Test if passing a BaseGrap method"""
+        
+        test = GClib.Graphs.DrawChromosome()
+        
+        #check that image is initialized
+        self.assertRaises(GClib.Graphs.MoreGraphsError, self._test_MoreGraphs.AddGraph, test)
+    
+    def test_AddGraph(self):
+        """Testing AddGraph by adding a first Graph"""
+
+        #disable log temporarily
+        old_threshold = GClib.logger.threshold
+        GClib.logger.threshold = 0
+        
+        self._test_MoreGraphs.AddGraph(self.First)
+                
+        #resetting threshold
+        GClib.logger.threshold = old_threshold
+        
+        #getting size
+        test_x, test_y = self._test_MoreGraphs.x, self._test_MoreGraphs.y
+        ref_x, ref_y = self.First.graph.size()
+        
+        #testing graph size
+        self.assertEquals((test_x, test_y), (ref_x, ref_y))
+        
+    def test_AddGraph2(self):
+        """Testing AddGraph by adding a second Graph"""
+        
+        #disable log temporarily
+        old_threshold = GClib.logger.threshold
+        GClib.logger.threshold = 0
+        
+        self._test_MoreGraphs.AddGraph(self.First)
+        self._test_MoreGraphs.AddGraph(self.Second)
+        
+        #resetting threshold
+        GClib.logger.threshold = old_threshold
+        
+        #getting size
+        test_x, test_y = self._test_MoreGraphs.x, self._test_MoreGraphs.y
+        ref_x, ref_y = self.First.graph.size()
+        ref2_x, ref2_y = self.Second.graph.size()
+        
+        #Now length is the same., but height is ref_y + ref2_y
+        
+        #testing graph size
+        self.assertEquals((test_x, test_y), (ref_x, ref_y+ref2_y))
+        
+    def test_SaveFigure(self):
+        """Testing SaveImage"""
+        
+        #disable log temporarily
+        old_threshold = GClib.logger.threshold
+        GClib.logger.threshold = 0
+        
+        #Call the function in the correct way
+        self._test_MoreGraphs.AddGraph(self.First)
+        self._test_MoreGraphs.AddGraph(self.Second)
+        
+        #Get a temporary filename for testing
+        testfile = tempfile.mktemp() + ".png"
+        
+        #Save the figure
+        self._test_MoreGraphs.SaveFigure(testfile)
+        
+        #check that no file are overwritten
+        self.assertRaises(GClib.Graphs.MoreGraphsError, self._test_MoreGraphs.SaveFigure, testfile)
+        
+        #remove temporary file
+        if os.path.exists(testfile):
+            os.unlink(testfile)
+            
+        #resetting threshold
+        GClib.logger.threshold = old_threshold
+    
 
 #TODO: Define test code for drawing graphs
 

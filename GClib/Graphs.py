@@ -51,6 +51,7 @@ from . import __copyright__, __license__, __version__
 class BaseGraphError(Exception) : pass
 class DrawChromosomeError(BaseGraphError) : pass
 class DrawFamiliesError(Exception): pass
+class MoreGraphsError(Exception): pass
 
 #The maximum and minumu values of DrawChromosome graph (in percentage)
 GRAPH_GC_MAX = 65
@@ -64,7 +65,7 @@ class BaseGraph():
         self.scale = 30000 #17500 #higher values shrink images
         self.border = 90 #the white space on the left and on the right of the figure
         self.top = 70 #the upper space before the X axis
-        self.bottom = 45 # the bottom size border  
+        self.bottom = 35 # the bottom size border  
         self.y = 385 #the height of the graphic area (in which isocore are printed, not image height)
         
         #image heigth = self.y + self.bottom
@@ -89,7 +90,7 @@ class BaseGraph():
         
         #To control image labels with PIL
         self.drawn_labels = False #if labels are drawn by DrawXaxes, it will be True
-        self.imagefile = None #if labels are drawn by PIL, this will be the path of image file
+        self.tempfile = None #if labels are drawn by PIL, this will be the path of image file
         
         #Defined by InitPicture method
         self.graph = None #GD graph instance will be put here
@@ -104,7 +105,7 @@ class BaseGraph():
         myattributes = self.__dict__
         
         #the returned string
-        message = "\n %s Object\n\n" %(myclass)
+        message = "\n %s instance at %s\n\n" %(myclass, hex(id(self)))
         
         for key, value in myattributes.iteritems():
             message += "\t%s -> %s\n" %(key, value)
@@ -117,9 +118,12 @@ class BaseGraph():
     def __del__(self):
         """Delete temporary file if exists"""
         
-        if self.imagefile != None:
-            if os.path.exists(self.imagefile):
-                os.remove(self.imagefile)
+        if self.tempfile != None:
+            GClib.logger.log(5, "Found %s temporary file..." %(self.tempfile))
+            
+            if os.path.exists(self.tempfile):
+                GClib.logger.log(4, "Removing %s temporary file..." %(self.tempfile))
+                os.unlink(self.tempfile)
         
     def SetMinMaxValues(self, min_value, max_value):
         """Set the maximum and minimum values printable in the graphs"""
@@ -459,13 +463,13 @@ class BaseGraph():
             raise BaseGraphError, "Labels were drawn by DrawXaxes, and cannot be overwritten by this function"
         
         #determining a temp file for image
-        imagefile = tempfile.mktemp(suffix=".png")
+        fd, imagefile = tempfile.mkstemp(suffix=".png")
         
         #Save the image for the first time
-        self.SaveFigure(imagefile)
+        self.SaveFigure(imagefile, check=False)
         
         #Setting the proper attribute to file position
-        self.imagefile = imagefile
+        self.tempfile = imagefile
         
         #Open the temporary image in order to modify it
         im = Image.open(imagefile)
@@ -546,29 +550,29 @@ class BaseGraph():
         #save the new figure
         im.save(imagefile)
 
-    def SaveFigure(self, filename):
-        """Draw the image in a new file"""
+    def SaveFigure(self, filename, check=True):
+        """Draw the image in a new file. Check for file existance before writing"""
         
         if self.graph == None:
             #if GD image isn't instantiated yed, I couldn't instantiate colors
             raise BaseGraphError, "InitPicture must be called before this method"
         
         #checking for file existance
-        if os.path.exists(filename):
+        if os.path.exists(filename) and check == True:
             raise BaseGraphError, "File %s exists!!!" %(filename)
         
         #Determing if the Image is already drawn in temporary files
-        if self.imagefile == None:
+        if self.tempfile == None:
             #write a new image
             self.graph.writePng(filename)
             
             GClib.logger.log(1, "Image written in %s" %(filename))
             
         else:
-            #move the temporary image in user files
-            shutil.move(self.imagefile, filename)
+            #copy the temporary image in user files. I such way I can save file more times
+            shutil.copy(self.tempfile, filename)
         
-            GClib.logger.log(1, "Image moved in %s" %(filename))
+            GClib.logger.log(1, "Image copied in %s" %(filename))
         
 
 #The main class which simulates the behaviour of draw_chromsome.pl
@@ -987,13 +991,13 @@ class DrawBarChromosome(BaseGraph):
             raise BaseGraphError, "Labels were drawn by DrawXaxes, and cannot be overwritten by this function"
         
         #determining a temp file for image
-        imagefile = tempfile.mktemp(suffix=".png")
+        fd, imagefile = tempfile.mkstemp(suffix=".png")
         
         #Save the image for the first time
-        self.SaveFigure(imagefile)
+        self.SaveFigure(imagefile, check=False)
         
         #Setting the proper attribute to file position
-        self.imagefile = imagefile
+        self.tempfile = imagefile
         
         #Open the temporary image in order to modify it
         im = Image.open(imagefile)
@@ -1040,6 +1044,106 @@ class DrawBarChromosome(BaseGraph):
         im.save(imagefile)
 
     
+# End of DrawBarChromosome class
+
+# Now a class to put two or more BaseGraph instances in the same image
+class MoreGraphs():
+    """This class allows to put two BaseGraph images in the same image"""
+    
+    def __init__(self):
+        """Instantiate the class"""
+ 
+        # Set image dimension
+        self.x = 0
+        self.y = 0
+        
+        # The image class attribute
+        self.image = None
+         
+        # This records the number of BaseGraph classed loaded in this image
+        self.n_of_graphs = 0
+        
+    def __str__(self):
+        """A method useful for debugging"""
+        
+        myclass = str(self.__class__)
+        myattributes = self.__dict__
+        
+        #the returned string
+        message = "\n %s instance at %s\n\n" %(myclass, hex(id(self)))
+        
+        for key, value in myattributes.iteritems():
+            message += "\t%s -> %s\n" %(key, value)
+            
+        return message
+        
+    def __repr__(self):
+        return self.__str__()
+        
+    def AddGraph(self, Graph):
+        """Adding more BaseGraph or derived to the same image"""
+        
+        #check that Graph is a BaseGraph instance or its derivate
+        if not hasattr(Graph, "graph"):
+            raise MoreGraphsError, "%s Object doesn't seem to be a BaseGraph or its derivate" %(Graph)
+            
+        if Graph.graph is None:
+            raise MoreGraphsError, "%s doesn't seem to be initialized" %(Graph)
+            
+        #Ok. If I had a basegraph object, I need to save the figure in a temporary file
+        fd, imagefile = tempfile.mkstemp(suffix=".png")
+        
+        #Save the image for the first time
+        Graph.SaveFigure(imagefile, check=False)
+        
+        #Open the image file
+        graph_image = Image.open(imagefile)
+        
+        #get current size
+        x, y = graph_image.size
+        
+        #create a new temporary image
+        tmp_image = Image.new('RGB',(max(x,self.x),y+self.y),color=(255,255,255))
+        
+        #Copy old data in the new image if necessary
+        if self.n_of_graphs > 0:
+            box = (0,0,self.x, self.y)
+            region = self.image.crop(box)
+            tmp_image.paste(region, box)
+        
+        #cut the graph_image. Define a box
+        box = (0,0,x,y)
+        region = graph_image.crop(box)
+        
+        #Define a box in which put an image. X will ne 0, by Y will be image heigth
+        box = (0,self.y, x, y+self.y)
+        tmp_image.paste(region, box)
+        
+        #updating class attributes
+        self.image = tmp_image
+        self.n_of_graphs += 1
+        self.x, self.y = self.image.size
+        
+        
+    def SaveFigure(self, filename, check=True):
+        """Save figure to a file. Check file existance"""
+        
+        if self.image == None:
+            #I have no image to save
+            raise MoreGraphsError, "No BaseGraph or derivate were added to this class instance"
+        
+        #checking for file existance
+        if os.path.exists(filename) and check == True:
+            raise MoreGraphsError, "File %s exists!!!" %(filename)
+        
+        #Determing if the Image is already drawn in temporary files
+        self.image.save(filename)
+        
+        GClib.logger.log(1, "Image saved in %s" %(filename))
+        
+        
+
+
 class DrawFamilies:
     """A class to plot isochores families in histograms"""
     
@@ -1078,7 +1182,7 @@ class DrawFamilies:
         myattributes = self.__dict__
         
         #the returned string
-        message = "\n %s Object\n\n" %(myclass)
+        message = "\n %s instance at %s\n\n" %(myclass, hex(id(self)))
         
         for key, value in myattributes.iteritems():
             message += "\t%s -> %s\n" %(key, value)
