@@ -356,7 +356,12 @@ if __name__ == "__main__":
         Graph.EnlargeLabels()
         Reference.EnlargeLabels()
         
-        #Save reference or Graph?
-        Graph.SaveFigure(args.barfile)
+        #Now put the two images in the same file
+        Final = GClib.Graphs.MoreGraphs()
+        Final.AddGraph(Reference)
+        Final.AddGraph(Graph)
+        
+        #Now save the image
+        Final.SaveFigure(args.barfile)
     
     
