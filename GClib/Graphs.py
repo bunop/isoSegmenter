@@ -546,7 +546,7 @@ class BaseGraph():
                 label = str(label)
             
             draw.text((int(self.border / 3)-8, y1-12), label + "%", font=myfont, fill=1)
-            
+        
         #save the new figure
         im.save(imagefile)
 
@@ -805,7 +805,14 @@ class DrawBarChromosome(BaseGraph):
         BaseGraph.__init__(self, sequence_start=sequence_start)
 
         #re modulate bottom border        
-        self.bottom = 60
+        self.bottom = 70
+        self.top = 80 #the upper space before the X axis
+        
+        # re modulate borders
+        self.border = 110 #the white space on the left and on the right of the figure
+        
+        # A more thin image
+        self.y = 300
         
         #Shrink image
         self.scale = 40000
@@ -1004,13 +1011,13 @@ class DrawBarChromosome(BaseGraph):
         
         #These are fonts used to draw images. Ensure thay you have the file specified in
         #GClib/__init__.py module
-        myfont = ImageFont.truetype(GClib.graph_font_type, 30)
+        myfont = ImageFont.truetype(GClib.graph_font_type, 40)
         
-        #Questo oggetto mi serve per scriverci dentro
+        #An object in order to write inside image
         draw = ImageDraw.Draw(im)
         
         #Determining left size point y1
-        y1 = self.top - 45
+        y1 = self.top - 55
         
         #the interval (in bp) in which labels will be drawn
         label = 1000000
@@ -1022,24 +1029,34 @@ class DrawBarChromosome(BaseGraph):
                 continue
             
             #Write a label in correspondance to thicks, every two "label" distance
-            if iteration % 2 == 0:
+            if iteration % 4 == 0:
                 position = int(round((i - self.sequence_start) / self.scale + self.border))
                 
                 #a different X position for different label precision (1, 10, 100)
                 if i/label < 10:
-                    draw.text((position-7,y1), str(i/label), font=myfont, fill=1)
+                    draw.text((position-10,y1), str(i/label), font=myfont, fill=1)
                 elif i/label < 100:
-                    draw.text((position-15,y1), str(i/label), font=myfont, fill=1)
+                    draw.text((position-18,y1), str(i/label), font=myfont, fill=1)
                 else:
-                    draw.text((position-23,y1), str(i/label), font=myfont, fill=1)
+                    draw.text((position-26,y1), str(i/label), font=myfont, fill=1)
                     
             #Next step
             iteration += 1
             
         #For the Mb text
-        position = self.x - self.border/5*4
-        draw.text((position+5,y1), "Mb", font=myfont, fill=1)
-            
+        position = self.x - self.border * 0.90
+        draw.text((position+10,y1), "Mb", font=myfont, fill=1)
+        
+        #Add a GC on the left of the graph. Create a transparent layer
+        layer = Image.new('RGBA',(60, 50),color=(255,255,255))
+        draw_gc = ImageDraw.Draw(layer)
+        draw_gc.text((0,0), "GC", font=myfont, fill=(0,0,0))
+        rotated_layer=layer.rotate(90,  expand=1)
+        
+        #Covert image in 4x8-bit pixels, true color with transparency mask
+        im = im.convert("RGBA")
+        im.paste(rotated_layer, (int(self.border*0.40), self.y / 2), rotated_layer)
+        
         #save the new figure
         im.save(imagefile)
 

@@ -122,8 +122,8 @@ GClib.Elements.Chromosome.LoadIsochores = ReadReference2006
 
 if __name__ == "__main__":
     #To continue work, I need almost one file to write
-    if args.outfile == None and args.graphfile == None:
-        raise Exception, "You must specify an output isochore file while calling this program, by graphfile or outfile option"
+    if args.outfile == None and args.graphfile == None and args.barfile == None:
+        raise Exception, "You must specify an output isochore file while calling this program, by graphfile, barfile or outfile option"
         
     #verify verbosity level
     if args.verbose != GClib.logger.threshold:
