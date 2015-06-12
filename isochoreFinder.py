@@ -29,7 +29,7 @@ Main program for Isochore Definition
 
 """
 
-import os
+import csv
 import argparse
 
 #Modules for dealing with GC content and graph
@@ -61,7 +61,6 @@ args = parser.parse_args()
 
 #TODO: Change GAP tolerance
 #TODO: Setting sequence start and end
-#TODO: Draw Genome Research 2006 isochore profile
 #TODO: Write GAP CSV file
 #TODO: Change isochore class boundaries
 #TODO: Switch to Isochore Profile and Isochore Rectangle Boxes
@@ -70,8 +69,8 @@ args = parser.parse_args()
 
 if __name__ == "__main__":
     #To continue work, I need almost one file to write
-    if args.outfile == None and args.graphfile == None:
-        raise Exception, "You must specify an output isochore file while calling this program, by graphfile or outfile option"
+    if args.outfile == None and args.graphfile == None and args.barfile == None:
+        raise Exception, "You must specify an output isochore file while calling this program, by graphfile, barfile or outfile option"
         
     #verify verbosity level
     if args.verbose != GClib.logger.threshold:

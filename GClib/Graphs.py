@@ -546,7 +546,7 @@ class BaseGraph():
                 label = str(label)
             
             draw.text((int(self.border / 3)-8, y1-12), label + "%", font=myfont, fill=1)
-            
+        
         #save the new figure
         im.save(imagefile)
 
@@ -985,7 +985,7 @@ class DrawBarChromosome(BaseGraph):
         #GClib/__init__.py module
         myfont = ImageFont.truetype(GClib.graph_font_type, 40)
         
-        #Questo oggetto mi serve per scriverci dentro
+        #An object in order to write inside image
         draw = ImageDraw.Draw(im)
         
         #Determining left size point y1
@@ -1017,8 +1017,18 @@ class DrawBarChromosome(BaseGraph):
             
         #For the Mb text
         position = self.x - self.border * 0.90
-        draw.text((position+5,y1), "Mb", font=myfont, fill=1)
-            
+        draw.text((position+10,y1), "Mb", font=myfont, fill=1)
+        
+        #Add a GC on the left of the graph. Create a transparent layer
+        layer = Image.new('RGBA',(60, 50),color=(255,255,255))
+        draw_gc = ImageDraw.Draw(layer)
+        draw_gc.text((0,0), "GC", font=myfont, fill=(0,0,0))
+        rotated_layer=layer.rotate(90,  expand=1)
+        
+        #Covert image in 4x8-bit pixels, true color with transparency mask
+        im = im.convert("RGBA")
+        im.paste(rotated_layer, (int(self.border*0.40), self.y / 2), rotated_layer)
+        
         #save the new figure
         im.save(imagefile)
 
