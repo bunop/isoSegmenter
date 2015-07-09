@@ -553,12 +553,50 @@ class Chromosome:
         #Starting the 2° step
         GClib.logger.log(4, "Starting Step (2)...")
         
+        #filtering short isochores
+        self.__filter_isochores(min_length=1)
+        
+        GClib.logger.log(4, "Step (2) completed.")
+        
+        #HINT: decomment this line to draw back isochore after step2
+        #return
+    
+        GClib.logger.log(4, " Starting Step (3)...")
+        
+        self.__merge_isochores()
+        
+        GClib.logger.log(4, "Step (3) completed.")
+        
+        #Starting the 4° step
+        GClib.logger.log(4, "Starting Step (4)...")
+        
+        #filtering short isochores
+        self.__filter_isochores(min_length=2)
+        
+        GClib.logger.log(4, "Step (4) completed.")
+        
+        #HINT: decomment this line to draw back isochore after step4
+        #return
+        
+        GClib.logger.log(4, " Starting Step (5)...")
+        
+        self.__merge_isochores()
+        
+        GClib.logger.log(4, "Step (5) completed.")        
+        
+        #Print out each isochore instantiation, like windows and gaps
+        for isochore in self.isochores:
+            GClib.logger.log(3, "New %s defined" %(isochore))
+        
+        GClib.logger.log(2, "Isochores calculation finished")
+        
+    def __filter_isochores(self, min_length=1):        
         #Now we can merge isochore under a certain size. Since we are modifing the
         #isochore list by removing indexes, it is safer to procede by reversing array. To obtain the -2 value,
         #I have to consider len(isochores) -2 because the length of an array is +1
         #higher than the last index
         for i in range(len(self.isochores)-2,1,-1):
-            if self.isochores[i].Class == "gap" or len(self.isochores[i]) > 1:
+            if self.isochores[i].Class == "gap" or len(self.isochores[i]) > min_length:
                 GClib.logger.log(5, "Ignoring %s" %(self.isochores[i]))
                 continue
             
@@ -627,12 +665,8 @@ class Chromosome:
             #debug
             #break
         
-        GClib.logger.log(4, "Step (2) completed.")
-        
-        #HINT: decomment this line to draw back isochore after step2
-        #return
-    
-        GClib.logger.log(4, " Starting Step (3)...")
+    def __merge_isochores(self):
+        """Merge two isochores with the same class"""
         
         #Now we could two distinct isochore with the same class, and we want to merge them
         for i in range(len(self.isochores)-2,0,-1):
@@ -659,14 +693,6 @@ class Chromosome:
                     raise ChromosomeError, "The class has changed for %s" %(self.isochores[i])
             
             #cicle i
-        
-        GClib.logger.log(4, "Step (3) completed.")
-        
-        #Print out each isochore instantiation, like windows and gaps
-        for isochore in self.isochores:
-            GClib.logger.log(3, "New %s defined" %(isochore))
-        
-        GClib.logger.log(2, "Isochores calculation finished")
     
     def _handle_output(self,outfile):
         """This function open a file for writing if necessary"""

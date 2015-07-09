@@ -51,7 +51,7 @@ parser.add_argument('-v', '--verbose', action="count", required=False, default=0
 parser.add_argument('--windowgraph', type=str, required=False, help="Output windows Graph file")
 parser.add_argument('--draw_legend', action='store_true', help="Draw legend on the right side of the image")
 parser.add_argument('--force_overwrite', action='store_true', help="Force overwrite")
-parser.add_argument('--sequence_start', type=int, required=False, default=1, help="Start segmentation from this position (1-based coordinates)")
+parser.add_argument('--sequence_start', type=float, required=False, default=1, help="Start segmentation from this position (1-based coordinates)")
 parser.add_argument('--max_length', type=float, required=False, default=None, help="Scan for isochores until for this dimension in bp")
 parser.add_argument('--draw_chname', type=str, required=False, default=None, help="Draw chromosome name in figure")
 parser.add_argument('--window_size', type=int, required=False, default=GClib.WINDOW_SIZE, help="Set window size in bp (default: '%(default)s')")
@@ -151,7 +151,7 @@ if __name__ == "__main__":
         raise Exception, "Sequence start must be 1-based and > 0"
     
     #Internal coordinates are 0-based, not 1-based
-    args.sequence_start -= 1
+    args.sequence_start = int(args.sequence_start) -1
     
     #To is the position in which isochore calculation ends. None will be threated
     #as chromosome end position
