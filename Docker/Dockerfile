@@ -1,12 +1,12 @@
 
 #
-# VERSION 0.1
+# VERSION 0.2
 # DOCKER-VERSION  1.6.2
 # AUTHOR:         Paolo Cozzi <paolo.cozzi@tecnoparco.org>
 # DESCRIPTION:    An image python base image which isoSegmenter will run
-# TO_BUILD:       docker build --rm -t bunop/isochorefinder .
-# TO_RUN:         docker run -ti bunop/isochorefinder /bin/bash
-# TO_TAG:         docker tag bunop/isochorefinder:latest bunop/isochorefinder:0.1
+# TO_BUILD:       docker build --rm -t bunop/isosegmenter .
+# TO_RUN:         docker run -ti bunop/isosegmenter /bin/bash
+# TO_TAG:         docker tag bunop/isosegmenter:latest bunop/isosegmenter:0.2
 #
 
 FROM python:2.7.9
