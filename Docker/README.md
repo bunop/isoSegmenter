@@ -9,7 +9,7 @@ Those are instructions on how tu run [isoSegmenter](https://github.com/bunop/iso
 You can start a isochoreFinde image simply by typing:
 
 ```bash
-docker run -ti bunop/isochorefinder /bin/bash
+docker run -ti bunop/isosegmenter /bin/bash
 ```
 
 This will be enough to get an isoSegmenter running container. You can otionally mount a local directoy inside the running container by adding a local directory as a docker volume. More information can be found inside Docker tutorial on [Managing data in Container](http://docs.docker.com/userguide/dockervolumes/). `isoSegmenter` will be placed under `/opt/isoSegmenter` directory
@@ -21,8 +21,8 @@ Clone isoSegmenter repository from github on your machine, enter in Docker direc
 ```bash
 $ git clone https://github.com/bunop/isoSegmenter.git
 $ cd Docker
-$ docker build --rm -t bunop/isochorefinder .
-$ docker run -ti bunop/isochorefinder /bin/bash
+$ docker build --rm -t bunop/isosegmenter .
+$ docker run -ti bunop/isosegmenter /bin/bash
 ```
 
 More information can be found on [Docker documentation](http://docs.docker.com/) or on [Working with Docker Images](http://docs.docker.com/userguide/dockerimages/) tutorial
