@@ -410,12 +410,12 @@ class BaseGraph():
         
         #pay attention to self.y_max and self.y_min
         if type(self.y_max) == types.FloatType or type(self.y_min) == types.FloatType:
-            y_max = "%.3f" %(self.y_max) + "%"
-            y_min = "%.3f" %(self.y_min) + "%"
+            y_max = "%.3f" %(self.y_max)
+            y_min = "%.3f" %(self.y_min)
             
         else:
-            y_max = str(self.y_max)+"%"
-            y_min = str(self.y_min)+"%"
+            y_max = str(self.y_max)
+            y_min = str(self.y_min)
             
         if drawlabels == True:
             self.graph.string(self.fontsize,(int(self.border / 3), y1-8), y_max, self.black)
@@ -443,7 +443,7 @@ class BaseGraph():
             
             if drawlabels == True:
                 #Write the value on the left and a dotted line
-                self.graph.string(self.fontsize, (int(self.border / 3), y1-8), label + "%",self.black)
+                self.graph.string(self.fontsize, (int(self.border / 3), y1-8), label,self.black)
             
     def FinishPicture(self,drawlabels=True):
         """Call functions for x,y axis and horizontal lines. Drawlabels flag specifies
@@ -519,12 +519,12 @@ class BaseGraph():
         
         #pay attention to self.y_max and self.y_min
         if type(self.y_max) == types.FloatType or type(self.y_min) == types.FloatType:
-            y_max = "%.3f" %(self.y_max) + "%"
-            y_min = "%.3f" %(self.y_min) + "%"
+            y_max = "%.3f" %(self.y_max)
+            y_min = "%.3f" %(self.y_min)
             
         else:
-            y_max = str(self.y_max)+"%"
-            y_min = str(self.y_min)+"%"
+            y_max = str(self.y_max)
+            y_min = str(self.y_min)
         
         #Draw max and min values with PIL
         draw.text((int(self.border / 3)-8, y1-12), y_max, font=myfont, fill=1)
@@ -545,7 +545,7 @@ class BaseGraph():
             else:
                 label = str(label)
             
-            draw.text((int(self.border / 3)-8, y1-12), label + "%", font=myfont, fill=1)
+            draw.text((int(self.border / 3)-8, y1-12), label, font=myfont, fill=1)
         
         #save the new figure
         im.save(imagefile)
@@ -1020,14 +1020,14 @@ class DrawBarChromosome(BaseGraph):
         draw.text((position+10,y1), "Mb", font=myfont, fill=1)
         
         #Add a GC on the left of the graph. Create a transparent layer
-        layer = Image.new('RGBA',(60, 50),color=(255,255,255))
-        draw_gc = ImageDraw.Draw(layer)
-        draw_gc.text((0,0), "GC", font=myfont, fill=(0,0,0))
-        rotated_layer=layer.rotate(90,  expand=1)
+        # layer = Image.new('RGBA',(60, 50),color=(255,255,255))
+        # draw_gc = ImageDraw.Draw(layer)
+        # draw_gc.text((0,0), "GC", font=myfont, fill=(0,0,0))
+        # rotated_layer=layer.rotate(90,  expand=1)
         
         #Covert image in 4x8-bit pixels, true color with transparency mask
-        im = im.convert("RGBA")
-        im.paste(rotated_layer, (int(self.border*0.40), self.y / 2), rotated_layer)
+        # im = im.convert("RGBA")
+        # im.paste(rotated_layer, (int(self.border*0.40), self.y / 2), rotated_layer)
         
         #save the new figure
         im.save(imagefile)
