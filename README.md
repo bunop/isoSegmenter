@@ -1,11 +1,12 @@
-isochoreFinder
+
+isoSegmenter
 ==============
 
 A program for segmenting genomes into isochores
 
 ##License
 
-isochoreFinder - A program for segmenting genomes into isochores
+isoSegmenter - A program for segmenting genomes into isochores
 
 Copyright (C) 2013-2015 ITB - CNR
 
@@ -24,10 +25,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ##Installation
 
-isochoreFinder consist in a series of python scripts. You can install the software using git
+isoSegmenter consist in a series of python scripts. You can install the software using git
 
 ```
-$ git clone https://github.com/bunop/isochoreFinder.git
+$ git clone https://github.com/bunop/isoSegmenter.git
 ```
 
 To get more detail on the installation, please see INSTALL.md

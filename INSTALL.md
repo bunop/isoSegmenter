@@ -1,5 +1,5 @@
 
-How to install isochoreFinder
+How to install isoSegmenter
 =============================
 
 ## Dependencies
@@ -10,13 +10,13 @@ The following programs and libraries are require to compile and run python code
 * [libgd](http://libgd.bitbucket.org/)
 * [giflib](http://sourceforge.net/projects/giflib/)
 
-And the following python libraries are required to run isochoreFinder.py and isochoreFamilies.py:
+And the following python libraries are required to run isoSegmenter.py and isochoreFamilies.py:
 
 * [gdmodule](https://github.com/Solomoriah/gdmodule)
 * [Pillow](http://python-pillow.github.io/)
 * [matplotlib](http://matplotlib.org/)
 
-To install isochoreFinder dependencies you can follow one of the proposed methods (by package, by pip, ...). Choose the method more preferable for you
+To install isoSegmenter dependencies you can follow one of the proposed methods (by package, by pip, ...). Choose the method more preferable for you
 
 ### Install dependencies via package manager
 
@@ -47,24 +47,24 @@ $ pip install biopython
 
 (or use sudo if you don't have required permissions)
 
-## Installing isochoreFinder using GIT
+## Installing isoSegmenter using GIT
 
-Once dependencies are satisfied, simply install isochoreFinder using git:
-
-```bash
-$ git clone https://github.com/bunop/isochoreFinder.git
-```
-
-To test isochoreFinder installation, enter the isochoreFinder directory and simply type:
+Once dependencies are satisfied, simply install isoSegmenter using git:
 
 ```bash
-$ ./isochoreFinder.py --help
+$ git clone https://github.com/bunop/isoSegmenter.git
 ```
 
-If the installation is ok, you will see the help message of isochoreFinder.py by invoking it:
+To test isoSegmenter installation, enter the isoSegmenter directory and simply type:
+
+```bash
+$ ./isoSegmenter.py --help
+```
+
+If the installation is ok, you will see the help message of isoSegmenter.py by invoking it:
 
 ```
-usage: isochoreFinder.py [-h] -i INFILE [-o OUTFILE] [-g GRAPHFILE] [-w WINDOWFILE]
+usage: isoSegmenter.py [-h] -i INFILE [-o OUTFILE] [-g GRAPHFILE] [-w WINDOWFILE]
                     [-v] [--windowgraph WINDOWGRAPH] [--draw_legend]
                     [--force_overwrite] [--sequence_start SEQUENCE_START]
                     [--max_length MAX_LENGTH] [--draw_chname DRAW_CHNAME]
@@ -101,6 +101,6 @@ optional arguments:
   --y_min Y_MIN         Set min value in graph (default: '30')
 ```
 
-## Installing isochoreFinder using docker
+## Installing isoSegmenter using docker
 
-There are instructions on how to build and run a isochoreFinder image in the Docker subdirectory in isochoreFinder project. Please look at README.md inside that directory.
+There are instructions on how to build and run a isoSegmenter image in the Docker subdirectory in isoSegmenter project. Please look at README.md inside that directory.
