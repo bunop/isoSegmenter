@@ -561,7 +561,7 @@ class Chromosome:
         #HINT: decomment this line to draw back isochore after step2
         #return
     
-        GClib.logger.log(4, " Starting Step (3)...")
+        GClib.logger.log(4, "Starting Step (3)...")
         
         self.__merge_isochores()
         
@@ -578,7 +578,7 @@ class Chromosome:
         #HINT: decomment this line to draw back isochore after step4
         #return
         
-        GClib.logger.log(4, " Starting Step (5)...")
+        GClib.logger.log(4, "Starting Step (5)...")
         
         self.__merge_isochores()
         
@@ -669,7 +669,10 @@ class Chromosome:
         """Merge two isochores with the same class"""
         
         #Now we could two distinct isochore with the same class, and we want to merge them
-        for i in range(len(self.isochores)-2,0,-1):
+        for i in range(len(self.isochores)-2,-1,-1):
+            #debug
+            GClib.logger.log(5, "Evaluating %s and %s" %(self.isochores[i],self.isochores[i+1]))
+            
             if self.isochores[i].Class == self.isochores[i+1].Class:
                 #debug
                 GClib.logger.log(4, "Merging %s to %s" %(self.isochores[i],self.isochores[i+1]))
