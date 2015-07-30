@@ -29,6 +29,7 @@ Main program for Isochore Definition
 
 """
 
+import csv
 import argparse
 
 #Modules for dealing with GC content and graph
