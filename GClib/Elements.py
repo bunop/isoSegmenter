@@ -549,40 +549,33 @@ class Chromosome:
         
         #HINT: decomment this line to draw back isochore after step1
         #return
+        
+        #Now I can cicle in order to remove isochores shorter that ISO_MIN_SIZE dimension
+        for min_length in range(1, GClib.ISO_MIN_SIZE):
+            #Updating step number
+            step = (min_length-1) * 2 + 2
     
-        #Starting the 2° step
-        GClib.logger.log(4, "Starting Step (2)...")
+            #Starting even step step
+            GClib.logger.log(4, "Starting Step (%s)..." %(step))
         
-        #filtering short isochores
-        self.__filter_isochores(min_length=1)
+            #filtering short isochores
+            self.__filter_isochores(min_length=min_length)
         
-        GClib.logger.log(4, "Step (2) completed.")
+            GClib.logger.log(4, "Step (%s) completed." %(step))
         
-        #HINT: decomment this line to draw back isochore after step2
-        #return
+            #HINT: decomment this line to draw back isochore after even step
+            #return
+            
+            #Updating step number
+            step = (min_length-1) * 2 + 3
     
-        GClib.logger.log(4, "Starting Step (3)...")
+            GClib.logger.log(4, "Starting Step (%s)..." %(step))
         
-        self.__merge_isochores()
+            self.__merge_isochores()
         
-        GClib.logger.log(4, "Step (3) completed.")
-        
-        #Starting the 4° step
-        GClib.logger.log(4, "Starting Step (4)...")
-        
-        #filtering short isochores
-        self.__filter_isochores(min_length=2)
-        
-        GClib.logger.log(4, "Step (4) completed.")
-        
-        #HINT: decomment this line to draw back isochore after step4
-        #return
-        
-        GClib.logger.log(4, "Starting Step (5)...")
-        
-        self.__merge_isochores()
-        
-        GClib.logger.log(4, "Step (5) completed.")        
+            GClib.logger.log(4, "Step (%s) completed." %(step))
+            
+        #Now isochores have at least GClib.ISO_MIN_SIZE dimension
         
         #Print out each isochore instantiation, like windows and gaps
         for isochore in self.isochores:

@@ -29,7 +29,6 @@ Main program for Isochore Definition
 
 """
 
-import csv
 import argparse
 
 #Modules for dealing with GC content and graph
@@ -54,6 +53,7 @@ parser.add_argument('--draw_chname', type=str, required=False, default=None, hel
 parser.add_argument('--window_size', type=int, required=False, default=GClib.WINDOW_SIZE, help="Set window size in bp (default: '%(default)s')")
 parser.add_argument('--y_max', type=int, required=False, default=GClib.Graphs.GRAPH_GC_MAX, help="Set max value in graph (default: '%(default)s')")
 parser.add_argument('--y_min', type=int, required=False, default=GClib.Graphs.GRAPH_GC_MIN, help="Set min value in graph (default: '%(default)s')")
+parser.add_argument('--isochore_min_size', type=int, required=False, default=GClib.ISO_MIN_SIZE, help="Set how many windows an isochore need to have (default: '%(default)s')")
 args = parser.parse_args()
 
 #debug
@@ -111,6 +111,10 @@ if __name__ == "__main__":
         
         #Setting max_length as To coordinates, starting from sequence start
         To = args.sequence_start + args.max_length
+        
+    #Evaluaing isochore min size
+    if args.isochore_min_size != GClib.ISO_MIN_SIZE:
+        GClib.ISO_MIN_SIZE = args.isochore_min_size
     
     #Open the sequence file
     FastaFile = GClib.Utility.FastaFile(args.infile)
