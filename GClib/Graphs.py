@@ -801,7 +801,7 @@ class DrawBarChromosome(BaseGraph):
         self.y = 300
         
         #Shrink image
-        self.scale = 50000
+        self.scale = 40000
         
     #override basegrap set colour list
     def SetColorsList(self, colorbyclass=True):
