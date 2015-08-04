@@ -271,6 +271,9 @@ if __name__ == "__main__":
         #Instantiating DrawChromosome Class. Look at sequence start (0-based sequence start, this has been fixed in the top of this main block)
         Graph = GClib.Graphs.DrawChromosome(sequence_start=args.sequence_start)
         
+        #Instantiating a graph for the reference
+        Reference = GClib.Graphs.DrawChromosome(sequence_start=args.sequence_start)
+        
         #beware user defined min and max values
         if args.y_max != None or args.y_min != None:
             #If only one value is defined by the user, get the othert value
@@ -282,36 +285,56 @@ if __name__ == "__main__":
             
             #Set max and min values
             Graph.SetMinMaxValues(args.y_min, args.y_max)
+            Reference.SetMinMaxValues(args.y_min, args.y_max)
         
         #Fixing appropriate values
         if args.max_length != None:
             #SetSequencelength needs the To position (the absolute end position)
             Graph.SetSequenceLength(To)
+            Reference.SetSequenceLength(To)
         
         else:
             Graph.SetSequenceLength(Chrom.size)
+            Reference.SetSequenceLength(Chrom.size)
         
         Graph.InitPicture()
+        Reference.InitPicture()
+        
         Graph.SetHorizontalLines([37, 41, 46, 53])
+        Reference.SetHorizontalLines([37, 41, 46, 53])
+        
         Graph.SetColorsList(colorbyclass=True)
+        Reference.SetColorsList(colorbyclass=True)
         
         #Draw the correct values
         Graph.DrawIsochoreRectangles(isochores=Chrom.isochores)
         
-        #Draw the reference profile
-        Graph.DrawIsochoreProfile(isochores=Ref2006.isochores)
+        #Draw the reference isochores
+        Reference.DrawIsochoreRectangles(isochores=Ref2006.isochores)
         
         #Draw legend or not
         if args.draw_legend == True:
             Graph.DrawLegend()
+            Reference.DrawLegend()
             
         #Draw ChName
         if args.draw_chname != None:
             Graph.DrawChName(args.draw_chname)
+            Reference.DrawChName(args.draw_chname)
         
         Graph.FinishPicture(drawlabels=False)
+        Reference.FinishPicture(drawlabels=False)
+        
         Graph.EnlargeLabels()
-        Graph.SaveFigure(args.graphfile)
+        Reference.EnlargeLabels()
+        
+        #Now put the two images in the same file
+        Final = GClib.Graphs.MoreGraphs()
+        Final.AddGraph(Reference)
+        Final.AddGraph(Graph)
+        
+        #Now save the image
+        Final.SaveFigure(args.graphfile)
         
         
     #Create bar graph isocore grap (as Schmidt and Frishman 2008) if it is necessary
