@@ -1,15 +1,15 @@
 
 #
-# VERSION 0.2
-# DOCKER-VERSION  1.6.2
-# AUTHOR:         Paolo Cozzi <paolo.cozzi@tecnoparco.org>
+# VERSION 0.3
+# DOCKER-VERSION  1.9.1
+# AUTHOR:         Paolo Cozzi <paolo.cozzi@ptp.it>
 # DESCRIPTION:    An image python base image which isoSegmenter will run
 # TO_BUILD:       docker build --rm -t bunop/isosegmenter .
 # TO_RUN:         docker run -ti bunop/isosegmenter /bin/bash
-# TO_TAG:         docker tag bunop/isosegmenter:latest bunop/isosegmenter:0.2
+# TO_TAG:         docker tag bunop/isosegmenter:latest bunop/isosegmenter:0.3
 #
 
-FROM python:2.7.9
+FROM python:2.7.10
 
 MAINTAINER Paolo Cozzi <paolo.cozzi@tecnoparco.org>
 
@@ -17,42 +17,36 @@ MAINTAINER Paolo Cozzi <paolo.cozzi@tecnoparco.org>
 WORKDIR /root
 
 # Install deb dependancies
-RUN apt-get update && apt-get install -y libgd2-xpm-dev \
+RUN apt-get update && apt-get install -y libgd-dev \
     libgif-dev
 
 # Clean packages and histories
 RUN apt-get clean && rm -rf /var/lib/apt/lists/
 
-# Install isoSegmenter requirements
-RUN pip install Pillow matplotlib biopython
-
-# Install gdmodule
-ADD https://pypi.python.org/packages/source/g/gdmodule/gdmodule-0.58.tar.gz /root/gdmodule-0.58.tar.gz
-RUN tar -xzf /root/gdmodule-0.58.tar.gz
+# Install gdmodule manually
+RUN git clone https://github.com/Solomoriah/gdmodule.git
 
 # Set corrent working directory
-WORKDIR /root/gdmodule-0.58
+WORKDIR /root/gdmodule
 
-# Install package manually (note the invocation of Setup - this seems to be the principal reason
-# that we can't install gd libraries using pip)
-RUN python Setup.py build && python Setup.py install
+# Install package from github repository
+RUN pip install .
 
-# now clone isoSegmenter in /opt directory
-RUN git clone https://github.com/bunop/isoSegmenter.git /opt/isoSegmenter
+# now clone isoSegmenter project
+RUN git clone https://github.com/bunop/isoSegmenter.git /root/isoSegmenter
 
-# Setting the final working directory
-WORKDIR /opt/isoSegmenter
+# Setting working directory
+WORKDIR /root/isoSegmenter
 
 # Byte compiling libraries
-RUN python -m compileall -f GClib
-
-# simbolick linking
-RUN ln -s /opt/isoSegmenter/isoSegmenter.py /usr/local/bin && \
-    ln -s /opt/isoSegmenter/isoFamily.py /usr/local/bin
+RUN pip install .
 
 # Adding a volume
 RUN mkdir /data
 VOLUME /data
 
+# Setting /data as working directory
+WORKDIR /data/
+
 # executing a default command
-CMD [ "python", "/opt/isoSegmenter/isoSegmenter.py", "--help" ]
+CMD [ "python", "isoSegmenter.py", "--help" ]
