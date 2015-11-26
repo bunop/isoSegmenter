@@ -20,6 +20,11 @@
     along with isoSegmenter.  If not, see <http://www.gnu.org/licenses/>.
 
 
+If you use isoSegmenter in your work, please cite this manuscripts:
+
+    Cozzi P, Milanesi L, Bernardi G. Segmenting the Human Genome into Isochores. 
+    Evolutionary Bioinformatics. 2015;11:253-261. doi:10.4137/EBO.S27693
+    
 Created on Fri May  3 15:04:39 2013
 
 @author: Paolo Cozzi <paolo.cozzi@tecnoparco.org>
@@ -40,7 +45,7 @@ import GClib
 import types
 import Bio.SeqUtils
 
-__author__ = "Paolo Cozzi <paolo.cozzi@tecnoparco.org>"
+__author__ = "Paolo Cozzi <paolo.cozzi@ptp.it>"
 
 from . import __copyright__, __license__, __version__
 

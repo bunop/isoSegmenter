@@ -20,6 +20,11 @@
     along with isoSegmenter.  If not, see <http://www.gnu.org/licenses/>.
 
 
+If you use isoSegmenter in your work, please cite this manuscripts:
+
+    Cozzi P, Milanesi L, Bernardi G. Segmenting the Human Genome into Isochores. 
+    Evolutionary Bioinformatics. 2015;11:253-261. doi:10.4137/EBO.S27693
+    
 Created on Fri May  3 14:49:03 2013
 
 @author: Paolo Cozzi <paolo.cozzi@tecnoparco.org>
@@ -27,13 +32,13 @@ Created on Fri May  3 14:49:03 2013
 """
 
 __all__ = ["Elements", "Utility", "Graphs" ]
-__author__ = "Paolo Cozzi <paolo.cozzi@tecnoparco.org>"
+__author__ = "Paolo Cozzi <paolo.cozzi@ptp.it>"
 __copyright__ = "Copyright (C) 2013-2015 ITB - CNR"
 __credits__ = ["Paolo Cozzi"]
 __license__ = "GNU GPLv3"
-__version__ = "1.4"
+__version__ = "1.5"
 __maintainer__ = "Paolo Cozzi"
-__email__ = "paolo.cozzi@tecnoparco.org"
+__email__ = "paolo.cozzi@ptp.it"
 __status__ = "beta"
 
 
