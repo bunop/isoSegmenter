@@ -4,7 +4,7 @@ isoSegmenter
 
 A program for segmenting genomes into isochores
 
-##License
+## License
 
 isoSegmenter - A program for segmenting genomes into isochores
 
@@ -23,7 +23,13 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-##Installation
+## Citation
+
+If you use isoSegmenter in your work, please cite this manuscripts:
+
+Cozzi P, Milanesi L, Bernardi G. Segmenting the Human Genome into Isochores. Evolutionary Bioinformatics 2015;11:253-261. [doi:10.4137/EBO.S27693](http://www.la-press.com/segmenting-the-human-genome-into-isochores-article-a5225)
+
+## Installation
 
 isoSegmenter consist in a series of python scripts. You can install the software using git
 
@@ -33,6 +39,6 @@ $ git clone https://github.com/bunop/isoSegmenter.git
 
 To get more detail on the installation, please see INSTALL.md
 
-##Use
+## Use
 
 blah, blah

@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
+
 """
 
 
@@ -21,6 +22,11 @@
     along with isoSegmenter.  If not, see <http://www.gnu.org/licenses/>.
 
 
+If you use isoSegmenter in your work, please cite this manuscripts:
+
+    Cozzi P, Milanesi L, Bernardi G. Segmenting the Human Genome into Isochores. 
+    Evolutionary Bioinformatics. 2015;11:253-261. doi:10.4137/EBO.S27693
+
 Created on Wed Jun 12 16:31:27 2013
 
 @author: Paolo Cozzi <paolo.cozzi@tecnoparco.it>
@@ -37,7 +43,17 @@ import GClib.Graphs
 import GClib.Utility
 import GClib.Elements
 
-parser = argparse.ArgumentParser(description='Find Isochores in sequences')
+# Add epilog on bottom of help message
+epilog ="""
+
+If you use isoSegmenter in your work, please cite this manuscripts:
+
+    Cozzi P, Milanesi L, Bernardi G. Segmenting the Human Genome into Isochores. 
+    Evolutionary Bioinformatics. 2015;11:253-261. doi:10.4137/EBO.S27693
+    
+    """
+
+parser = argparse.ArgumentParser(description='Find Isochores in sequences', epilog=epilog, formatter_class=argparse.RawDescriptionHelpFormatter)
 parser.add_argument('-i', '--infile', type=str, required=True, help="Input Fasta File (even compressed)")
 parser.add_argument('-o', '--outfile', type=str, required=False, help="Output isochores CSV file")
 parser.add_argument('-g', '--graphfile', type=str, required=False, help="Output graph filename (PNG)")

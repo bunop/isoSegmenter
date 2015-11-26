@@ -22,6 +22,11 @@
     along with isoSegmenter.  If not, see <http://www.gnu.org/licenses/>.
 
 
+If you use isoSegmenter in your work, please cite this manuscripts:
+
+    Cozzi P, Milanesi L, Bernardi G. Segmenting the Human Genome into Isochores. 
+    Evolutionary Bioinformatics. 2015;11:253-261. doi:10.4137/EBO.S27693
+
 Created on Thu Jun 13 14:53:14 2013
 
 @author: Paolo Cozzi <paolo.cozzi@tecnoparco.org>
@@ -38,7 +43,17 @@ import GClib.Graphs
 import GClib.Utility
 import GClib.Elements
 
-parser = argparse.ArgumentParser(description='Find Isochores Families in a user defined directory')
+# Add epilog on bottom of help message
+epilog ="""
+
+If you use isoSegmenter in your work, please cite this manuscripts:
+
+    Cozzi P, Milanesi L, Bernardi G. Segmenting the Human Genome into Isochores. 
+    Evolutionary Bioinformatics. 2015;11:253-261. doi:10.4137/EBO.S27693
+    
+    """
+
+parser = argparse.ArgumentParser(description='Find Isochores Families in a user defined directory', epilog=epilog, formatter_class=argparse.RawDescriptionHelpFormatter)
 parser.add_argument('-i', '--indir', type=str, required=True, help="Input directory in which isochore have been calculated")
 parser.add_argument('-o', '--outfile', type=str, required=True, help="Output families CSV files")
 parser.add_argument('-g', '--graphfile', type=str, required=False, help="Output graph filename (PNG)")

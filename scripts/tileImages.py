@@ -22,6 +22,11 @@
     along with isoSegmenter.  If not, see <http://www.gnu.org/licenses/>.
 
 
+If you use isoSegmenter in your work, please cite this manuscripts:
+
+    Cozzi P, Milanesi L, Bernardi G. Segmenting the Human Genome into Isochores. 
+    Evolutionary Bioinformatics. 2015;11:253-261. doi:10.4137/EBO.S27693
+
 Created on Tue Jun 16 21:27:51 2015
 
 @author: Paolo Cozzi <paolo.cozzi@tecnoparco.org>
@@ -38,11 +43,21 @@ from GClib.Graphs import MoreGraphsError
 
 from PIL import Image
 
-__author__ = "Paolo Cozzi <paolo.cozzi@tecnoparco.org>"
+__author__ = "Paolo Cozzi <paolo.cozzi@ptp.it>"
 
 from GClib import __copyright__, __license__, __version__
 
-parser = argparse.ArgumentParser(description='Put more images in the same files')
+# Add epilog on bottom of help message
+epilog ="""
+
+If you use isoSegmenter in your work, please cite this manuscripts:
+
+    Cozzi P, Milanesi L, Bernardi G. Segmenting the Human Genome into Isochores. 
+    Evolutionary Bioinformatics. 2015;11:253-261. doi:10.4137/EBO.S27693
+    
+    """
+
+parser = argparse.ArgumentParser(description='Put more images in the same files', epilog=epilog, formatter_class=argparse.RawDescriptionHelpFormatter)
 parser.add_argument('--image_files', metavar='image_file', type=str, nargs='+', help='One or more image to put together')
 parser.add_argument('-o', '--output', type=str, required=True, help="Output graph filename (PNG)")
 args = parser.parse_args()
