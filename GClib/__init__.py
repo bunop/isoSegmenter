@@ -20,14 +20,14 @@
     along with isoSegmenter.  If not, see <http://www.gnu.org/licenses/>.
 
 
-If you use isoSegmenter in your work, please cite this manuscripts:
+If you use isoSegmenter in your work, please cite this manuscript:
 
-    Cozzi P, Milanesi L, Bernardi G. Segmenting the Human Genome into Isochores. 
+    Cozzi P, Milanesi L, Bernardi G. Segmenting the Human Genome into Isochores.
     Evolutionary Bioinformatics. 2015;11:253-261. doi:10.4137/EBO.S27693
-    
+
 Created on Fri May  3 14:49:03 2013
 
-@author: Paolo Cozzi <paolo.cozzi@tecnoparco.org>
+@author: Paolo Cozzi <paolo.cozzi@ptp.it>
 
 """
 

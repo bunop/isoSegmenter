@@ -22,14 +22,14 @@
     along with isoSegmenter.  If not, see <http://www.gnu.org/licenses/>.
 
 
-If you use isoSegmenter in your work, please cite this manuscripts:
+If you use isoSegmenter in your work, please cite this manuscript:
 
-    Cozzi P, Milanesi L, Bernardi G. Segmenting the Human Genome into Isochores. 
+    Cozzi P, Milanesi L, Bernardi G. Segmenting the Human Genome into Isochores.
     Evolutionary Bioinformatics. 2015;11:253-261. doi:10.4137/EBO.S27693
 
 Created on Thu Jun 13 14:53:14 2013
 
-@author: Paolo Cozzi <paolo.cozzi@tecnoparco.org>
+@author: Paolo Cozzi <paolo.cozzi@ptp.it>
 
 This is the main program to find isochores families in a user defined directory
 
@@ -46,11 +46,11 @@ import GClib.Elements
 # Add epilog on bottom of help message
 epilog ="""
 
-If you use isoSegmenter in your work, please cite this manuscripts:
+If you use isoSegmenter in your work, please cite this manuscript:
 
-    Cozzi P, Milanesi L, Bernardi G. Segmenting the Human Genome into Isochores. 
+    Cozzi P, Milanesi L, Bernardi G. Segmenting the Human Genome into Isochores.
     Evolutionary Bioinformatics. 2015;11:253-261. doi:10.4137/EBO.S27693
-    
+
     """
 
 notice = """
@@ -83,46 +83,44 @@ args = parser.parse_args()
 if __name__ == "__main__":
     #print out notice
     GClib.logger.err(0, notice)
-    
+
     #verify verbosity level
     if args.verbose != GClib.logger.threshold:
         #setting user defined threshold of verbosity
         GClib.logger.threshold = args.verbose
-    
+
     #chceking for csv existance
     GClib.Utility.FileExists(args.outfile, remove_if_exists=args.force_overwrite)
-    
+
     #Checking for graph file existance
     GClib.Utility.FileExists(args.graphfile, remove_if_exists=args.force_overwrite)
 
     #instantiate a families element
     families = GClib.Elements.Families()
-    
+
     #scanning for isochore files in user defined directory
     families.Scan4Files(args.indir, pattern=args.regexp)
-    
+
     #Group isochore relying their GClevels
     #TODO: here i can set Xmax and Xmin values and bin size dimension
     families.GroupByIsochores()
 
     #Dump families in a CSV file
     families.DumpFamilies(outfile=args.outfile)
-    
+
     #Instantiating graph if it is necessary
     if args.graphfile != None:
         #Instantiating DrawFamilies Class
         graph = GClib.Graphs.DrawFamilies(families)
-        
+
         #Setting Grids and axis Labels
         graph.DrawAxisLabels()
         graph.DrawGrid()
-        
+
         #Override Xmax and Xmin values
         axes = [args.x_min, args.x_max, 0, 0]
         graph.SetAxisLimits(axis=axes)
-        
+
         #save image
         #TODO: change figure quality
         graph.SaveFigure(filename=args.graphfile)
-        
-        

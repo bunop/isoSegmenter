@@ -25,7 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ## Citation
 
-If you use isoSegmenter in your work, please cite this manuscripts:
+If you use isoSegmenter in your work, please cite this manuscript:
 
 > Cozzi P, Milanesi L, Bernardi G. Segmenting the Human Genome into Isochores. Evolutionary Bioinformatics 2015;11:253-261. [doi:10.4137/EBO.S27693](http://www.la-press.com/segmenting-the-human-genome-into-isochores-article-a5225)
 
@@ -40,7 +40,7 @@ libraries are needed by isoSegmenter
 * biopython
 
 You can install all those requirements by installing the appropriate unix package, or
-by using pip. More information on installation are available in [INSTALL.md](https://github.com/bunop/isoSegmenter/blob/master/INSTALL.md)
+by using pip. More information on installation are available in [INSTALL.md](https://github.com/bunop/isoSegmenter/blob/master/INSTALL.md#install-dependencies-via-package-manager)
 
 ## Installation
 
@@ -58,8 +58,30 @@ $ cd isoSegmenter
 $ pip install .
 ```
 
-To get more details on installation, please see [INSTALL.md](https://github.com/bunop/isoSegmenter/blob/master/INSTALL.md)
+To get more details on installation, please see [INSTALL.md](https://github.com/bunop/isoSegmenter/blob/master/INSTALL.md#how-to-install-isosegmenter)
 
 ## Usage
 
-blah, blah
+`isoSegmenter.py` is the main application to execute isochores segmentation. It requires a single chromosome FASTA file as an input file (ONLY a chromosome inside file). You can download genome sequences from [UCSC](http://hgdownload.soe.ucsc.edu/downloads.html), [EnsEMBL](http://www.ensembl.org/info/data/ftp/index.html) or [NCBI](ftp://ftp.ncbi.nlm.nih.gov/genomes/) FTP sites. Output files can be .CSV data file (importable in Excel) and .png image file. For example, inside isoSegmenter/test directory there is the Human chromosome 21 [hg19] as a packed FASTA file. We can call isoSegmenter to draw an image and to get the segmentation .csv file. Enter inside isoSegmenter and type:
+
+```bash
+$ isoSegmenter.py --infile test/chr21.fa.gz --outfile chr21.isochores.csv --graphfile chr21.isochores.png --draw_legend --verbose
+```
+
+`--infile`: This is the FASTA input file. It could be plain/text or compressed with gzip/bz2
+`--outfile`: This is isochores .CSV output file
+`--graphfile`: This is isochores .PNG output file
+`--draw_legend`: Draw a colored legend on the right side of the image
+`--verbose`: Useful for debugging
+
+This will draw an image like this:
+
+![chr21.isochores](images/chr21.isochores.png)
+
+There are other options for manipulate graphs and segmentation. You can get a brief description of them by running:
+
+```bash
+$ isoSegmenter.py --help
+```
+
+Others usage examples will be available (soon) on [isoSegmenter Wiki](https://github.com/bunop/isoSegmenter/wiki#isosegmenter-wiki)

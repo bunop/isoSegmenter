@@ -49,4 +49,4 @@ VOLUME /data
 WORKDIR /data/
 
 # executing a default command
-CMD [ "python", "isoSegmenter.py", "--help" ]
+CMD [ "python", "/usr/local/bin/isoSegmenter.py", "--help" ]

@@ -23,13 +23,13 @@ To install isoSegmenter dependencies you can follow one of the proposed methods 
 
 ### Install dependencies via package manager
 
-The most easy way to install dependencies is via your linux distribution package manager. For example, to install all python dependencies on Debian/Ubuntu:
+The most easy way to install dependencies is via your Linux distribution package manager. For example, to install all python dependencies on Debian/Ubuntu:
 
 ```bash
 $ sudo apt-get install python-gd python-imaging python-matplotlib python-biopython
 ```
 
-And this will also check and resolve any dependancies. Then go to [Installing isoSegmenter using GIT](#install-isoSegmenter)
+And this will also check and resolve any dependancies. Then go to [Installing isoSegmenter using GIT](https://github.com/bunop/isoSegmenter/blob/master/INSTALL.md#installing-isosegmenter-using-git)
 
 ### Installing dependencies using pip
 
@@ -50,7 +50,7 @@ $ pip install biopython
 
 (or use sudo if you don't have required permissions)
 
-## Installing isoSegmenter using GIT <a id="install-isoSegmenter"></a>
+## Installing isoSegmenter using GIT
 
 Once dependencies are satisfied, simply install isoSegmenter by cloning project with Git and using pip inside isoSegmenter directory:
 
@@ -111,13 +111,13 @@ optional arguments:
                         Set how many windows an isochore need to have
                         (default: '2')
 
-If you use isoSegmenter in your work, please cite this manuscripts:
+If you use isoSegmenter in your work, please cite this manuscript:
 
     Cozzi P, Milanesi L, Bernardi G. Segmenting the Human Genome into Isochores.
     Evolutionary Bioinformatics. 2015;11:253-261. doi:10.4137/EBO.S27693
-        
+
 ```
 
 ## Installing isoSegmenter using docker
 
-There are instructions on how to build and run a isoSegmenter image in the Docker subdirectory in isoSegmenter project. Please look at README.md inside that directory.
+There are instructions on how to build and run a isoSegmenter image in the Docker subdirectory in isoSegmenter project. Please look at [README.md](https://github.com/bunop/isoSegmenter/blob/master/Docker/README.md#installing-isosegmenter-using-docker) inside `Docker` directory.
