@@ -53,6 +53,15 @@ If you use isoSegmenter in your work, please cite this manuscripts:
     
     """
 
+notice = """
+
+isoSegmenter  Copyright (C) 2013-2015 ITB - CNR
+This program comes with ABSOLUTELY NO WARRANTY; for details type `isoFamily.py --help'.
+This is free software, and you are welcome to redistribute it
+under certain conditions; show LICENSE.md for more details.
+
+"""
+
 parser = argparse.ArgumentParser(description='Find Isochores Families in a user defined directory', epilog=epilog, formatter_class=argparse.RawDescriptionHelpFormatter)
 parser.add_argument('-i', '--indir', type=str, required=True, help="Input directory in which isochore have been calculated")
 parser.add_argument('-o', '--outfile', type=str, required=True, help="Output families CSV files")
@@ -72,6 +81,9 @@ args = parser.parse_args()
 #TODO: change figure resolution
 
 if __name__ == "__main__":
+    #print out notice
+    GClib.logger.err(0, notice)
+    
     #verify verbosity level
     if args.verbose != GClib.logger.threshold:
         #setting user defined threshold of verbosity

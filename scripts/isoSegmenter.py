@@ -53,6 +53,15 @@ If you use isoSegmenter in your work, please cite this manuscripts:
     
     """
 
+notice = """
+
+isoSegmenter  Copyright (C) 2013-2015 ITB - CNR
+This program comes with ABSOLUTELY NO WARRANTY; for details type `isoSegmenter --help'.
+This is free software, and you are welcome to redistribute it
+under certain conditions; show LICENSE.md for more details.
+
+"""
+
 parser = argparse.ArgumentParser(description='Find Isochores in sequences', epilog=epilog, formatter_class=argparse.RawDescriptionHelpFormatter)
 parser.add_argument('-i', '--infile', type=str, required=True, help="Input Fasta File (even compressed)")
 parser.add_argument('-o', '--outfile', type=str, required=False, help="Output isochores CSV file")
@@ -87,7 +96,10 @@ if __name__ == "__main__":
     #To continue work, I need almost one file to write
     if args.outfile == None and args.graphfile == None and args.barfile == None:
         raise Exception, "You must specify an output isochore file while calling this program, by graphfile, barfile or outfile option"
-        
+    
+    #print out notice
+    GClib.logger.err(0, notice)
+    
     #verify verbosity level
     if args.verbose != GClib.logger.threshold:
         #setting user defined threshold of verbosity
