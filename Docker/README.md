@@ -2,17 +2,17 @@
 Installing isoSegmenter using Docker
 ======================================
 
-Those are instructions on how tu run [isoSegmenter](https://github.com/bunop/isoSegmenter) inside a docker container. First install [docker](http://docs.docker.com/installation/#installation) on your platform. Then you can dowload the pre-build docker image or modify and build a new docker image
+Those are instructions on how tu run [isoSegmenter](https://github.com/bunop/isoSegmenter) inside a docker container. By using docker, you will start a container in which isoSegmenter is already installed (you don't need to install all requirements since they are already satisfied in image). First install [docker](http://docs.docker.com/installation/#installation) on your platform. Then you can download the pre-build docker image or modify and build a new docker image
 
 ## Running isoSegmenter under a pre builded image
 
-You can start a isochoreFinde image simply by typing:
+You can start a isosegmenter image simply by typing:
 
 ```bash
 docker run -ti bunop/isosegmenter /bin/bash
 ```
 
-This will be enough to get an isoSegmenter running container. You can otionally mount a local directoy inside the running container by adding a local directory as a docker volume. More information can be found inside Docker tutorial on [Managing data in Container](http://docs.docker.com/userguide/dockervolumes/). `isoSegmenter` will be placed under `/opt/isoSegmenter` directory
+This will be enough to download and get an isoSegmenter running container. You can otionally mount a local directoy inside the running container by adding a local directory as a docker volume. More information can be found inside Docker tutorial on [Managing data in Container](http://docs.docker.com/userguide/dockervolumes/). `isoSegmenter.py` will be placed under `/usr/local/bin/` directory
 
 ## Build you own image
 

@@ -2,7 +2,7 @@
 How to install isoSegmenter
 =============================
 
-## Using virtualenv (recommeded!)
+isoSegmenter is written as a python module and need to be installed in a Unix distribution. No test were made in windows environment.
 
 ## Dependencies
 
@@ -19,7 +19,7 @@ And the following python libraries are required to run isoSegmenter.py and isoch
 * [matplotlib](http://matplotlib.org/)
 * [biopython](http://biopython.org/wiki/Main_Page)
 
-To install isoSegmenter dependencies you can follow one of the proposed methods (by package, by pip, ...). Choose the method more preferable for you
+To install isoSegmenter dependencies, you may use the [system package manager](https://github.com/bunop/isoSegmenter/blob/master/INSTALL.md#install-dependencies-via-package-manager) or [building packages from sources](https://github.com/bunop/isoSegmenter/blob/master/INSTALL.md#building-packages-from-sources). Choose the method more preferable for you
 
 ### Install dependencies via package manager
 
@@ -29,15 +29,51 @@ The most easy way to install dependencies is via your Linux distribution package
 $ sudo apt-get install python-gd python-imaging python-matplotlib python-biopython
 ```
 
-And this will also check and resolve any dependancies. Then go to [Installing isoSegmenter using GIT](https://github.com/bunop/isoSegmenter/blob/master/INSTALL.md#installing-isosegmenter-using-git)
+And this will also check and resolve any dependencies. Then go to [Installing isoSegmenter using GIT](https://github.com/bunop/isoSegmenter/blob/master/INSTALL.md#installing-isosegmenter-using-git)
 
-### Installing dependencies using pip
+### Building packages from sources
 
-In case you are not a system administrator, or you want to compile the last library versions, you have to install all development libraries dependancies to compile python libraries, and then install python packages. I suggest to manage different python version installations using [pyenv](https://github.com/yyuu/pyenv). Otherwise, you can install libraries locally using [virtualenv](https://virtualenv.pypa.io/en/latest/). In order to compile python libraries correctly, you need to have installed the needed build libraries. To install libraries dependancies via package manager (for example in Debian/Ubuntu):
+In case you are not a system administrator, or you want to compile the last library versions, you have to install all development libraries dependencies to compile python libraries, and then install python packages. I suggest to install libraries locally using [virtualenv](https://virtualenv.pypa.io/en/latest/). Otherwise, you can manage different python versions and installations using [pyenv](https://github.com/yyuu/pyenv). In order to compile python libraries correctly, you need to have installed the needed build libraries. To install libraries dependancies via package manager (for example in Debian/Ubuntu):
 
 ```bash
 $ sudo apt-get install libgd2-xpm-dev libgif-dev
 ```
+
+#### Using pyenv (optional)
+
+[pyenv](https://github.com/yyuu/pyenv) lets you easily switch between multiple versions of Python. It could be installed as a non root user and give the opportunity to deal with different versions of python. This solution is not necessary to install isoSegmenter, however we suggest this solution if you don't want to install python dependencies in the system python environment as a root, or your system has a very old version of python. isoSegmenter was initially wrote on Python 2.6 and then tested on Python 2.7.  
+
+#### Using virtualenv (recommeded!)
+
+A Virtual Environment is a tool to keep the dependencies required by different projects in separate places, by creating virtual Python environments for them. [virtualenv](http://docs.python-guide.org/en/latest/dev/virtualenvs/) creates a folder which contains all the necessary executables to use the packages that a Python project would need. You can install both virtualenv and pyenv, virtualenv will create a directory in which all libraries of your pyenv python will be placed. Starting a virtualenv
+environments is simple. You need to to install the `virtualenv` python package:
+
+```bash
+$ pip install virtualenv
+```
+
+[pip](http://pip.readthedocs.org/en/stable/) is the PyPA recommended tool for installing Python packages. Since Python 2.7.9 is included in python distribution; If you don't have pip installed, you could install it by [following this guide](http://pip.readthedocs.org/en/stable/installing/). You may need to install virtualenv (and pip, if needed) as a root user, if you want to install virtualenv inside system python environments. Once virtualenv is installed, we can create a python virtual environment and install packages without root privileges. Choose a directory in which the virtualenv environment will be placed, then set up the python environment:
+
+```bash
+$ virtualenv --verbose env
+$ source env/bin/activate
+```
+
+The first command will create the `env` directory in which all the dependencies will be placed. Next we can start the python environment by sourcing the `activate` script that is placed inside the `env` directory, used in this example. If things gone correctly, the name of the current virtual environment will now appear on the left of the prompt (e.g. `(env)Your-Computer:your_project UserName$`) to let you know that it’s active. Now each python or pip invocation will use the python libraries and directories inside the `env` directory. You can inspect which python is currently used by typing:
+
+```bash
+$ which python
+```
+
+You will see that the current python installation is inside the `env` directory. You can follow the section [Installing dependencies using pip](https://github.com/bunop/isoSegmenter/blob/master/INSTALL.md#installing-dependencies-using-pip) and install all python libraries inside virtualenv environment. To exit from python environment, you can close the terminal or call the `deactivate` scripts:
+
+```bash
+$ deactivate
+```
+
+Once deactivated, your prompt has no more the `env` directory on the left and your python is the default python interpreter. To resume your isoSegmenter installation, you will need only to `activate` the python virtual environment with the `source env/bin/activate` command
+
+### Installing dependencies using pip
 
 The recommend way to install manually python packages is by using [pip](http://dubroy.com/blog/so-you-want-to-install-a-python-package/). In this case:
 
@@ -120,4 +156,4 @@ If you use isoSegmenter in your work, please cite this manuscript:
 
 ## Installing isoSegmenter using docker
 
-There are instructions on how to build and run a isoSegmenter image in the Docker subdirectory in isoSegmenter project. Please look at [README.md](https://github.com/bunop/isoSegmenter/blob/master/Docker/README.md#installing-isosegmenter-using-docker) inside `Docker` directory.
+There are instructions on how to build and run a isoSegmenter image in the Docker subdirectory in isoSegmenter project. Please look at [README.md](https://github.com/bunop/isoSegmenter/blob/master/Docker/README.md#installing-isosegmenter-using-docker) inside `Docker` directory, or at the [isoSegmenter page on Docker Hub](https://hub.docker.com/r/bunop/isosegmenter/)

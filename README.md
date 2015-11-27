@@ -32,15 +32,15 @@ If you use isoSegmenter in your work, please cite this manuscript:
 ## Requirements
 
 isoSegmenter works on a Linux distribution with python 2.7 installed. Some python
-libraries are needed by isoSegmenter
+libraries are needed by isoSegmenter:
 
 * gdmodule
 * Pillow
 * matplotlib
 * biopython
 
-You can install all those requirements by installing the appropriate unix package, or
-by using pip. More information on installation are available in [INSTALL.md](https://github.com/bunop/isoSegmenter/blob/master/INSTALL.md#install-dependencies-via-package-manager)
+You can install all those requirements by installing the appropriate Linux package for your distribution, or
+by using pip. More information on installation are available in [INSTALL.md](https://github.com/bunop/isoSegmenter/blob/master/INSTALL.md#dependencies)
 
 ## Installation
 
@@ -50,54 +50,36 @@ isoSegmenter consist in a series of python scripts. You can install the software
 $ git clone https://github.com/bunop/isoSegmenter.git
 ```
 
-Then enter into isoSegmenter directory and install the package (using python virtualenv
-  is high recommeded):
+Then enter into isoSegmenter directory and install the package using pip (using python [virtualenv](http://docs.python-guide.org/en/latest/dev/virtualenvs/) is high recommeded). Note the final `.` after pip install. This will install packages inside current directory:
 
 ```bash
 $ cd isoSegmenter
 $ pip install .
 ```
 
-To get more details on installation, please see [INSTALL.md](https://github.com/bunop/isoSegmenter/blob/master/INSTALL.md#how-to-install-isosegmenter)
+To get more details on installation, please see [INSTALL.md](https://github.com/bunop/isoSegmenter/blob/master/INSTALL.md#installing-isosegmenter-using-git)
 
 ## Usage
 
-`isoSegmenter.py` is the main application to execute isochores segmentation. It requires a single chromosome FASTA file as an input file (ONLY a chromosome inside file). You can download genome sequences from [UCSC](http://hgdownload.soe.ucsc.edu/downloads.html), [EnsEMBL](http://www.ensembl.org/info/data/ftp/index.html) or [NCBI](http://www.ncbi.nlm.nih.gov/genome/) FTP sites. Output files can be .CSV data file (importable in Excel) and .png image file. For example, inside isoSegmenter/test directory there is the Human chromosome 21 [hg19] as a packed FASTA file. We can call isoSegmenter to draw an image and to get the segmentation .csv file. Enter inside isoSegmenter and type:
+`isoSegmenter.py` is the main application to execute isochores segmentation. It requires a single chromosome FASTA file as an input file (ONLY a chromosome inside a file). You can download genome sequences from [UCSC](http://hgdownload.soe.ucsc.edu/downloads.html), [EnsEMBL](http://www.ensembl.org/info/data/ftp/index.html) or [NCBI](ftp://ftp.ncbi.nlm.nih.gov/genomes/) FTP sites. Output files can be .CSV data file (importable in Excel) and .png image file. For example, inside isoSegmenter/test directory there is the Human chromosome 21 (hg19) as a packed FASTA file. We can call isoSegmenter to draw an image and to get the segmentation .csv file. Enter inside isoSegmenter and type:
 
 ```bash
 $ isoSegmenter.py --infile test/chr21.fa.gz --outfile chr21.isochores.csv --graphfile chr21.isochores.png --draw_legend --verbose
 ```
 
-`--infile`: This is the FASTA input file. It could be plain/text or compressed with gzip/bz2
-`--outfile`: This is isochores .CSV output file
-`--graphfile`: This is isochores .PNG output file
-`--draw_legend`: Draw a colored legend on the right side of the image
+`--infile`: This is the FASTA input file. It could be plain/text or compressed with gzip/bz2   
+`--outfile`: This is the isochores .CSV output file   
+`--graphfile`: This is the isochores .PNG output file   
+`--draw_legend`: Draw a colored legend on the right side of the image  
 `--verbose`: Useful for debugging
 
 This will draw an image like this:
 
 ![chr21.isochores](images/chr21.isochores.png)
 
-Here are the first 10 lines of `chr21.isochores.csv` file:
-
-| Start  | End | Size | Class | AVG_GClevel | STDDEV_GClevel |
-| -----: | ---:| ----:| :--:  | ----------: | -------------: |
-|1|9411193|9411193|gap|||
-|9411194|9595548|184355|L2|37.488076|1.366238|
-|9595549|9645548|50000|gap|||
-|9645549|9775437|129889|L2|39.379518|5.352066|
-|9775438|9825437|50000|gap|||
-|9825438|10034920|209483|H1|41.889945|4.183834|
-|10034921|10084920|50000|gap|||
-|10084921|10215976|131056|L2|40.070044|1.624994|
-|10215977|10365976|150000|gap||||
-
-`Start` and `End` are isochores (or gaps) 1-based position. `Size` is the isochore (or gap size). `AVG_GClevel` and `STDDEV_GClevel` are isochores GC average and standard deviation. `Class` is isochore class according to [Constantini et al.](http://genome.cshlp.org/content/16/4/536.abstract) approach.
-
-There are other options for manipulate graphs and segmentation. You can get a brief description of them by running:
+There are other options for manipulating graphs and segmentation, for instance you can change windows size or gap tolerance, if you need. You can get a brief description of them by running:
 
 ```bash
 $ isoSegmenter.py --help
 ```
-
 Others usage examples will be available (soon) on [isoSegmenter Wiki](https://github.com/bunop/isoSegmenter/wiki#isosegmenter-wiki)
