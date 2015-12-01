@@ -22,7 +22,7 @@
 
 If you use isoSegmenter in your work, please cite this manuscripts:
 
-    Cozzi P, Milanesi L, Bernardi G. Segmenting the Human Genome into Isochores. 
+    Cozzi P, Milanesi L, Bernardi G. Segmenting the Human Genome into Isochores.
     Evolutionary Bioinformatics. 2015;11:253-261. doi:10.4137/EBO.S27693
 
 Created on Thu Nov 26 12:23:08 2015
@@ -102,7 +102,7 @@ setup(
     # simple. Or you can use find_packages().
     packages=find_packages(exclude=['tests']),
 
-    # Scripts are files containing Python source code, intended to be started from 
+    # Scripts are files containing Python source code, intended to be started from
     # the command line. The scripts option simply is a list of files to be handled in this way
     scripts = ['scripts/isoSegmenter.py', 'scripts/tileImages.py', 'scripts/isoFamily.py'],
 
@@ -114,7 +114,7 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=["gdmodule>=0.58", "Pillow", "matplotlib", "biopython"],
+    install_requires=["numpy", "gdmodule>0.58", "Pillow", "matplotlib", "biopython"],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
