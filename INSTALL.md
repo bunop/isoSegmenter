@@ -18,6 +18,7 @@ And the following python libraries are required to run isoSegmenter.py and isoch
 * [Pillow](http://python-pillow.github.io/)
 * [matplotlib](http://matplotlib.org/)
 * [biopython](http://biopython.org/wiki/Main_Page)
+* [numpy](http://www.numpy.org/)
 
 To install isoSegmenter dependencies, you may use the [system package manager](https://github.com/bunop/isoSegmenter/blob/master/INSTALL.md#install-dependencies-via-package-manager) or [building packages from sources](https://github.com/bunop/isoSegmenter/blob/master/INSTALL.md#building-packages-from-sources). Choose the method more preferable for you
 
@@ -26,17 +27,17 @@ To install isoSegmenter dependencies, you may use the [system package manager](h
 The most easy way to install dependencies is via your Linux distribution package manager. For example, to install all python dependencies on Debian/Ubuntu:
 
 ```bash
-$ sudo apt-get install python-gd python-imaging python-matplotlib python-biopython
+$ sudo apt-get install python-gd python-imaging python-matplotlib python-biopython python-numpy
 ```
 
 And this will also check and resolve any dependencies. Then go to [Installing isoSegmenter using GIT](https://github.com/bunop/isoSegmenter/blob/master/INSTALL.md#installing-isosegmenter-using-git)
 
 ### Building packages from sources
 
-In case you are not a system administrator, or you want to compile the last library versions, you have to install all development libraries dependencies to compile python libraries, and then install python packages. I suggest to install libraries locally using [virtualenv](https://virtualenv.pypa.io/en/latest/). Otherwise, you can manage different python versions and installations using [pyenv](https://github.com/yyuu/pyenv). In order to compile python libraries correctly, you need to have installed the needed build libraries. To install libraries dependancies via package manager (for example in Debian/Ubuntu):
+In case you are not a system administrator, or you want to compile the last library versions, you have to install all development libraries dependencies to compile python libraries, and then install python packages. I suggest to install libraries locally using [virtualenv](https://virtualenv.pypa.io/en/latest/). Otherwise, you can manage different python versions and installations using [pyenv](https://github.com/yyuu/pyenv). In order to compile python libraries correctly, you need to have installed the needed build libraries. To install libraries dependencies via package manager (for example in Debian/Ubuntu):
 
 ```bash
-$ sudo apt-get install libgd2-xpm-dev libgif-dev
+$ sudo apt-get install libgd-dev libgif-dev
 ```
 
 #### Using pyenv (optional)
@@ -78,6 +79,7 @@ Once deactivated, your prompt has no more the `env` directory on the left and yo
 The recommend way to install manually python packages is by using [pip](http://dubroy.com/blog/so-you-want-to-install-a-python-package/). In this case:
 
 ```bash
+$ pip install numpy
 $ pip install Pillow
 $ pip install matplotlib
 $ pip install gdmodule
