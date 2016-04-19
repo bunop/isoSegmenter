@@ -42,6 +42,7 @@ __email__ = "paolo.cozzi@ptp.it"
 __status__ = "beta"
 
 
+import os
 import Graphs
 import Utility
 import Elements
@@ -59,7 +60,8 @@ GAP_TOLERANCE = 5000
 CLASS_TO_LEVEL = { "L1":37, "L2":41, "H1":46, "H2":53, "H3":100 }
 
 #The true type font used by EnlargeLabels(Graphs module)
-graph_font_type = "FreeSerifBold.ttf"
+module_path = os.path.dirname(__file__)
+graph_font_type = os.path.join(module_path, "FreeSerifBold.ttf")
 
 # The minimum size of an isochore
 ISO_MIN_SIZE = 2

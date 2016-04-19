@@ -29,6 +29,9 @@ RUN git clone https://github.com/bunop/isoSegmenter.git /root/isoSegmenter
 # Setting working directory
 WORKDIR /root/isoSegmenter
 
+# checking out a tagged release
+RUN git checkout v1.5
+
 # Byte compiling libraries
 RUN pip install .
 

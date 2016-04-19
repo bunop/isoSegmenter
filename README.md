@@ -34,6 +34,7 @@ If you use isoSegmenter in your work, please cite this manuscript:
 isoSegmenter works on a Linux distribution with python 2.7 installed. Some python
 libraries are needed by isoSegmenter:
 
+* numpy
 * gdmodule
 * Pillow
 * matplotlib
