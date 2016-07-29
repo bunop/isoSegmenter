@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 
-    Copyright (C) 2013-2015 ITB - CNR
+    Copyright (C) 2013-2016 ITB - CNR
 
     This file is part of isoSegmenter.
 
@@ -20,7 +20,7 @@
 
 Created on Fri May 31 16:33:03 2013
 
-@author: Paolo Cozzi <paolo.cozzi@tecnoparco.it>
+@author: Paolo Cozzi <paolo.cozzi@ptp.it>
 
 A test module for Utility library
 
@@ -34,14 +34,16 @@ import StringIO
 import tempfile
 import unittest
 
-
 sys.path.append("..")
 
 import GClib
 import GClib.Utility
 
-#Setting libary verbosity
+# Setting libary verbosity
 GClib.logger.threshold = 0
+
+# getting module path
+module_path = os.path.dirname(__file__)
 
 class TestLogger(unittest.TestCase):
     #To verify the Logger class
@@ -96,7 +98,7 @@ class TestFastaFile(unittest.TestCase):
         """Open the sequence with GClib.Utility.FastaFile"""
         
         #Open the sequence with fastafile module
-        self.test_seqObj = GClib.Utility.FastaFile("chr21.fa.gz")
+        self.test_seqObj = GClib.Utility.FastaFile(os.path.join(module_path,"chr21.fa.gz"))
     
     def test_GetNextSeq(self):
         """Testing GetNextSeq returns a Bio.SeqRecord.SeqRecord object"""

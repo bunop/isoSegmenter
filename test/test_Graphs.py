@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 
-    Copyright (C) 2013-2015 ITB - CNR
+    Copyright (C) 2013-2016 ITB - CNR
 
     This file is part of isoSegmenter.
 
@@ -20,7 +20,7 @@
 
 Created on Wed Jun  5 10:16:54 2013
 
-@author: Paolo Cozzi <paolo.cozzi@tecnoparco.it>
+@author: Paolo Cozzi <paolo.cozzi@ptp.it>
 
 A module to test Graphs module
 
@@ -32,14 +32,14 @@ import StringIO
 import tempfile
 import unittest
 
-
 sys.path.append("..")
 
 import GClib
 import GClib.Graphs
 import GClib.Elements
 
-__author__ = "Paolo Cozzi <paolo.cozzi@tecnoparco.org>"
+# getting module path
+module_path = os.path.dirname(__file__)
 
 class test_BaseGraph(unittest.TestCase):
     def setUp(self):
@@ -298,11 +298,11 @@ class test_DrawChromosome(unittest.TestCase):
     chromosome = GClib.Elements.Chromosome()
     
     #read isochore from isochores list
-    chromosome.LoadIsochores("test_isochores3_chr21.csv")
+    chromosome.LoadIsochores(os.path.join(module_path, "test_isochores3_chr21.csv"))
     isochores = chromosome.isochores
     
     #read windows from windows list
-    chromosome.LoadWindows("test_windows_chr21.csv")
+    chromosome.LoadWindows(os.path.join(module_path, "test_windows_chr21.csv"))
     windows = chromosome.windows
     
     #determing sequence length from isochore coordinates
@@ -359,11 +359,11 @@ class test_MoreGraphs(unittest.TestCase):
     chromosome = GClib.Elements.Chromosome()
     
     #read isochore from isochores list
-    chromosome.LoadIsochores("test_isochores3_chr21.csv")
+    chromosome.LoadIsochores(os.path.join(module_path, "test_isochores3_chr21.csv"))
     isochores = chromosome.isochores
     
     #read windows from windows list
-    chromosome.LoadWindows("test_windows_chr21.csv")
+    chromosome.LoadWindows(os.path.join(module_path, "test_windows_chr21.csv"))
     windows = chromosome.windows
     
     #determing sequence length from isochore coordinates

@@ -8,7 +8,7 @@ A program for segmenting genomes into isochores
 
 isoSegmenter - A program for segmenting genomes into isochores
 
-Copyright (C) 2013-2015 ITB - CNR
+Copyright (C) 2013-2016 ITB - CNR
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

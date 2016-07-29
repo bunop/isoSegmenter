@@ -2,7 +2,7 @@
 """
 
 
-    Copyright (C) 2013-2015 ITB - CNR
+    Copyright (C) 2013-2016 ITB - CNR
 
     This file is part of isoSegmenter.
 
@@ -293,7 +293,9 @@ class Chromosome:
         self.isochores = []
         self.windows = []
 
-        if self.seqRecord != None:
+        # check seqRecord value
+        if isinstance(self.seqRecord, Bio.SeqRecord.SeqRecord):    
+            # apply functions
             self.Scan4Gaps()
             self.name = seqRecord.name
             self.size = len(seqRecord)
@@ -364,7 +366,7 @@ class Chromosome:
         the GC countent on each window"""
 
         #No window divisions if there is no sequence
-        if self.seqRecord == None or type(self.seqRecord) != Bio.SeqRecord.SeqRecord:
+        if not isinstance(self.seqRecord, Bio.SeqRecord.SeqRecord):
             raise ChromosomeError, "The seqRecord class attribute must be instantiated with a valid Bio.Seqrecord object in order to divide sequence in windows"
 
         if self.size == 0 and len(self.seqRecord) == 0:

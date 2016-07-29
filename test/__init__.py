@@ -25,43 +25,8 @@ If you use isoSegmenter in your work, please cite this manuscript:
     Cozzi P, Milanesi L, Bernardi G. Segmenting the Human Genome into Isochores.
     Evolutionary Bioinformatics. 2015;11:253-261. doi:10.4137/EBO.S27693
 
-Created on Fri May  3 14:49:03 2013
+Created on Fri Jul 29 11:05:21 2016
 
 @author: Paolo Cozzi <paolo.cozzi@ptp.it>
-
 """
 
-__all__ = ["Elements", "Utility", "Graphs" ]
-__author__ = "Paolo Cozzi <paolo.cozzi@ptp.it>"
-__copyright__ = "Copyright (C) 2013-2016 ITB - CNR"
-__credits__ = ["Paolo Cozzi"]
-__license__ = "GNU GPLv3"
-__version__ = "1.5.1"
-__maintainer__ = "Paolo Cozzi"
-__email__ = "paolo.cozzi@ptp.it"
-__status__ = "beta"
-
-
-import os
-import Graphs
-import Utility
-import Elements
-
-#default level of vebosity
-logger = Utility.Logger(threshold=1)
-
-#the default window size in bp
-WINDOW_SIZE = 100000
-
-#The gap tolerance in bp
-GAP_TOLERANCE = 5000
-
-#The GClevel upper limit for each class
-CLASS_TO_LEVEL = { "L1":37, "L2":41, "H1":46, "H2":53, "H3":100 }
-
-#The true type font used by EnlargeLabels(Graphs module)
-module_path = os.path.dirname(__file__)
-graph_font_type = os.path.join(module_path, "FreeSerifBold.ttf")
-
-# The minimum size of an isochore
-ISO_MIN_SIZE = 2

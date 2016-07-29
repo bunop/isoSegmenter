@@ -2,7 +2,7 @@
 """
 
 
-    Copyright (C) 2013-2015 ITB - CNR
+    Copyright (C) 2013-2016 ITB - CNR
 
     This file is part of isoSegmenter.
 

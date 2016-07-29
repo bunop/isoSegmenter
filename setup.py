@@ -2,7 +2,7 @@
 """
 
 
-    Copyright (C) 2013-2015 ITB - CNR
+    Copyright (C) 2013-2016 ITB - CNR
 
     This file is part of isoSegmenter.
 
@@ -33,6 +33,10 @@ A module to install isoSegmenter through pip
 
 """
 
+import io
+import os
+import re
+
 # Always prefer setuptools over distutils
 from setuptools import setup, find_packages
 # To use a consistent encoding
@@ -47,13 +51,30 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
+# define function to parse versions
+# https://packaging.python.org/en/latest/single_source_version.html
+def read(*names, **kwargs):
+    with io.open(
+        os.path.join(os.path.dirname(__file__), *names),
+        encoding=kwargs.get("encoding", "utf8")
+    ) as fp:
+        return fp.read()
+
+def find_version(*file_paths):
+    version_file = read(*file_paths)
+    version_match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]",
+                              version_file, re.M)
+    if version_match:
+        return version_match.group(1)
+    raise RuntimeError("Unable to find version string.")
+
 setup(
     name='GClib',
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='1.5.0',
+    version=find_version('GClib', "__init__.py"),
 
     description='A program for segmenting genomes into isochores',
     long_description=long_description,
@@ -120,10 +141,13 @@ setup(
     # dependencies). You can install these using the following syntax,
     # for example:
     # $ pip install -e .[dev,test]
-#    extras_require={
-#        'dev': ['check-manifest'],
-#        'test': ['coverage'],
-#    },
+    extras_require={
+        'dev': ['check-manifest'],
+        'test': ['coveralls', 'nose'],
+    },
+
+    # testing modules
+    test_suite = "test",
 
     # If there are data files included in your packages that need to be
     # installed, specify them here.  If using Python 2.6 or less, then these

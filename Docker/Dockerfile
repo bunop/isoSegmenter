@@ -31,6 +31,7 @@ WORKDIR /root/isoSegmenter
 
 # checking out a tagged release
 RUN git fetch && \
+  git checkout v1.5 && \
   git checkout -b v1.5
 
 # Byte compiling libraries

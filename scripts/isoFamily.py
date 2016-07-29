@@ -4,7 +4,7 @@
 """
 
 
-    Copyright (C) 2013-2015 ITB - CNR
+    Copyright (C) 2013-2016 ITB - CNR
 
     This file is part of isoSegmenter.
 
@@ -55,7 +55,7 @@ If you use isoSegmenter in your work, please cite this manuscript:
 
 notice = """
 
-isoSegmenter  Copyright (C) 2013-2015 ITB - CNR
+isoSegmenter  Copyright (C) 2013-2016 ITB - CNR
 This program comes with ABSOLUTELY NO WARRANTY; for details type `isoFamily.py --help'.
 This is free software, and you are welcome to redistribute it
 under certain conditions; show LICENSE.md for more details.

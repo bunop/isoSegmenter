@@ -2,7 +2,7 @@
 """
 
 
-    Copyright (C) 2013-2015 ITB - CNR
+    Copyright (C) 2013-2016 ITB - CNR
 
     This file is part of isoSegmenter.
 
@@ -157,8 +157,8 @@ def FileExists(filename, remove_if_exists=False):
 
         else:
             #remove the file before calculation
-            GClib.logger.log(2, "file %s removed" %(filename))
             os.remove(filename)
+            GClib.logger.log(2, "file %s removed" %(filename))
 
     #this function return nothing is successful
 

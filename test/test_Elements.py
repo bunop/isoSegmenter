@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 
-    Copyright (C) 2013-2015 ITB - CNR
+    Copyright (C) 2013-2016 ITB - CNR
 
     This file is part of isoSegmenter.
 
@@ -20,7 +20,7 @@
 
 Created on Fri May 31 17:07:40 2013
 
-@author: Paolo Cozzi <paolo.cozzi@tecnoparco.it>
+@author: Paolo Cozzi <paolo.cozzi@ptp.it>
 
 """
 
@@ -37,6 +37,9 @@ sys.path.append("..")
 import GClib
 import GClib.Utility
 import GClib.Elements
+
+# getting module path
+module_path = os.path.dirname(__file__)
 
 class test_CalcClass(unittest.TestCase):
     def setUp(self):
@@ -288,11 +291,11 @@ class test_Isochore(unittest.TestCase):
 
 class test_Chromosome(unittest.TestCase):
     #maybe loads SeqRecord object once
-    fastafile = GClib.Utility.FastaFile("chr21.fa.gz")
+    fastafile = GClib.Utility.FastaFile(os.path.join(module_path,"chr21.fa.gz"))
     seqRecord = fastafile.GetNextSeq()
     
     #Open a local Gap CSV file, obtained by the precendent version of this software
-    old_filein = open("old_chr21_hg19_gaps.csv", "rU")
+    old_filein = open(os.path.join(module_path,"old_chr21_hg19_gaps.csv"), "rU")
     old_csvin = csv.reader(old_filein)
     
     #Discarding headers
@@ -310,7 +313,7 @@ class test_Chromosome(unittest.TestCase):
     old_filein.close()
     
     #Open a local Windows CSV file, obtained by the evaluation study of this program
-    test_filein = open("test_windows_chr21.csv", "rU")
+    test_filein = open(os.path.join(module_path,"test_windows_chr21.csv"), "rU")
     test_csvin = csv.reader(test_filein)
     
     #Discarding headers
@@ -348,7 +351,7 @@ class test_Chromosome(unittest.TestCase):
     test_filein.close()
     
     #Opena a local Isochore file, obtained bt the evaluation study of this program
-    test_filein = open("test_isochores3_chr21.csv", "rU")
+    test_filein = open(os.path.join(module_path,"test_isochores3_chr21.csv"), "rU")
     test_csvin = csv.reader(test_filein)
     
     #Discarding headers
