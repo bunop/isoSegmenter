@@ -9,19 +9,18 @@
 # TO_TAG:         docker tag bunop/isosegmenter:latest bunop/isosegmenter:0.5
 #
 
-FROM python:2.7.9
+FROM python:2.7
 
 MAINTAINER Paolo Cozzi <paolo.cozzi@ptp.it>
 
 # Set corrent working directory
 WORKDIR /root
 
-# Install deb dependancies
-RUN apt-get update && apt-get install -y libgd-dev \
-    libgif-dev
-
-# Clean packages and histories
-RUN apt-get clean && rm -rf /var/lib/apt/lists/
+# Install deb dependancies. Then clean  packages and histories
+RUN apt-get update \
+ && apt-get install -y libgd-dev \
+    libgif-dev \
+ && apt-get clean
 
 # now clone isoSegmenter project
 RUN git clone https://github.com/bunop/isoSegmenter.git /root/isoSegmenter
@@ -29,10 +28,13 @@ RUN git clone https://github.com/bunop/isoSegmenter.git /root/isoSegmenter
 # Setting working directory
 WORKDIR /root/isoSegmenter
 
+# setting isosegmente version
+ENV VERSION=v1.5.1
+
 # checking out a tagged release
 RUN git fetch && \
-  git checkout v1.5 && \
-  git checkout -b v1.5
+  git checkout $VERSION && \
+  git checkout -b $VERSION
 
 # Byte compiling libraries
 RUN pip install .
