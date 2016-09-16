@@ -4,6 +4,8 @@ isoSegmenter
 
 A program for segmenting genomes into isochores
 
+[![](https://images.microbadger.com/badges/version/bunop/isosegmenter.svg)](http://microbadger.com/images/bunop/isosegmenter "Get your own version badge on microbadger.com")
+
 ## License
 
 isoSegmenter - A program for segmenting genomes into isochores
