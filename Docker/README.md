@@ -1,6 +1,13 @@
 
+isoSegmenter
+==============
+
+A program for segmenting genomes into isochores
+
+[![](https://images.microbadger.com/badges/image/bunop/isosegmenter.svg)](http://microbadger.com/images/bunop/isosegmenter "Get your own image badge on microbadger.com")
+
 Installing isoSegmenter using Docker
-======================================
+------------------------------------
 
 Those are instructions on how tu run [isoSegmenter](https://github.com/bunop/isoSegmenter) inside a docker container. By using docker, you will start a container in which isoSegmenter is already installed (you don't need to install all requirements since they are already satisfied in image). First install [docker](http://docs.docker.com/installation/#installation) on your platform. Then you can download the pre-build docker image or modify and build a new docker image
 

@@ -87,7 +87,7 @@ setup(
     author_email='paolo.cozzi@ptp.it',
 
     # Choose your license
-    license='GPLv3 ',
+    license='GPLv3',
 
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[

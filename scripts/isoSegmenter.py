@@ -163,14 +163,8 @@ if __name__ == "__main__":
     #Instantiating Chromosome Class with seqRecord object (gaps are determined automatically)
     Chrom = GClib.Elements.Chromosome(seqRecord)
 
-    #Segmenting Sequence in windows
-    if args.window_size == GClib.WINDOW_SIZE:
-        #This call only to print the warning string when we use the default window size
-        Chrom.ValueWindows(From=args.sequence_start, To=To)
-
-    else:
-        #Call valuewindos with user defined window size
-        Chrom.ValueWindows(window_size=args.window_size, From=args.sequence_start, To=To)
+    #Call valuewindos with user defined window size
+    Chrom.ValueWindows(window_size=args.window_size, From=args.sequence_start, To=To)
 
     #Writing windows in a file (if I need it)
     if args.windowfile != None:
