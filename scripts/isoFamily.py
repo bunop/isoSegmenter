@@ -116,6 +116,7 @@ if __name__ == "__main__":
         #Setting Grids and axis Labels
         graph.DrawAxisLabels()
         graph.DrawGrid()
+        graph.DrawTitle('Histogram of isochore families in bins of 1% GC')
 
         #Override Xmax and Xmin values
         axes = [args.x_min, args.x_max, 0, 0]
