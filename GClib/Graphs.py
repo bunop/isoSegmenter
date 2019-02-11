@@ -47,6 +47,7 @@ from PIL import ImageDraw
 from PIL import ImageFont
 
 from matplotlib import pyplot
+import matplotlib.patches as mpatches
 
 __author__ = "Paolo Cozzi <paolo.cozzi@ptp.it>"
 
@@ -1157,17 +1158,37 @@ class DrawFamilies:
         scale = 20.0 / 12
 
         self.fig = pyplot.figure(figsize=(13,13/scale))
-        self.fontsize=30 #"x-large"
+        self.fontsize=20 #"x-large"
+
+        levels = sorted(GClib.CLASS_TO_LEVEL.items(), key = lambda x: x[1])
+
+        mycolorslist = ["#0064FF", "#00C8FF", "#FFFF00", "#FF8200", "#FF0000"]
 
         #instantiate a bar graph
         for bin, bin_data in self.families.data.iteritems():
             #print "%s:%s" %(bins[i], data[i]),
             length = bin_data["size"]
-            self.all_bar += [pyplot.bar(bin-families.bin_size*0.2, int(round(length/1e6,0)), width=0.4*families.bin_size, bottom=0)]
+
+            for i, (name, level) in enumerate(levels):
+                if bin <= level:
+                    break
+            color = mycolorslist[i]
+
+            self.all_bar += [
+                pyplot.bar(
+                    bin-families.bin_size*0.2, int(round(length/1e6,0)),
+                    width=0.4*families.bin_size, bottom=0, color=color,
+                )]
 
         #setting axes
         self.x_min = int(round(families.min_value / families.precision,0))
         self.x_max = int(round(families.max_value / families.precision,0))
+
+        # set legend
+        legend = []
+        for i, (name, level) in enumerate(levels):
+            legend.append(mpatches.Patch(color=mycolorslist[i], label=name))
+        pyplot.legend(handles=legend, loc="best")
 
     def __str__(self):
         """A method useful for debugging"""
@@ -1220,6 +1241,8 @@ class DrawFamilies:
         #draw the thicks and labels
         pyplot.xticks([myticks[i] for i in range(0,len(myticks))],[mylabels[i] for i in range(0,len(myticks))],size=self.fontsize)
         pyplot.yticks(size=self.fontsize)
+        pyplot.xlabel('GC', size=self.fontsize)
+        pyplot.ylabel('Mb', size=self.fontsize)
 
     def SetAxisLimits(self, axis=[0,0,0,0]):
         """Setting axis [Xmin, Xmax, Ymin, Ymax]"""
@@ -1254,11 +1277,9 @@ class DrawFamilies:
     def DrawTitle(self, title):
         """Draws title in graph"""
 
-        pyplot.text(0.8, 0.8, title,
-            horizontalalignment='center',
-            verticalalignment='center',
-            transform = pyplot.gca().transAxes,
-            size=40
+        pyplot.title(
+            title,
+            size=self.fontsize
         )
 
     def SaveFigure(self, filename, dpi=100):
