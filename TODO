@@ -27,3 +27,9 @@
   - log values set by user
 
 * Support for python3
+
+* Drop gdmodule support
+
+* refactoring for logging module
+
+* Publish as a python package

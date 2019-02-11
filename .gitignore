@@ -72,6 +72,13 @@ docs/_build/
 # PyBuilder
 target/
 
-# ingnore spyder project
+# ignore spyder project
 .spyderproject
 .spyproject/
+
+# ignore output files
+*.csv
+*.png
+*.gz
+*.bed
+*.xcf

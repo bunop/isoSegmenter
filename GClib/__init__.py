@@ -31,7 +31,7 @@ Created on Fri May  3 14:49:03 2013
 
 """
 
-__all__ = ["Elements", "Utility", "Graphs" ]
+__all__ = ["Elements", "Utility", "Graphs"]
 __author__ = "Paolo Cozzi <paolo.cozzi@ptp.it>"
 __copyright__ = "Copyright (C) 2013-2016 ITB - CNR"
 __credits__ = ["Paolo Cozzi"]
@@ -47,19 +47,19 @@ import Graphs
 import Utility
 import Elements
 
-#default level of vebosity
+# default level of vebosity
 logger = Utility.Logger(threshold=1)
 
-#the default window size in bp
+# the default window size in bp
 WINDOW_SIZE = 100000
 
-#The gap tolerance in bp
+# The gap tolerance in bp
 GAP_TOLERANCE = 5000
 
-#The GClevel upper limit for each class
-CLASS_TO_LEVEL = { "L1":37, "L2":41, "H1":46, "H2":53, "H3":100 }
+# The GClevel upper limit for each class
+CLASS_TO_LEVEL = {"L1": 37, "L2": 41, "H1": 46, "H2": 53, "H3": 100}
 
-#The true type font used by EnlargeLabels(Graphs module)
+# The true type font used by EnlargeLabels(Graphs module)
 module_path = os.path.dirname(__file__)
 graph_font_type = os.path.join(module_path, "FreeSerifBold.ttf")
 

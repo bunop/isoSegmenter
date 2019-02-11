@@ -44,33 +44,37 @@ __author__ = "Paolo Cozzi <paolo.cozzi@ptp.it>"
 
 from . import __copyright__, __license__, __version__
 
-#for logging messages
+# for logging messages
+
+
 class Logger:
     """To set up a level of verbosity of an application"""
-    def __init__(self,threshold=1,outfile=sys.stdout,errfile=sys.stderr):
+
+    def __init__(self, threshold=1, outfile=sys.stdout, errfile=sys.stderr):
         self.threshold = threshold
         self.outfile = outfile
         self.errfile = errfile
 
-    def log(self,level,message,outfile=None):
+    def log(self, level, message, outfile=None):
         '''Logs message if level lower than or equal to threshold.
         Message can even be an object - normal print functionality
         will be used'''
 
-        #Se non specifico un oufile, allora prendo quello di default
-        if outfile is None: outfile = self.outfile
+        # Se non specifico un oufile, allora prendo quello di default
+        if outfile is None:
+            outfile = self.outfile
 
         if level <= self.threshold:
-            print >> outfile, "%s: %s" %(time.ctime(),message)
-            #flushing outfile
+            print >> outfile, "%s: %s" % (time.ctime(), message)
+            # flushing outfile
             outfile.flush()
 
-    def err(self,level,message):
+    def err(self, level, message):
         '''Logs message in stderr, instead of predefined file'''
-        self.log(level,message,self.errfile)
+        self.log(level, message, self.errfile)
 
 
-#To deal with fasta files
+# To deal with fasta files
 class FastaFile:
     """A class to deal with fasta files"""
 
@@ -82,39 +86,39 @@ class FastaFile:
         self.seqs_ids = {}
         self.n_of_sequences = 0
 
-        #Open a fasta file, if requested
-        if fasta_file != None:
+        # Open a fasta file, if requested
+        if fasta_file is not None:
             self.Load(fasta_file)
 
-    def Load(self,fasta_file):
+    def Load(self, fasta_file):
         """Load a fasta file"""
 
-        #debug
-        GClib.logger.log(1, "Opening %s..." %(fasta_file))
+        # debug
+        GClib.logger.log(1, "Opening %s..." % (fasta_file))
 
-        #verify the file extension
+        # verify the file extension
         extension = os.path.splitext(fasta_file)[1]
 
         if extension == '.gz':
-            #Open handle with gzip
-            fasta_fh = gzip.open(fasta_file,"rb")
+            # Open handle with gzip
+            fasta_fh = gzip.open(fasta_file, "rb")
 
         else:
-            #open handle in universal mode
-            fasta_fh = open(fasta_file,"rU")
+            # open handle in universal mode
+            fasta_fh = open(fasta_file, "rU")
 
-        #Parsing sequences with Bio.SeqIO
+        # Parsing sequences with Bio.SeqIO
         self.seqs_list = list(Bio.SeqIO.parse(fasta_fh, "fasta"))
 
-        #How many sequences were read?
+        # How many sequences were read?
         self.n_of_sequences = len(self.seqs_list)
 
-        #Which are sequences ids
+        # Which are sequences ids
         for idx, seq in enumerate(self.seqs_list):
             self.seqs_ids[seq.id] = idx
 
-        #debug
-        GClib.logger.log(1, "%s sequences read" %(self.n_of_sequences))
+        # debug
+        GClib.logger.log(1, "%s sequences read" % (self.n_of_sequences))
 
     def IterSeqs(self):
         """Iters through Bio.Seqs Objects"""
@@ -136,30 +140,30 @@ class FastaFile:
     def GetSeqbyID(self, id):
         """Return a SeqObj by id"""
 
-        #get the position in list
+        # get the position in list
         idx = self.seqs_ids[id]
 
-        #return seq obj
+        # return seq obj
         return self.seqs_list[idx]
 
 
-#a function to check file existance and remove file if needed
+# a function to check file existance and remove file if needed
 def FileExists(filename, remove_if_exists=False):
     """Testing for file existance and removing file if needed"""
 
-    #return if filenames is None
-    if filename == None:
+    # return if filenames is None
+    if filename is None:
         return
 
     if os.path.exists(filename):
         if remove_if_exists == False:
-            raise IOError, "file %s exists!!!" %(filename)
+            raise IOError("file %s exists!!!" % (filename))
 
         else:
-            #remove the file before calculation
+            # remove the file before calculation
             os.remove(filename)
-            GClib.logger.log(2, "file %s removed" %(filename))
+            GClib.logger.log(2, "file %s removed" % (filename))
 
-    #this function return nothing is successful
+    # this function return nothing is successful
 
-#end of library
+# end of library
