@@ -74,3 +74,4 @@ target/
 
 # ingnore spyder project
 .spyderproject
+.spyproject/

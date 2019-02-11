@@ -26,3 +26,4 @@
 * when setting 100k, log says that no window is provided, so default 100Kb values is chosen
   - log values set by user
 
+* Support for python3

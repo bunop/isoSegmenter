@@ -45,11 +45,14 @@ from os import path
 
 here = path.abspath(path.dirname(__file__))
 
+
 # Get the long description from the README file
-# The long_description field is used by PyPI when you are registering a package, to build its home page.
+# The long_description field is used by PyPI when you are registering a
+# package, to build its home page.
 # TODO: convert README.md in README.rst
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
+
 
 # define function to parse versions
 # https://packaging.python.org/en/latest/single_source_version.html
@@ -60,6 +63,7 @@ def read(*names, **kwargs):
     ) as fp:
         return fp.read()
 
+
 def find_version(*file_paths):
     version_file = read(*file_paths)
     version_match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]",
@@ -67,6 +71,7 @@ def find_version(*file_paths):
     if version_match:
         return version_match.group(1)
     raise RuntimeError("Unable to find version string.")
+
 
 setup(
     name='GClib',
@@ -110,10 +115,10 @@ setup(
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
-        #'Programming Language :: Python :: 3',
-        #'Programming Language :: Python :: 3.2',
-        #'Programming Language :: Python :: 3.3',
-        #'Programming Language :: Python :: 3.4',
+        # 'Programming Language :: Python :: 3',
+        # 'Programming Language :: Python :: 3.2',
+        # 'Programming Language :: Python :: 3.3',
+        # 'Programming Language :: Python :: 3.4',
     ],
 
     # What does your project relate to?
@@ -123,9 +128,13 @@ setup(
     # simple. Or you can use find_packages().
     packages=find_packages(exclude=['tests']),
 
-    # Scripts are files containing Python source code, intended to be started from
-    # the command line. The scripts option simply is a list of files to be handled in this way
-    scripts = ['scripts/isoSegmenter.py', 'scripts/tileImages.py', 'scripts/isoFamily.py'],
+    # Scripts are files containing Python source code, intended to be started
+    # from the command line. The scripts option simply is a list of files to
+    # be handled in this way
+    scripts=[
+        'scripts/isoSegmenter.py',
+        'scripts/tileImages.py',
+        'scripts/isoFamily.py'],
 
     # Alternatively, if you want to distribute just a my_module.py, uncomment
     # this:
@@ -135,7 +144,12 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=["numpy", "gdmodule>0.58", "Pillow", "matplotlib", "biopython"],
+    install_requires=[
+        "numpy",
+        "gdmodule>0.58",
+        "Pillow",
+        "matplotlib",
+        "biopython"],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
@@ -147,7 +161,7 @@ setup(
     },
 
     # testing modules
-    test_suite = "test",
+    test_suite="test",
 
     # If there are data files included in your packages that need to be
     # installed, specify them here.  If using Python 2.6 or less, then these
@@ -160,7 +174,7 @@ setup(
     # need to place data files outside of your packages. See:
     # http://docs.python.org/3.4/distutils/setupscript.html#installing-additional-files # noqa
     # In this case, 'data_file' will be installed into '<sys.prefix>/my_data'
-    #data_files=[('my_data', ['data/data_file'])],
+    # data_files=[('my_data', ['data/data_file'])],
 
     # To provide executable scripts, use entry points in preference to the
     # "scripts" keyword. Entry points provide cross-platform support and allow
