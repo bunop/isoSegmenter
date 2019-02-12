@@ -23,3 +23,7 @@ graph_font_type = os.path.join(module_path, "FreeSerifBold.ttf")
 
 # The minimum size of an isochore
 ISO_MIN_SIZE = 2
+
+# The maximum and minumu values of DrawChromosome graph (in percentage)
+GRAPH_GC_MAX = 65
+GRAPH_GC_MIN = 30

@@ -36,11 +36,10 @@ A module to deal with isochore graphs. This module is inspired from draw_chromos
 
 import gd
 import os
-import GClib
 import shutil
 import types
 import tempfile
-import GClib.Elements
+import logging
 
 from PIL import Image
 from PIL import ImageDraw
@@ -49,13 +48,18 @@ from PIL import ImageFont
 from matplotlib import pyplot
 import matplotlib.patches as mpatches
 
+from . import Elements
+from . import constants
+
 __author__ = "Paolo Cozzi <paolo.cozzi@ptp.it>"
 
 from . import __copyright__, __license__, __version__
 
+# for logging messages
+logger = logging.getLogger(__name__)
+
+
 # exception definition
-
-
 class BaseGraphError(Exception):
     pass
 
@@ -72,18 +76,14 @@ class MoreGraphsError(Exception):
     pass
 
 
-# The maximum and minumu values of DrawChromosome graph (in percentage)
-GRAPH_GC_MAX = 65
-GRAPH_GC_MIN = 30
-
-
 class BaseGraph():
     """A base class to make graps like draw chromosomes"""
 
     def __init__(self, sequence_start=0):
         # default values in points (pixel)
         self.scale = 30000  # 17500 #higher values shrink images
-        self.border = 90  # the white space on the left and on the right of the figure
+        # the white space on the left and on the right of the figure
+        self.border = 90
         self.top = 70  # the upper space before the X axis
         self.bottom = 35  # the bottom size border
         # the height of the graphic area (in which isocore are printed, not
@@ -104,7 +104,8 @@ class BaseGraph():
         self.x = None  # the width of the image
         # the number of horizontal lines to draw (horizontal grid)
         self.n_of_h_lines = None
-        self.h_lines = None  # the values in which horizontal line will be drawn
+        # the values in which horizontal line will be drawn
+        self.h_lines = None
         self.isochore_label = None  # isochores names used to draw legend
         # isocores values used to print horizontal lines and their values
         self.isochore_values = None
@@ -115,8 +116,11 @@ class BaseGraph():
         self.colored_by_class = False
 
         # To control image labels with PIL
-        self.drawn_labels = False  # if labels are drawn by DrawXaxes, it will be True
-        self.tempfile = None  # if labels are drawn by PIL, this will be the path of image file
+
+        # if labels are drawn by DrawXaxes, it will be True
+        self.drawn_labels = False
+        # if labels are drawn by PIL, this will be the path of image file
+        self.tempfile = None
 
         # Defined by InitPicture method
         self.graph = None  # GD graph instance will be put here
@@ -145,11 +149,11 @@ class BaseGraph():
         """Delete temporary file if exists"""
 
         if self.tempfile is not None:
-            GClib.logger.log(5, "Found %s temporary file..." % (self.tempfile))
+            logger.debug("Found %s temporary file..." % (self.tempfile))
 
             if os.path.exists(self.tempfile):
-                GClib.logger.log(
-                    4, "Removing %s temporary file..." %
+                logger.debug(
+                    "Removing %s temporary file..." %
                     (self.tempfile))
                 os.unlink(self.tempfile)
 
@@ -179,8 +183,8 @@ class BaseGraph():
         self.x = 2 * self.border + int(self.sequence_length / self.scale)
 
         # debug
-        GClib.logger.log(
-            3, "Sequence %s bp; image width %s pixels" %
+        logger.debug(
+            "Sequence %s bp; image width %s pixels" %
             (self.sequence_length, self.x))
 
     def SetFontSize(self, fontsize=gd.gdFontGiant):
@@ -202,11 +206,11 @@ class BaseGraph():
             raise BaseGraphError(
                 "Sequence length must be defined by SetSequenceLength")
 
-        GClib.logger.log(2, "Starting figure...")
+        logger.debug("Starting figure...")
 
-        # A gd image. Note that image height is equal to graphic height (self.y) plus
-        # upper space (self.top) in which put labels and bottom space
-        # (self.bottom) for aesthetic
+        # A gd image. Note that image height is equal to graphic height
+        # (self.y) plus upper space (self.top) in which put labels and bottom
+        # space (self.bottom) for aesthetic
         self.graph = gd.image((self.x, self.y + self.bottom))
 
         # Allocate base colors
@@ -267,9 +271,9 @@ class BaseGraph():
             self.colored_by_class = True
 
             # One color for each class. Getting the possible values sorted by GClevel
-            # note that GClib.CLASS_TO_LEVEL is a dictionary, so keys could be
+            # note that constants.CLASS_TO_LEVEL is a dictionary, so keys could be
             # in random order
-            items = sorted(GClib.CLASS_TO_LEVEL.items(), key=lambda x: x[1])
+            items = sorted(constants.CLASS_TO_LEVEL.items(), key=lambda x: x[1])
 
             # items are somethin like this: [('L1', 37), ('L2', 41), ('H1',
             # 46), ('H2', 53), ('H3', 100)]
@@ -334,10 +338,10 @@ class BaseGraph():
             raise BaseGraphError(
                 "SetColorsList must be called before retrive color by GClevel")
 
-        # It is possible that we have defined a Maximum value and that I could have and
-        # isochore higher than this value. In this case, this element will be plotted outside
-        # the box, and I will trow a warning message. In such case the color is the
-        # color assigned to the higher value
+        # It is possible that we have defined a Maximum value and that I could
+        # have and isochore higher than this value. In this case, this element
+        # will be plotted outside the box, and I will trow a warning message.
+        # In such case the color is the color assigned to the higher value
         color = self.colorslist[-1]
         flag_assigned = False
 
@@ -347,21 +351,24 @@ class BaseGraph():
                 flag_assigned = True
 
         # Controlling the color assignment
-        if flag_assigned == False:
-            GClib.logger.err(0, "GClevel higher than Maximum value (%s > %s). Maybe the maximum value have to be raised with SetMinMaxValues" % (
-                GClevel, self.isochore_values[-1]))
+        if flag_assigned is False:
+            logger.warning(
+                "GClevel higher than Maximum value (%s > %s). Maybe the "
+                "maximum value have to be raised with SetMinMaxValues" % (
+                        GClevel, self.isochore_values[-1]))
 
         # return a GD color ID
         return color
 
     def GetLabelByGClevel(self, GClevel):
-        """Starting from a GClevel values, returns the class using GClib.Elements.CalcClass"""
+        """Starting from a GClevel values, returns the class using
+        GClib.Elements.CalcClass"""
 
         if self.colorslist is None:
             raise BaseGraphError(
                 "SetColorsList must be called before retrive class by GClevel")
 
-        return GClib.Elements.CalcClass(GClevel)
+        return Elements.CalcClass(GClevel)
 
     def DrawChName(self, chname):
         """Draws chromosome name inside the graph"""
@@ -573,9 +580,9 @@ class BaseGraph():
         # Open the temporary image in order to modify it
         im = Image.open(imagefile)
 
-        # These are fonts used to draw images. Ensure thay you have the file specified in
-        # GClib/__init__.py module
-        myfont = ImageFont.truetype(GClib.graph_font_type, 30)
+        # These are fonts used to draw images. Ensure thay you have the file
+        # specified in constants module
+        myfont = ImageFont.truetype(constants.graph_font_type, 30)
 
         # Questo oggetto mi serve per scriverci dentro
         draw = ImageDraw.Draw(im)
@@ -665,7 +672,8 @@ class BaseGraph():
         im.save(imagefile)
 
     def SaveFigure(self, filename, check=True):
-        """Draw the image in a new file. Check for file existance before writing"""
+        """Draw the image in a new file. Check for file existance before
+        writing"""
 
         if self.graph is None:
             # if GD image isn't instantiated yed, I couldn't instantiate colors
@@ -673,7 +681,7 @@ class BaseGraph():
                 "InitPicture must be called before this method")
 
         # checking for file existance
-        if os.path.exists(filename) and check == True:
+        if os.path.exists(filename) and check is True:
             raise BaseGraphError("File %s exists!!!" % (filename))
 
         # Determing if the Image is already drawn in temporary files
@@ -681,14 +689,14 @@ class BaseGraph():
             # write a new image
             self.graph.writePng(filename)
 
-            GClib.logger.log(1, "Image written in %s" % (filename))
+            logger.info("Image written in %s" % (filename))
 
         else:
             # copy the temporary image in user files. I such way I can save
             # file more times
             shutil.copy(self.tempfile, filename)
 
-            GClib.logger.log(1, "Image copied in %s" % (filename))
+            logger.info("Image copied in %s" % (filename))
 
 
 # The main class which simulates the behaviour of draw_chromsome.pl
@@ -701,9 +709,9 @@ class DrawChromosome(BaseGraph):
         # Instantiate the base methods and the default attribute class
         BaseGraph.__init__(self, sequence_start=sequence_start)
 
-        # The y max and min values are decided by graph type. In this case, GClevel values
-        # comprised by 30 and 65 are expected
-        self.SetMinMaxValues(GRAPH_GC_MIN, GRAPH_GC_MAX)
+        # The y max and min values are decided by graph type. In this case,
+        # GClevel values comprised by 30 and 65 are expected
+        self.SetMinMaxValues(constants.GRAPH_GC_MIN, constants.GRAPH_GC_MAX)
 
     def DrawGenericProfile(self, elements, attribute, color, myshift):
         """This function draw elements with a line, which heigth is equal to 'attribute'
@@ -744,7 +752,7 @@ class DrawChromosome(BaseGraph):
                     self.scale) -
                 1)
 
-            GClib.logger.log(5, "Considering %s" % (element))
+            logger.debug("Considering %s" % (element))
 
             if element.Class == 'gap':
                 # a grey rectangle which height is image height and lenght is
@@ -780,10 +788,10 @@ class DrawChromosome(BaseGraph):
         self.graph.setThickness(1)
 
     def DrawIsochoreProfile(self, isochores, color=(0, 0, 0), myshift=0):
-        """This function draw isochores with a line, which heigth is equal to class
-        avg_GClevel. This representation can be considered like a profile of isochores.
-        User havo to define an isochore list and the color of the line. Graphs can
-        be shifted by 'myshift' value"""
+        """This function draw isochores with a line, which heigth is equal to
+        class avg_GClevel. This representation can be considered like a profile
+        of isochores. User havo to define an isochore list and the color of the
+        line. Graphs can be shifted by 'myshift' value"""
 
         # call the generic function
         self.DrawGenericProfile(
@@ -792,13 +800,13 @@ class DrawChromosome(BaseGraph):
             color=color,
             myshift=myshift)
 
-        GClib.logger.log(2, "Isochores profile drawn")
+        logger.info("Isochores profile drawn")
 
     def DrawWindowProfile(self, windows, color=(0, 0, 0), myshift=0):
-        """This function draw windows with a line, which heigth is equal to window
-        GClevel. This representation can be considered like a profile of window.
-        User havo to define a windows list and the color of the line. Graphs can
-        be shifted by 'myshift' value"""
+        """This function draw windows with a line, which heigth is equal to
+        window GClevel. This representation can be considered like a profile
+        of window. User havo to define a windows list and the color of the
+        line. Graphs can be shifted by 'myshift' value"""
 
         # call the generic function
         self.DrawGenericProfile(
@@ -807,16 +815,17 @@ class DrawChromosome(BaseGraph):
             color=color,
             myshift=myshift)
 
-        GClib.logger.log(2, "Windows profile drawn")
+        logger.info("Windows profile drawn")
 
     def DrawGenericRectangles(self, elements, attribute, myshift):
-        """Draw a rectangle in correspondence to elements found. This function needs
-        a list of elements to represent and the class attribute to determine rectanlges
-        hight. Called by DrawIsochoreRectangles and DrawWindowRectangles"""
+        """Draw a rectangle in correspondence to elements found. This function
+        needs a list of elements to represent and the class attribute to
+        determine rectanlges hight. Called by DrawIsochoreRectangles and
+        DrawWindowRectangles"""
 
-        # Determining the left coordinataes of boxes. The x1 grap position is critical
-        # to be determined. It depends from first element position and user
-        # shift value.
+        # Determining the left coordinataes of boxes. The x1 grap position is
+        # critical to be determined. It depends from first element position
+        # and user shift value.
         x1 = int(
             self.border +
             round(
@@ -831,10 +840,10 @@ class DrawChromosome(BaseGraph):
         y2 = self.y
 
         for element in elements:
-            # the length of drawn element is derived considering image size and user shift.
-            # This value is derived starting from left side of the image every time to
-            # avoid that errors on position of first element will be added to
-            # last isochores
+            # the length of drawn element is derived considering image size and
+            # user shift. This value is derived starting from left side of the
+            # image every time to avoid that errors on position of first
+            # element will be added to last isochores
             x2 = int(
                 self.border +
                 round(
@@ -858,12 +867,12 @@ class DrawChromosome(BaseGraph):
                     self.y - (getattr(element, attribute) - self.y_min) * self.py)
 
                 # Warning when drawing objects outside max and min values.
-                # getattr(element, attribute) returns GClevel of windows or isochores
-                # depending on the type of the class
+                # getattr(element, attribute) returns GClevel of windows or
+                # isochores depending on the type of the class
                 if getattr(element, attribute) > self.y_max:
-                    GClib.logger.err(
-                        0,
-                        "Maximum graph point reached (%s > %s). Increase picture max value" %
+                    logger.warning(
+                        "Maximum graph point reached (%s > %s). Increase "
+                        "picture max value" %
                         (getattr(
                             element,
                             attribute),
@@ -873,9 +882,9 @@ class DrawChromosome(BaseGraph):
                     y1 = int(self.y - (self.y_max - self.y_min) * self.py)
 
                 if getattr(element, attribute) < self.y_min:
-                    GClib.logger.err(
-                        0,
-                        "Minimum graph point reached (%s < %s). Decrease picture min value" %
+                    logger.warning(
+                        "Minimum graph point reached (%s < %s). Decrease "
+                        "picture min value" %
                         (getattr(
                             element,
                             attribute),
@@ -891,10 +900,10 @@ class DrawChromosome(BaseGraph):
             x1 = x2 + 1
 
     def DrawIsochoreRectangles(self, isochores, myshift=0):
-        """This function draw isochores with filled rectangles, which heigth is equal to
-        class avg_GClevel. This representation can be considered similar to draw_chromosome.pl
-        User havo to define an isochore list and evetually provide a value 'myshift'
-        to shift the representation"""
+        """This function draw isochores with filled rectangles, which heigth
+        is equal to class avg_GClevel. This representation can be considered
+        similar to draw_chromosome.pl User havo to define an isochore list and
+        eventually provide a value 'myshift' to shift the representation"""
 
         # call the generic function
         self.DrawGenericRectangles(
@@ -902,13 +911,13 @@ class DrawChromosome(BaseGraph):
             attribute="avg_GClevel",
             myshift=myshift)
 
-        GClib.logger.log(2, "Isochores rectangles drawn")
+        logger.info("Isochores rectangles drawn")
 
     def DrawWindowRectangles(self, windows, myshift=0):
-        """This function draw windows with filled rectangles, which heigth is equal to
-        class GClevel. This representation can be considered similar to draw_chromosome.pl
-        User havo to define a window list and evetually provide a value 'myshift'
-        to shift the representation"""
+        """This function draw windows with filled rectangles, which heigth is
+        equal to class GClevel. This representation can be considered similar
+        to draw_chromosome.pl User havo to define a window list and evetually
+        provide a value 'myshift' to shift the representation"""
 
         # call the generic function
         self.DrawGenericRectangles(
@@ -916,15 +925,17 @@ class DrawChromosome(BaseGraph):
             attribute="GClevel",
             myshift=myshift)
 
-        GClib.logger.log(2, "Windows rectangles drawn")
+        logger.info("Windows rectangles drawn")
 
     def DrawLegend(self):
-        """Draw a small legend on the right side of the graph (use with DrawIsochoreRectangles
-        or DrawWindowRectangles and SetColorsList(colorbyclass=True)"""
+        """Draw a small legend on the right side of the graph (use with
+        DrawIsochoreRectangles or DrawWindowRectangles and
+        SetColorsList(colorbyclass=True)"""
 
-        if self.colored_by_class == False:
+        if self.colored_by_class is False:
             raise DrawChromosomeError(
-                "DrawLegend must be called after SetColorsList(colorbyclass=True)")
+                "DrawLegend must be called after SetColorsList"
+                "(colorbyclass=True)")
 
         # draw a colored box. This is the upper box in legend
         y1 = self.y - (self.y_max - self.y_min) * self.py
@@ -1018,9 +1029,9 @@ class DrawBarChromosome(BaseGraph):
             self.colored_by_class = True
 
             # One color for each class. Getting the possible values sorted by GClevel
-            # note that GClib.CLASS_TO_LEVEL is a dictionary, so keys could be
+            # note that constants.CLASS_TO_LEVEL is a dictionary, so keys could be
             # in random order
-            items = sorted(GClib.CLASS_TO_LEVEL.items(), key=lambda x: x[1])
+            items = sorted(constants.CLASS_TO_LEVEL.items(), key=lambda x: x[1])
 
             # items are somethin like this: [('L1', 37), ('L2', 41), ('H1',
             # 46), ('H2', 53), ('H3', 100)]
@@ -1184,10 +1195,10 @@ class DrawBarChromosome(BaseGraph):
             x1 = x2 + 1
 
     def DrawIsochoreRectangles(self, isochores, myshift=0):
-        """This function draw isochores with filled rectangles, which heigth is equal to
-        class avg_GClevel. This representation can be considered similar to draw_chromosome.pl
-        User havo to define an isochore list and evetually provide a value 'myshift'
-        to shift the representation"""
+        """This function draw isochores with filled rectangles, which heigth
+        is equal to class avg_GClevel. This representation can be considered
+        similar to draw_chromosome.pl User havo to define an isochore list and
+        eventually provide a value 'myshift' to shift the representation"""
 
         # call the generic function
         self.DrawGenericRectangles(
@@ -1195,15 +1206,16 @@ class DrawBarChromosome(BaseGraph):
             attribute="avg_GClevel",
             myshift=myshift)
 
-        GClib.logger.log(2, "Isochores bar rectangles drawn")
+        logger.info("Isochores bar rectangles drawn")
 
     # Overriding enlarge labels
     def EnlargeLabels(self):
         """Enlarge labels in picture"""
 
-        if self.drawn_labels == True:
+        if self.drawn_labels is True:
             raise BaseGraphError(
-                "Labels were drawn by DrawXaxes, and cannot be overwritten by this function")
+                "Labels were drawn by DrawXaxes, and cannot be overwritten by "
+                "this function")
 
         # determining a temp file for image
         fd, imagefile = tempfile.mkstemp(suffix=".png")
@@ -1217,9 +1229,9 @@ class DrawBarChromosome(BaseGraph):
         # Open the temporary image in order to modify it
         im = Image.open(imagefile)
 
-        # These are fonts used to draw images. Ensure thay you have the file specified in
-        # GClib/__init__.py module
-        myfont = ImageFont.truetype(GClib.graph_font_type, 40)
+        # These are fonts used to draw images. Ensure thay you have the file
+        # specified in constants module
+        myfont = ImageFont.truetype(constants.graph_font_type, 40)
 
         # An object in order to write inside image
         draw = ImageDraw.Draw(im)
@@ -1384,13 +1396,13 @@ class MoreGraphs():
                 "No BaseGraph or derivate were added to this class instance")
 
         # checking for file existance
-        if os.path.exists(filename) and check == True:
+        if os.path.exists(filename) and check is True:
             raise MoreGraphsError("File %s exists!!!" % (filename))
 
         # Determing if the Image is already drawn in temporary files
         self.image.save(filename)
 
-        GClib.logger.log(1, "Image saved in %s" % (filename))
+        logger.info("Image saved in %s" % (filename))
 
 
 class DrawFamilies:
@@ -1399,9 +1411,10 @@ class DrawFamilies:
     def __init__(self, families=None):
         """Instantiate the class starting from Families Element"""
 
-        if families.__class__ != GClib.Elements.Families or families.data == {}:
+        if families.__class__ != Elements.Families or families.data == {}:
             raise DrawFamiliesError(
-                "This class must be instantiated only by a valid Families Element Class""")
+                "This class must be instantiated only by a valid Families "
+                "Element Class""")
 
         # setting families element
         self.families = families
@@ -1415,7 +1428,7 @@ class DrawFamilies:
         self.fig = pyplot.figure(figsize=(13, 13 / scale))
         self.fontsize = 20  # "x-large"
 
-        levels = sorted(GClib.CLASS_TO_LEVEL.items(), key=lambda x: x[1])
+        levels = sorted(constants.CLASS_TO_LEVEL.items(), key=lambda x: x[1])
 
         mycolorslist = ["#0064FF", "#00C8FF", "#FFFF00", "#FF8200", "#FF0000"]
 
@@ -1549,7 +1562,7 @@ class DrawFamilies:
         # save picture in file
         pyplot.savefig(filename, dpi=dpi)
 
-        GClib.logger.log(1, "Image written in %s" % (filename))
+        logger.info("Image written in %s" % (filename))
 
 # debug: define a test function to works on BaseGraph
 

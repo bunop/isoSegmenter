@@ -51,7 +51,8 @@ class FastaFile:
     """A class to deal with fasta files"""
 
     def __init__(self, fasta_file=None):
-        """To instantiate the class. You may give a fasta path (also compressed)"""
+        """To instantiate the class. You may give a fasta path (also
+        compressed)"""
 
         self.last_idx = 0
         self.seqs_list = []
@@ -128,7 +129,7 @@ def FileExists(filename, remove_if_exists=False):
         return
 
     if os.path.exists(filename):
-        if remove_if_exists == False:
+        if remove_if_exists is False:
             raise IOError("file %s exists!!!" % (filename))
 
         else:

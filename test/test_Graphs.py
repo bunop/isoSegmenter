@@ -231,19 +231,8 @@ class test_BaseGraph(unittest.TestCase):
             color = self._test_BaseGrap.GetColorByGClevel(GClevel)
             self.assertEqual(color, value)
 
-        # testing a value returning a warning
-        old_errfile = GClib.logger.errfile
-        GClib.logger.errfile = StringIO.StringIO()
-
         color = self._test_BaseGrap.GetColorByGClevel(101)
         self.assertEqual(color, 7)
-
-        GClib.logger.errfile.seek(0)
-        message = GClib.logger.errfile.read()
-
-        self.assertTrue("GClevel higher than Maximum value" in message)
-
-        GClib.logger.errfile = old_errfile
 
     # TODO: test GetLabelByGClevel
 
@@ -308,10 +297,6 @@ class test_BaseGraph(unittest.TestCase):
     def test_Enlargelabels(self):
         """Testing EnlargeLabels"""
 
-        # disable log temporarily
-        old_threshold = GClib.logger.threshold
-        GClib.logger.threshold = 0
-
         # testing methods before SetMaxMinValues
         self.assertRaises(
             GClib.Graphs.BaseGraphError,
@@ -324,9 +309,6 @@ class test_BaseGraph(unittest.TestCase):
         self._test_BaseGrap.InitPicture()
         self._test_BaseGrap.DrawHorizontalLines()
         self._test_BaseGrap.EnlargeLabels()
-
-        # resetting threshold
-        GClib.logger.threshold = old_threshold
 
     def test_SaveFigure(self):
         """Testing SaveImage"""
@@ -341,10 +323,6 @@ class test_BaseGraph(unittest.TestCase):
         # Get a temporary filename for testing
         testfile = tempfile.mktemp()
 
-        # disable log temporarily
-        old_threshold = GClib.logger.threshold
-        GClib.logger.threshold = 0
-
         # Save the figure
         self._test_BaseGrap.SaveFigure(testfile)
 
@@ -358,15 +336,12 @@ class test_BaseGraph(unittest.TestCase):
         if os.path.exists(testfile):
             os.unlink(testfile)
 
-        # resetting threshold
-        GClib.logger.threshold = old_threshold
-
 # The testing methods for DrawChromosome classes
 
 
 class test_DrawChromosome(unittest.TestCase):
-    # To test image representation, I need an useful test case. Element.Chromosome
-    # is tested by apposited methods
+    # To test image representation, I need an useful test case.
+    # Element.Chromosome is tested by apposited methods
     chromosome = GClib.Elements.Chromosome()
 
     # read isochore from isochores list
@@ -458,10 +433,6 @@ class test_MoreGraphs(unittest.TestCase):
     sequence_length = end - start
 
     def setUp(self):
-        # disable log temporarily
-        old_threshold = GClib.logger.threshold
-        GClib.logger.threshold = 0
-
         # Now generate images from data
         First = GClib.Graphs.DrawChromosome()
         First.SetMinMaxValues(65, 30)
@@ -496,9 +467,7 @@ class test_MoreGraphs(unittest.TestCase):
         # Set Second as a class attributes
         self.Second = Second
 
-        # re enabling log
-        GClib.logger.threshold = old_threshold
-
+        # testing more graphs
         self._test_MoreGraphs = GClib.Graphs.MoreGraphs()
 
     def test_HandleGraph(self):
@@ -515,14 +484,7 @@ class test_MoreGraphs(unittest.TestCase):
     def test_AddGraph(self):
         """Testing AddGraph by adding a first Graph"""
 
-        # disable log temporarily
-        old_threshold = GClib.logger.threshold
-        GClib.logger.threshold = 0
-
         self._test_MoreGraphs.AddGraph(self.First)
-
-        # resetting threshold
-        GClib.logger.threshold = old_threshold
 
         # getting size
         test_x, test_y = self._test_MoreGraphs.x, self._test_MoreGraphs.y
@@ -534,15 +496,8 @@ class test_MoreGraphs(unittest.TestCase):
     def test_AddGraph2(self):
         """Testing AddGraph by adding a second Graph"""
 
-        # disable log temporarily
-        old_threshold = GClib.logger.threshold
-        GClib.logger.threshold = 0
-
         self._test_MoreGraphs.AddGraph(self.First)
         self._test_MoreGraphs.AddGraph(self.Second)
-
-        # resetting threshold
-        GClib.logger.threshold = old_threshold
 
         # getting size
         test_x, test_y = self._test_MoreGraphs.x, self._test_MoreGraphs.y
@@ -556,10 +511,6 @@ class test_MoreGraphs(unittest.TestCase):
 
     def test_SaveFigure(self):
         """Testing SaveImage"""
-
-        # disable log temporarily
-        old_threshold = GClib.logger.threshold
-        GClib.logger.threshold = 0
 
         # Call the function in the correct way
         self._test_MoreGraphs.AddGraph(self.First)
@@ -580,9 +531,6 @@ class test_MoreGraphs(unittest.TestCase):
         # remove temporary file
         if os.path.exists(testfile):
             os.unlink(testfile)
-
-        # resetting threshold
-        GClib.logger.threshold = old_threshold
 
 
 # TODO: Define test code for drawing graphs

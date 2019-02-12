@@ -488,12 +488,12 @@ class test_Chromosome(unittest.TestCase):
             isochore.avg_GClevel = float(avg_GClevel)
             isochore.stddev_GClevel = float(stddev_GClevel)
 
-            # finally I have to set the GC_levels attribute class, by reading those values from
-            # windows that compone isochores
+            # finally I have to set the GC_levels attribute class, by reading
+            # those values from windows that compone isochores
             for window in test_windows:
                 # pay attention to coordinates
                 if window.start >= start - 1 and window.end <= end:
-                    #print "%s added to %s" %(window, isochore)
+                    # print "%s added to %s" %(window, isochore)
                     isochore.GClevels += [window.GClevel]
 
             # add this isochore to isochore list
