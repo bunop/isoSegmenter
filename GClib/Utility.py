@@ -34,10 +34,8 @@ A class in which we can find all utilities to deal with isochores
 """
 
 import os
-import sys
 import gzip
-import time
-import GClib
+import logging
 import Bio.SeqIO
 
 __author__ = "Paolo Cozzi <paolo.cozzi@ptp.it>"
@@ -45,33 +43,7 @@ __author__ = "Paolo Cozzi <paolo.cozzi@ptp.it>"
 from . import __copyright__, __license__, __version__
 
 # for logging messages
-
-
-class Logger:
-    """To set up a level of verbosity of an application"""
-
-    def __init__(self, threshold=1, outfile=sys.stdout, errfile=sys.stderr):
-        self.threshold = threshold
-        self.outfile = outfile
-        self.errfile = errfile
-
-    def log(self, level, message, outfile=None):
-        '''Logs message if level lower than or equal to threshold.
-        Message can even be an object - normal print functionality
-        will be used'''
-
-        # Se non specifico un oufile, allora prendo quello di default
-        if outfile is None:
-            outfile = self.outfile
-
-        if level <= self.threshold:
-            print >> outfile, "%s: %s" % (time.ctime(), message)
-            # flushing outfile
-            outfile.flush()
-
-    def err(self, level, message):
-        '''Logs message in stderr, instead of predefined file'''
-        self.log(level, message, self.errfile)
+logger = logging.getLogger(__name__)
 
 
 # To deal with fasta files
@@ -94,7 +66,7 @@ class FastaFile:
         """Load a fasta file"""
 
         # debug
-        GClib.logger.log(1, "Opening %s..." % (fasta_file))
+        logger.info("Opening %s..." % (fasta_file))
 
         # verify the file extension
         extension = os.path.splitext(fasta_file)[1]
@@ -118,7 +90,7 @@ class FastaFile:
             self.seqs_ids[seq.id] = idx
 
         # debug
-        GClib.logger.log(1, "%s sequences read" % (self.n_of_sequences))
+        logger.info("%s sequences read" % (self.n_of_sequences))
 
     def IterSeqs(self):
         """Iters through Bio.Seqs Objects"""
@@ -162,7 +134,7 @@ def FileExists(filename, remove_if_exists=False):
         else:
             # remove the file before calculation
             os.remove(filename)
-            GClib.logger.log(2, "file %s removed" % (filename))
+            logger.debug("file %s removed" % (filename))
 
     # this function return nothing is successful
 

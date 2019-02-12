@@ -42,26 +42,6 @@ __email__ = "paolo.cozzi@ptp.it"
 __status__ = "beta"
 
 
-import os
 import Graphs
 import Utility
 import Elements
-
-# default level of vebosity
-logger = Utility.Logger(threshold=1)
-
-# the default window size in bp
-WINDOW_SIZE = 100000
-
-# The gap tolerance in bp
-GAP_TOLERANCE = 5000
-
-# The GClevel upper limit for each class
-CLASS_TO_LEVEL = {"L1": 37, "L2": 41, "H1": 46, "H2": 53, "H3": 100}
-
-# The true type font used by EnlargeLabels(Graphs module)
-module_path = os.path.dirname(__file__)
-graph_font_type = os.path.join(module_path, "FreeSerifBold.ttf")
-
-# The minimum size of an isochore
-ISO_MIN_SIZE = 2

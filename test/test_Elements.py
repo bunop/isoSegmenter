@@ -514,16 +514,6 @@ class test_Chromosome(unittest.TestCase):
 
         self._test_Chromosome = GClib.Elements.Chromosome(self.seqRecord)
 
-        # Shut down logger
-        self._default_threshold = GClib.logger.threshold
-        GClib.logger.threshold = 0
-
-    def tearDown(self):
-        """A method called after each test"""
-
-        # restart logger with the default verbosity
-        GClib.logger.threshold = self._default_threshold
-
     def test_Scan4Gaps(self):
         """Testing Scan4Gaps"""
 
