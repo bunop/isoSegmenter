@@ -56,14 +56,14 @@ If you use isoSegmenter in your work, please cite this manuscript:
     Isochores. Evolutionary Bioinformatics. 2015;11:253-261.
     doi:10.4137/EBO.S27693
 
-    """
+"""
 
 notice = """
 
 isoSegmenter  Copyright (C) 2013-2019 ITB - CNR
 This program comes with ABSOLUTELY NO WARRANTY; for details type:
 
-    `isoSegmenter --help'.
+    `isoFamily.py --help'.
 
 This is free software, and you are welcome to redistribute it
 under certain conditions; show LICENSE.md for more details.

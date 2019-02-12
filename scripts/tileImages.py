@@ -38,6 +38,8 @@ A simple program in order to put more image together
 """
 
 import os
+import sys
+import logging
 import argparse
 
 import GClib
@@ -45,23 +47,27 @@ from GClib.Graphs import MoreGraphsError
 
 from PIL import Image
 
-__author__ = "Paolo Cozzi <paolo.cozzi@ptp.it>"
-
-from GClib import __copyright__, __license__, __version__
+# programname
+program_name = os.path.basename(sys.argv[0])
 
 # Add epilog on bottom of help message
 epilog = """
 
 If you use isoSegmenter in your work, please cite this manuscript:
 
-    Cozzi P, Milanesi L, Bernardi G. Segmenting the Human Genome into Isochores.
-    Evolutionary Bioinformatics. 2015;11:253-261. doi:10.4137/EBO.S27693
+    Cozzi P, Milanesi L, Bernardi G. Segmenting the Human Genome into
+    Isochores. Evolutionary Bioinformatics. 2015;11:253-261.
+    doi:10.4137/EBO.S27693
 
-    """
+"""
+
 notice = """
 
-isoSegmenter  Copyright (C) 2013-2016 ITB - CNR
-This program comes with ABSOLUTELY NO WARRANTY; for details type `tileImages.py --help'.
+isoSegmenter  Copyright (C) 2013-2019 ITB - CNR
+This program comes with ABSOLUTELY NO WARRANTY; for details type:
+
+    `tileImages.py --help'.
+
 This is free software, and you are welcome to redistribute it
 under certain conditions; show LICENSE.md for more details.
 
@@ -85,9 +91,14 @@ parser.add_argument(
     help="Output graph filename (PNG)")
 args = parser.parse_args()
 
+# get a logger with a defined name
+logging.basicConfig(
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        level=logging.INFO)
+logger = logging.getLogger(program_name)
+
+
 # A class instance in order to record useful variables
-
-
 class Tile():
     def __init__(self):
         self.x = 0
@@ -104,18 +115,18 @@ class Tile():
                 "No BaseGraph or derivate were added to this class instance")
 
         # checking for file existance
-        if os.path.exists(filename) and check == True:
+        if os.path.exists(filename) and check is True:
             raise MoreGraphsError("File %s exists!!!" % (filename))
 
         # Determing if the Image is already drawn in temporary files
         self.image.save(filename)
 
-        GClib.logger.log(1, "Image saved in %s" % (filename))
+        logger.info("Image saved in %s" % (filename))
 
 
 if __name__ == "__main__":
     # print out notice
-    GClib.logger.err(0, notice)
+    logger.info(notice)
 
     # instantiate a tile class
     tile = Tile()

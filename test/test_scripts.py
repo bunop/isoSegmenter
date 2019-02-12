@@ -116,5 +116,37 @@ class IsoFamilyTestCase(unittest.TestCase):
         self.assertEqual(status, 0)
 
 
+class TileImageTestCase(unittest.TestCase):
+    """A class to test isoFamily scripts"""
+
+    def setUp(self):
+        # create temporary file names
+        self.outfile = tempfile.mktemp(suffix=".png")
+
+        # get a test image
+        self.image_file = os.path.join(module_path, "chr21.isochores.png")
+
+    def tearDown(self):
+        # clean up stuff if exists
+        if os.path.exists(self.outfile):
+            os.remove(self.outfile)
+
+    def test_tileimages(self):
+        """Test rileImages.py script"""
+
+        cmd = (
+            "tileImages.py --image_files {0} {1} -o {2}").format(
+                    self.image_file,
+                    self.image_file,
+                    self.outfile)
+
+        cmds = shlex.split(cmd)
+
+        # call script
+        status = subprocess.check_call(cmds)
+
+        self.assertEqual(status, 0)
+
+
 if __name__ == "__main__":
     unittest.main()
