@@ -191,15 +191,15 @@ logger = logging.getLogger(program_name)
 
 
 if __name__ == "__main__":
+    # print out notice
+    logger.info(notice)
+
     # To continue work, I need almost one file to write
     if (args.outfile is None and args.graphfile is None and
             args.barfile is None):
         raise Exception(
             "You must specify an output isochore file while calling this "
             "program, by graphfile, barfile or outfile option")
-
-    # print out notice
-    logger.info(notice)
 
     # Chromosome istance will not Dump isochore if file exist. So I can verify
     # this before reading fasta file. Outfile is a required option

@@ -45,7 +45,7 @@ module_path = os.path.dirname(__file__)
 
 
 class IsoSegmenterTestCase(unittest.TestCase):
-    """A class to test iSosegmenter scripts"""
+    """A class to test isoSegmenter scripts"""
 
     def setUp(self):
         # create temporary file names
@@ -69,6 +69,42 @@ class IsoSegmenterTestCase(unittest.TestCase):
             "isoSegmenter.py --infile {0} --outfile {1} --graphfile {2} "
             "--draw_legend --verbose").format(
                     self.infile,
+                    self.outfile,
+                    self.graphfile)
+
+        cmds = shlex.split(cmd)
+
+        # call script
+        status = subprocess.check_call(cmds)
+
+        self.assertEqual(status, 0)
+
+
+class IsoFamilyTestCase(unittest.TestCase):
+    """A class to test isoFamily scripts"""
+
+    def setUp(self):
+        # create temporary file names
+        self.outfile = tempfile.mktemp()
+        self.graphfile = tempfile.mktemp()
+
+        self.indir = module_path
+
+    def tearDown(self):
+        # clean up stuff if exists
+        if os.path.exists(self.outfile):
+            os.remove(self.outfile)
+
+        if os.path.exists(self.graphfile):
+            os.remove(self.graphfile)
+
+    def test_isofamily(self):
+        """Test isoFamily.py script"""
+
+        cmd = (
+            "isoFamily.py --indir {0} --outfile {1} --graphfile {2} "
+            "--verbose --regexp test_isochores3_chr21.csv").format(
+                    self.indir,
                     self.outfile,
                     self.graphfile)
 

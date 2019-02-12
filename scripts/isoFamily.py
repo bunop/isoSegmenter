@@ -37,27 +37,34 @@ This is the main program to find isochores families in a user defined directory
 """
 
 import os
+import sys
+import logging
 import argparse
 
-import GClib
-import GClib.Graphs
-import GClib.Utility
-import GClib.Elements
+# Modules for dealing with GC content and graph
+from GClib import constants, Graphs, Elements, Utility
+
+# programname
+program_name = os.path.basename(sys.argv[0])
 
 # Add epilog on bottom of help message
 epilog = """
 
 If you use isoSegmenter in your work, please cite this manuscript:
 
-    Cozzi P, Milanesi L, Bernardi G. Segmenting the Human Genome into Isochores.
-    Evolutionary Bioinformatics. 2015;11:253-261. doi:10.4137/EBO.S27693
+    Cozzi P, Milanesi L, Bernardi G. Segmenting the Human Genome into
+    Isochores. Evolutionary Bioinformatics. 2015;11:253-261.
+    doi:10.4137/EBO.S27693
 
     """
 
 notice = """
 
-isoSegmenter  Copyright (C) 2013-2016 ITB - CNR
-This program comes with ABSOLUTELY NO WARRANTY; for details type `isoFamily.py --help'.
+isoSegmenter  Copyright (C) 2013-2019 ITB - CNR
+This program comes with ABSOLUTELY NO WARRANTY; for details type:
+
+    `isoSegmenter --help'.
+
 This is free software, and you are welcome to redistribute it
 under certain conditions; show LICENSE.md for more details.
 
@@ -95,10 +102,8 @@ parser.add_argument(
 parser.add_argument(
     '-v',
     '--verbose',
-    action="count",
-    required=False,
-    default=0,
-    help="verbose level")
+    action='store_true',
+    help="Set logging to debug mode")
 parser.add_argument(
     '--force_overwrite',
     action='store_true',
@@ -108,15 +113,27 @@ parser.add_argument(
     '--x_max',
     type=int,
     required=False,
-    default=GClib.Graphs.GRAPH_GC_MAX,
+    default=constants.GRAPH_GC_MAX,
     help="Set X max value in graph (default: '%(default)s')")
 parser.add_argument(
     '--x_min',
     type=int,
     required=False,
-    default=GClib.Graphs.GRAPH_GC_MIN,
+    default=constants.GRAPH_GC_MIN,
     help="Set X min value in graph (default: '%(default)s')")
 args = parser.parse_args()
+
+# get debugging level
+mylevel = logging.INFO
+
+if args.verbose:
+    mylevel = logging.DEBUG
+
+# get a logger with a defined name
+logging.basicConfig(
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        level=mylevel)
+logger = logging.getLogger(program_name)
 
 # TODO: Adding option for chainging Xmax and Xmin values
 # TODO: Adding option for change bin dimension
@@ -127,24 +144,20 @@ args = parser.parse_args()
 
 if __name__ == "__main__":
     # print out notice
-    GClib.logger.err(0, notice)
-
-    # verify verbosity level
-    if args.verbose != GClib.logger.threshold:
-        # setting user defined threshold of verbosity
-        GClib.logger.threshold = args.verbose
+    logger.info(notice)
 
     # chceking for csv existance
-    GClib.Utility.FileExists(args.outfile,
-                             remove_if_exists=args.force_overwrite)
+    Utility.FileExists(
+            args.outfile,
+            remove_if_exists=args.force_overwrite)
 
     # Checking for graph file existance
-    GClib.Utility.FileExists(
+    Utility.FileExists(
         args.graphfile,
         remove_if_exists=args.force_overwrite)
 
     # instantiate a families element
-    families = GClib.Elements.Families()
+    families = Elements.Families()
 
     # scanning for isochore files in user defined directory
     families.Scan4Files(args.indir, pattern=args.regexp)
@@ -159,7 +172,7 @@ if __name__ == "__main__":
     # Instantiating graph if it is necessary
     if args.graphfile is not None:
         # Instantiating DrawFamilies Class
-        graph = GClib.Graphs.DrawFamilies(families)
+        graph = Graphs.DrawFamilies(families)
 
         # Setting Grids and axis Labels
         graph.DrawAxisLabels()
