@@ -31,8 +31,8 @@ Created on Tue Jun  4 11:05:34 2013
 
 @author: Paolo Cozzi <paolo.cozzi@ibba.cnr.it>
 
-A module to deal with isochore graphs. This module is inspired from draw_chromosome.pl
-(2002 Jan Paces, http://genomat.img.cas.cz)
+A module to deal with isochore graphs. This module is inspired from
+draw_chromosome.pl (2002 Jan Paces, http://genomat.img.cas.cz)
 
 """
 
@@ -53,12 +53,16 @@ import matplotlib.patches as mpatches
 from . import Elements
 from . import constants
 
-__author__ = "Paolo Cozzi <paolo.cozzi@ptp.it>"
-
-from . import __copyright__, __license__, __version__
-
 # for logging messages
 logger = logging.getLogger(__name__)
+
+
+# Turn interactive mode off.
+# https://stackoverflow.com/a/40257251/4385116
+# https://github.com/Sylhare/nprime/issues/2
+if os.environ.get('DISPLAY', '') == '':
+    logger.warning('no display found. Using non-interactive Agg backend')
+    pyplot.switch_backend('Agg')
 
 
 # exception definition
