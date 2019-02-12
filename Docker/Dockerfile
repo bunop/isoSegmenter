@@ -1,9 +1,9 @@
 
 #
-# VERSION 0.5
+# VERSION 0.6
 # DOCKER-VERSION  1.9.1
-# AUTHOR:         Paolo Cozzi <paolo.cozzi@ptp.it>
-# DESCRIPTION:    An image python base image which isoSegmenter will run
+# AUTHOR:         Paolo Cozzi <paolo.cozzi@ibba.cnr.it>
+# DESCRIPTION:    A python based image with isoSegmenter installed
 # TO_BUILD:       docker build --rm -t bunop/isosegmenter .
 # TO_RUN:         docker run -ti bunop/isosegmenter /bin/bash
 # TO_TAG:         docker tag bunop/isosegmenter:latest bunop/isosegmenter:0.5
@@ -11,7 +11,9 @@
 
 FROM python:2.7
 
-MAINTAINER Paolo Cozzi <paolo.cozzi@ptp.it>
+LABEL maintainer="Paolo Cozzi <paolo.cozzi@ibba.cnr.it>" \
+      description="A python based image with isoSegmenter installed" \
+      version="0.6"
 
 # Set corrent working directory
 WORKDIR /root
@@ -28,8 +30,8 @@ RUN git clone https://github.com/bunop/isoSegmenter.git /root/isoSegmenter
 # Setting working directory
 WORKDIR /root/isoSegmenter
 
-# setting isosegmente version
-ENV VERSION=v1.5.1
+# setting isosegmenter version
+ENV VERSION=16d4206
 
 # checking out a tagged release
 RUN git fetch && \
