@@ -691,7 +691,8 @@ class test_Chromosome(unittest.TestCase):
 
         # test for GC levels in this regions (look how it simple when no gap is
         # considered ando supposing no isochore detection
-        GC_values = [round(Bio.SeqUtils.GC(self.seqRecord[step:step + window_size].seq), 6)
+        GC_values = [round(Bio.SeqUtils.GC(
+                self.seqRecord[step:step + window_size].seq), 6)
                      for step in range(From, To, window_size)]
 
         # determining windows
@@ -750,9 +751,9 @@ class test_Chromosome(unittest.TestCase):
             new_isochore = chromosome.isochores[i]
             test_isochore = self.test_isochores[i]
 
-            # the new load isochore leaks from GClevels attribute, since it isn't present
-            # in CSV file. So I fix this term before comparison, if other class attributes
-            # will be different, the test will fail
+            # the new load isochore leaks from GClevels attribute, since it
+            # isn't present in CSV file. So I fix this term before comparison,
+            # if other class attributes will be different, the test will fail
             if new_isochore.Class != "gap" and test_isochore.Class != "gap":
                 new_isochore.GClevels = test_isochore.GClevels
 
@@ -761,6 +762,20 @@ class test_Chromosome(unittest.TestCase):
 
         # deleting the old file
         os.remove(testfile)
+
+    def test_LoadIsochoresFromBED(self):
+        """Testing load isochores from bed file"""
+
+        bedfile = os.path.join(
+            module_path,
+            "chr1_hg17_isofinder.bed")
+
+        # get a chromosome object and read isochores
+        chromosome = GClib.Elements.Chromosome()
+        chromosome.LoadIsochoresFromBED(bedfile)
+
+        self.assertEqual(len(chromosome.isochores), 634)
+
 
 # TODO: test code for families element
 
