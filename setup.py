@@ -2,7 +2,7 @@
 """
 
 
-    Copyright (C) 2013-2016 ITB - CNR
+    Copyright (C) 2013-2019 ITB - CNR
 
     This file is part of isoSegmenter.
 
@@ -20,14 +20,16 @@
     along with isoSegmenter.  If not, see <http://www.gnu.org/licenses/>.
 
 
-If you use isoSegmenter in your work, please cite this manuscripts:
+If you use isoSegmenter in your work, please cite this manuscript:
 
-    Cozzi P, Milanesi L, Bernardi G. Segmenting the Human Genome into Isochores.
-    Evolutionary Bioinformatics. 2015;11:253-261. doi:10.4137/EBO.S27693
+    Cozzi P, Milanesi L, Bernardi G. Segmenting the Human Genome into
+    Isochores. Evolutionary Bioinformatics. 2015;11:253-261.
+    doi:10.4137/EBO.S27693
+
 
 Created on Thu Nov 26 12:23:08 2015
 
-@author: Paolo Cozzi <paolo.cozzi@ptp.it>
+@author: Paolo Cozzi <paolo.cozzi@ibba.cnr.it>
 
 A module to install isoSegmenter through pip
 

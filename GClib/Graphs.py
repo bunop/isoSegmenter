@@ -2,7 +2,7 @@
 """
 
 
-    Copyright (C) 2013-2016 ITB - CNR
+    Copyright (C) 2013-2019 ITB - CNR
 
     This file is part of isoSegmenter.
 
@@ -22,12 +22,14 @@
 
 If you use isoSegmenter in your work, please cite this manuscript:
 
-    Cozzi P, Milanesi L, Bernardi G. Segmenting the Human Genome into Isochores.
-    Evolutionary Bioinformatics. 2015;11:253-261. doi:10.4137/EBO.S27693
+    Cozzi P, Milanesi L, Bernardi G. Segmenting the Human Genome into
+    Isochores. Evolutionary Bioinformatics. 2015;11:253-261.
+    doi:10.4137/EBO.S27693
+
 
 Created on Tue Jun  4 11:05:34 2013
 
-@author: Paolo Cozzi <paolo.cozzi@ptp.it>
+@author: Paolo Cozzi <paolo.cozzi@ibba.cnr.it>
 
 A module to deal with isochore graphs. This module is inspired from draw_chromosome.pl
 (2002 Jan Paces, http://genomat.img.cas.cz)

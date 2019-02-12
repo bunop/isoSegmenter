@@ -4,7 +4,7 @@
 """
 
 
-    Copyright (C) 2013-2016 ITB - CNR
+    Copyright (C) 2013-2019 ITB - CNR
 
     This file is part of isoSegmenter.
 
@@ -24,12 +24,13 @@
 
 If you use isoSegmenter in your work, please cite this manuscript:
 
-    Cozzi P, Milanesi L, Bernardi G. Segmenting the Human Genome into Isochores.
-    Evolutionary Bioinformatics. 2015;11:253-261. doi:10.4137/EBO.S27693
+    Cozzi P, Milanesi L, Bernardi G. Segmenting the Human Genome into
+    Isochores. Evolutionary Bioinformatics. 2015;11:253-261.
+    doi:10.4137/EBO.S27693
 
 Created on Thu Jun 13 14:53:14 2013
 
-@author: Paolo Cozzi <paolo.cozzi@ptp.it>
+@author: Paolo Cozzi <paolo.cozzi@ibba.cnr.it>
 
 This is the main program to find isochores families in a user defined directory
 

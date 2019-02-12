@@ -30,7 +30,7 @@ If you use isoSegmenter in your work, please cite this manuscript:
 
 Created on Wed Jun 12 16:31:27 2013
 
-@author: Paolo Cozzi <paolo.cozzi@ptp.it>
+@author: Paolo Cozzi <paolo.cozzi@ibba.cnr.it>
 
 Main program for Isochore Definition
 
