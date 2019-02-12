@@ -73,14 +73,13 @@ To get more details on installation, please see [INSTALL.md](https://github.com/
 `isoSegmenter.py` is the main application to execute isochores segmentation. It requires a single chromosome FASTA file as an input file (ONLY a chromosome inside a file). You can download genome sequences from [UCSC](http://hgdownload.soe.ucsc.edu/downloads.html), [EnsEMBL](http://www.ensembl.org/info/data/ftp/index.html) or [NCBI](ftp://ftp.ncbi.nlm.nih.gov/genomes/) FTP sites. Output files can be .CSV data file (importable in Excel) and .png image file. For example, inside isoSegmenter/test directory there is the Human chromosome 21 (hg19) as a packed FASTA file. We can call isoSegmenter to draw an image and to get the segmentation .csv file. Enter inside isoSegmenter and type:
 
 ```bash
-$ isoSegmenter.py --infile test/chr21.fa.gz --outfile chr21.isochores.csv --graphfile chr21.isochores.png --draw_legend --verbose
+$ isoSegmenter.py --infile test/chr21.fa.gz --outfile chr21.isochores.csv --graphfile chr21.isochores.png --draw_legend
 ```
 
 `--infile`: This is the FASTA input file. It could be plain/text or compressed with gzip/bz2   
 `--outfile`: This is the isochores .CSV output file   
 `--graphfile`: This is the isochores .PNG output file   
-`--draw_legend`: Draw a colored legend on the right side of the image  
-`--verbose`: Useful for debugging
+`--draw_legend`: Draw a colored legend on the right side of the image
 
 This will draw an image like this:
 

@@ -243,7 +243,7 @@ class Isochore():
         self.Class = CalcClass(self.avg_GClevel)
 
         if old_Class != self.Class:
-            logger.error(
+            logger.warning(
                 "The Class changed between %s and %s for %s" %
                 (old_Class, self.Class, self))
 
@@ -286,7 +286,7 @@ class Isochore():
 
         # Pheraps this event isn't so significant
         if old_Class != self.Class:
-            logger.error(
+            logger.warning(
                 "The Class changed between %s and %s for %s" %
                 (old_Class, self.Class, self))
 

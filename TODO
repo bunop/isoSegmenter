@@ -32,4 +32,6 @@
 
 * refactoring for logging module
 
+* rafactoring script as `console_scripts`
+
 * Publish as a python package

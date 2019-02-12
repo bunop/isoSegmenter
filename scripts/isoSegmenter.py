@@ -4,7 +4,7 @@
 """
 
 
-    Copyright (C) 2013-2016 ITB - CNR
+    Copyright (C) 2013-2019 ITB - CNR
 
     This file is part of isoSegmenter.
 
@@ -24,8 +24,9 @@
 
 If you use isoSegmenter in your work, please cite this manuscript:
 
-    Cozzi P, Milanesi L, Bernardi G. Segmenting the Human Genome into Isochores.
-    Evolutionary Bioinformatics. 2015;11:253-261. doi:10.4137/EBO.S27693
+    Cozzi P, Milanesi L, Bernardi G. Segmenting the Human Genome into
+    Isochores. Evolutionary Bioinformatics. 2015;11:253-261.
+    doi:10.4137/EBO.S27693
 
 Created on Wed Jun 12 16:31:27 2013
 
@@ -35,28 +36,35 @@ Main program for Isochore Definition
 
 """
 
+import os
+import sys
+import logging
 import argparse
 
 # Modules for dealing with GC content and graph
-import GClib
-import GClib.Graphs
-import GClib.Utility
-import GClib.Elements
+from GClib import constants, Graphs, Elements, Utility
+
+# programname
+program_name = os.path.basename(sys.argv[0])
 
 # Add epilog on bottom of help message
 epilog = """
 
 If you use isoSegmenter in your work, please cite this manuscript:
 
-    Cozzi P, Milanesi L, Bernardi G. Segmenting the Human Genome into Isochores.
-    Evolutionary Bioinformatics. 2015;11:253-261. doi:10.4137/EBO.S27693
+    Cozzi P, Milanesi L, Bernardi G. Segmenting the Human Genome into
+    Isochores. Evolutionary Bioinformatics. 2015;11:253-261.
+    doi:10.4137/EBO.S27693
 
     """
 
 notice = """
 
-isoSegmenter  Copyright (C) 2013-2016 ITB - CNR
-This program comes with ABSOLUTELY NO WARRANTY; for details type `isoSegmenter --help'.
+isoSegmenter  Copyright (C) 2013-2019 ITB - CNR
+This program comes with ABSOLUTELY NO WARRANTY; for details type:
+
+    `isoSegmenter --help'.
+
 This is free software, and you are welcome to redistribute it
 under certain conditions; show LICENSE.md for more details.
 
@@ -99,10 +107,8 @@ parser.add_argument(
 parser.add_argument(
     '-v',
     '--verbose',
-    action="count",
-    required=False,
-    default=0,
-    help="Verbosity level")
+    action='store_true',
+    help="Set logging to debug mode")
 parser.add_argument(
     '--windowgraph',
     type=str,
@@ -138,30 +144,43 @@ parser.add_argument(
     '--window_size',
     type=int,
     required=False,
-    default=GClib.WINDOW_SIZE,
+    default=constants.WINDOW_SIZE,
     help="Set window size in bp (default: '%(default)s')")
 parser.add_argument(
     '--y_max',
     type=int,
     required=False,
-    default=GClib.Graphs.GRAPH_GC_MAX,
+    default=constants.GRAPH_GC_MAX,
     help="Set max value in graph (default: '%(default)s')")
 parser.add_argument(
     '--y_min',
     type=int,
     required=False,
-    default=GClib.Graphs.GRAPH_GC_MIN,
+    default=constants.GRAPH_GC_MIN,
     help="Set min value in graph (default: '%(default)s')")
 parser.add_argument(
     '--isochore_min_size',
     type=int,
     required=False,
-    default=GClib.ISO_MIN_SIZE,
-    help="Set how many windows an isochore need to have (default: '%(default)s')")
+    default=constants.ISO_MIN_SIZE,
+    help=("Set how many windows an isochore need to have "
+          "(default: '%(default)s')"))
 args = parser.parse_args()
 
 # debug
-#print args
+# print args
+
+# get debugging level
+mylevel = logging.INFO
+
+if args.verbose:
+    mylevel = logging.DEBUG
+
+# get a logger with a defined name
+logging.basicConfig(
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        level=mylevel)
+logger = logging.getLogger(program_name)
 
 # TODO: Change GAP tolerance
 # TODO: Setting sequence start and end
@@ -173,39 +192,36 @@ args = parser.parse_args()
 
 if __name__ == "__main__":
     # To continue work, I need almost one file to write
-    if args.outfile is None and args.graphfile is None and args.barfile is None:
+    if (args.outfile is None and args.graphfile is None and
+            args.barfile is None):
         raise Exception(
-            "You must specify an output isochore file while calling this program, by graphfile, barfile or outfile option")
+            "You must specify an output isochore file while calling this "
+            "program, by graphfile, barfile or outfile option")
 
     # print out notice
-    GClib.logger.err(0, notice)
+    logger.info(notice)
 
-    # verify verbosity level
-    if args.verbose != GClib.logger.threshold:
-        # setting user defined threshold of verbosity
-        GClib.logger.threshold = args.verbose
-
-    # Chromosome istance will not Dump isochore if file exist. So I can verify this
-    # before reading fasta file. Outfile is a required option
-    GClib.Utility.FileExists(args.outfile,
-                             remove_if_exists=args.force_overwrite)
+    # Chromosome istance will not Dump isochore if file exist. So I can verify
+    # this before reading fasta file. Outfile is a required option
+    Utility.FileExists(args.outfile,
+                       remove_if_exists=args.force_overwrite)
 
     # Checking for graph file existance
-    GClib.Utility.FileExists(
+    Utility.FileExists(
         args.graphfile,
         remove_if_exists=args.force_overwrite)
 
     # Checking for graph file existance
-    GClib.Utility.FileExists(args.barfile,
-                             remove_if_exists=args.force_overwrite)
+    Utility.FileExists(args.barfile,
+                       remove_if_exists=args.force_overwrite)
 
     # Checking for window file existance
-    GClib.Utility.FileExists(
+    Utility.FileExists(
         args.windowfile,
         remove_if_exists=args.force_overwrite)
 
     # Checking for window graph file existance
-    GClib.Utility.FileExists(
+    Utility.FileExists(
         args.windowgraph,
         remove_if_exists=args.force_overwrite)
 
@@ -216,8 +232,8 @@ if __name__ == "__main__":
     # Internal coordinates are 0-based, not 1-based
     args.sequence_start = int(args.sequence_start) - 1
 
-    # To is the position in which isochore calculation ends. None will be threated
-    # as chromosome end position
+    # To is the position in which isochore calculation ends. None will be
+    # threated as chromosome end position
     To = None
 
     # Checking user max_length of sequence analysis
@@ -229,11 +245,12 @@ if __name__ == "__main__":
         To = args.sequence_start + args.max_length
 
     # Evaluaing isochore min size
-    if args.isochore_min_size != GClib.ISO_MIN_SIZE:
-        GClib.ISO_MIN_SIZE = args.isochore_min_size
+    if args.isochore_min_size != constants.ISO_MIN_SIZE:
+        # TODO: avoid to change constants, pass this as an argument
+        constants.ISO_MIN_SIZE = args.isochore_min_size
 
     # Open the sequence file
-    FastaFile = GClib.Utility.FastaFile(args.infile)
+    FastaFile = Utility.FastaFile(args.infile)
 
     # Seq Record object
     seqRecord = None
@@ -252,7 +269,7 @@ if __name__ == "__main__":
 
     # Instantiating Chromosome Class with seqRecord object (gaps are
     # determined automatically)
-    Chrom = GClib.Elements.Chromosome(seqRecord)
+    Chrom = Elements.Chromosome(seqRecord)
 
     # Call valuewindos with user defined window size
     Chrom.ValueWindows(
@@ -268,7 +285,7 @@ if __name__ == "__main__":
     if args.windowgraph is not None:
         # Instantiating DrawChromosome Class. Look at sequence start (0-based
         # sequence start, this has been fixed in the top of this main block)
-        Graph = GClib.Graphs.DrawChromosome(sequence_start=args.sequence_start)
+        Graph = Graphs.DrawChromosome(sequence_start=args.sequence_start)
 
         # beware user defined min and max values
         if args.y_max is not None or args.y_min is not None:
@@ -299,7 +316,7 @@ if __name__ == "__main__":
         Graph.DrawWindowRectangles(windows=Chrom.windows)
 
         # Draw legend or not
-        if args.draw_legend == True:
+        if args.draw_legend is True:
             Graph.DrawLegend()
 
         # Draw ChName
@@ -323,7 +340,7 @@ if __name__ == "__main__":
     if args.graphfile is not None:
         # Instantiating DrawChromosome Class. Look at sequence start (0-based
         # sequence start, this has been fixed in the top of this main block)
-        Graph = GClib.Graphs.DrawChromosome(sequence_start=args.sequence_start)
+        Graph = Graphs.DrawChromosome(sequence_start=args.sequence_start)
 
         # beware user defined min and max values
         if args.y_max is not None or args.y_min is not None:
@@ -354,7 +371,7 @@ if __name__ == "__main__":
         Graph.DrawIsochoreRectangles(isochores=Chrom.isochores)
 
         # Draw legend or not
-        if args.draw_legend == True:
+        if args.draw_legend is True:
             Graph.DrawLegend()
 
         # Draw ChName
@@ -371,7 +388,7 @@ if __name__ == "__main__":
         # Instantiating DrawBarChromosome Class. Look at sequence start
         # (0-based sequence start, this has been fixed in the top of this main
         # block)
-        Graph = GClib.Graphs.DrawBarChromosome(
+        Graph = Graphs.DrawBarChromosome(
             sequence_start=args.sequence_start)
 
         # there are no min and max values in this graph style
@@ -393,7 +410,7 @@ if __name__ == "__main__":
         Graph.DrawIsochoreRectangles(isochores=Chrom.isochores)
 
         # Draw legend or not
-        if args.draw_legend == True:
+        if args.draw_legend is True:
             Graph.DrawLegend()
 
         # Draw ChName
