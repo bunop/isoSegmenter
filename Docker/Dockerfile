@@ -31,7 +31,7 @@ RUN git clone https://github.com/bunop/isoSegmenter.git /root/isoSegmenter
 WORKDIR /root/isoSegmenter
 
 # setting isosegmenter version
-ENV VERSION=16d4206
+ENV VERSION=ce50af9
 
 # checking out a tagged release
 RUN git fetch && \
