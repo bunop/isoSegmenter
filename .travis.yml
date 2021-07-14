@@ -12,15 +12,14 @@ branches:
   - master
   - testing
 
-language: python
-
-python:
-  - "2.7"
-
 # prepare environment
 before_install:
   - sudo apt-get -qq update
-  - sudo apt-get install -y libgd-dev libgif-dev
+  - sudo apt-get install -y python python-dev python-virtualenv libgd-dev libgif-dev
+  - export PYTHON=$(which python2)
+  - virtualenv -p $PYTHON ~/venv
+  - source ~/venv/bin/activate
+  - pip list
 
 # command to install dependencies
 install:
