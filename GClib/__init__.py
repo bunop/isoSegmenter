@@ -35,12 +35,12 @@ Created on Fri May  3 14:49:03 2013
 
 __all__ = ["Elements", "Utility", "Graphs"]
 __author__ = "Paolo Cozzi <paolo.cozzi@ptp.it>"
-__copyright__ = "Copyright (C) 2013-2016 ITB - CNR"
+__copyright__ = "Copyright (C) 2013-2021 ITB - CNR"
 __credits__ = ["Paolo Cozzi"]
 __license__ = "GNU GPLv3"
 __version__ = "1.5.2"
 __maintainer__ = "Paolo Cozzi"
-__email__ = "paolo.cozzi@ptp.it"
+__email__ = "bunop@libero.it"
 __status__ = "beta"
 
 
