@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 
-    Copyright (C) 2013-2019 ITB - CNR
+    Copyright (C) 2013-2021 ITB - CNR
 
     This file is part of isoSegmenter.
 
