@@ -5,7 +5,7 @@ isoSegmenter
 A program for segmenting genomes into isochores
 
 [![python package](https://img.shields.io/pypi/v/isoSegmenter.svg)](https://pypi.python.org/pypi/isoSegmenter)
-[![Travis-CI Build Status](https://img.shields.io/travis/bunop/isoSegmenter.svg)](https://travis-ci.org/bunop/isoSegmenter)
+[![Build Status](https://travis-ci.com/bunop/isoSegmenter.svg?branch=master)](https://travis-ci.com/bunop/isoSegmenter)
 [![Coverall](https://coveralls.io/repos/github/bunop/isoSegmenter/badge.svg?branch=master)](https://coveralls.io/github/bunop/isoSegmenter?branch=master)
 [![](https://images.microbadger.com/badges/version/bunop/isosegmenter.svg)](http://microbadger.com/images/bunop/isosegmenter "Get your own version badge on microbadger.com")
 
@@ -13,7 +13,7 @@ A program for segmenting genomes into isochores
 
 isoSegmenter - A program for segmenting genomes into isochores
 
-Copyright (C) 2013-2019 ITB - CNR
+Copyright (C) 2013-2021 ITB - CNR
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
