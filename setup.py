@@ -151,7 +151,7 @@ setup(
         "gdmodule>0.58",
         "Pillow",
         "matplotlib",
-        "biopython"],
+        "biopython<1.77"],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
